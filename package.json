@@ -12,6 +12,7 @@
   "author": "Matschik <mathieu.schimmerling@protonmail.com>",
   "license": "MIT",
   "dependencies": {
+    "dotenv": "^16.4.1",
     "fastify": "^5.4.0"
   },
   "devDependencies": {
