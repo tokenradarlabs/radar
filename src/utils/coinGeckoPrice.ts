@@ -19,7 +19,7 @@ if (!COINGECKO_API_KEY) {
 /**
  * Fetches the price data for a specific token from CoinGecko
  * @param tokenId The CoinGecko token ID (e.g., 'bitcoin')
- * @returns The price data including USD price, 24h volume, and 24h change
+ * @returns The price data including USD price
  */
 export async function fetchTokenPrice(tokenId: string): Promise<CoinGeckoPriceDetail | null> {
     const url = `https://api.coingecko.com/api/v3/simple/price?vs_currencies=usd&ids=${tokenId}&precision=5`;
