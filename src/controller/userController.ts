@@ -10,7 +10,11 @@ const registerSchema = z.object({
   password: z.string({
     required_error: "Password is required",
     invalid_type_error: "Password must be a string"
-  }).min(8, "Password must be at least 8 characters long"),
+  })
+  .min(8, "Password must be at least 8 characters long")
+  .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+  .regex(/[0-9]/, "Password must contain at least one number")
+  .regex(/[!@#$%^&*(),.?":{}|<>]/, "Password must contain at least one special character"),
 });
 
 // Type inference from the Zod schema
