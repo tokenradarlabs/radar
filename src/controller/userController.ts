@@ -1,5 +1,6 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { z } from "zod";
+import bcrypt from "bcrypt";
 
 // Define the registration schema using Zod
 const registerSchema = z.object({
@@ -10,11 +11,18 @@ const registerSchema = z.object({
   password: z.string({
     required_error: "Password is required",
     invalid_type_error: "Password must be a string"
-  }).min(8, "Password must be at least 8 characters long"),
+  })
+  .min(8, "Password must be at least 8 characters long")
+  .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+  .regex(/[0-9]/, "Password must contain at least one number")
+  .regex(/[!@#$%^&*(),.?":{}|<>]/, "Password must contain at least one special character"),
 });
 
 // Type inference from the Zod schema
 type RegisterRequest = z.infer<typeof registerSchema>;
+
+// Number of salt rounds for bcrypt
+const SALT_ROUNDS = 12;
 
 export default async function userController(fastify: FastifyInstance) {
   // POST /auth/register
@@ -25,10 +33,15 @@ export default async function userController(fastify: FastifyInstance) {
         // Validate the request body against the schema
         const validatedData = registerSchema.parse(request.body);
 
+        // Hash the password using bcrypt
+        const hashedPassword = await bcrypt.hash(validatedData.password, SALT_ROUNDS);
+
         // TODO: Add actual user creation logic here
+        // For now, we'll just return success without storing the user
         return reply.code(201).send({
           message: "User registered successfully",
-          email: validatedData.email
+          email: validatedData.email,
+          // Note: Never return hashed password in response
         });
       } catch (error) {
           
@@ -40,6 +53,7 @@ export default async function userController(fastify: FastifyInstance) {
         }
         
         // Handle unexpected errors
+        console.error('Registration error:', error);
         return reply.code(500).send({
           error: "Internal server error"
         });
