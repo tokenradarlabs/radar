@@ -1,6 +1,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { z } from "zod";
 import bcrypt from "bcrypt";
+import { prisma } from "../utils/prisma";
 
 // Define the registration schema using Zod
 const registerSchema = z.object({
@@ -24,6 +25,11 @@ type RegisterRequest = z.infer<typeof registerSchema>;
 // Number of salt rounds for bcrypt
 const SALT_ROUNDS = 12;
 
+// Type guard for Prisma errors
+function isPrismaError(error: unknown): error is Error & { code: string } {
+  return error instanceof Error && 'code' in error;
+}
+
 export default async function userController(fastify: FastifyInstance) {
   // POST /auth/register
   fastify.post<{ Body: RegisterRequest }>(
@@ -36,20 +42,38 @@ export default async function userController(fastify: FastifyInstance) {
         // Hash the password using bcrypt
         const hashedPassword = await bcrypt.hash(validatedData.password, SALT_ROUNDS);
 
-        // TODO: Add actual user creation logic here
-        // For now, we'll just return success without storing the user
+        // Create the user in the database
+        const user = await prisma.user.create({
+          data: {
+            email: validatedData.email,
+            password: hashedPassword,
+          },
+          select: {
+            id: true,
+            email: true,
+            createdAt: true,
+          },
+        });
+
         return reply.code(201).send({
           message: "User registered successfully",
-          email: validatedData.email,
-          // Note: Never return hashed password in response
+          user,
         });
       } catch (error) {
-          
         if (error instanceof z.ZodError) {
           // Return validation errors
           return reply.code(400).send({
             error: error.errors[0].message
           });
+        }
+
+        if (isPrismaError(error)) {
+          // Handle unique constraint violation (duplicate email)
+          if (error.code === 'P2002') {
+            return reply.code(409).send({
+              error: "Email already exists"
+            });
+          }
         }
         
         // Handle unexpected errors
