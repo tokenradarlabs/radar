@@ -12,6 +12,7 @@
   "author": "Matschik <mathieu.schimmerling@protonmail.com>",
   "license": "MIT",
   "dependencies": {
+    "@prisma/client": "^6.10.1",
     "@types/bcrypt": "^5.0.2",
     "bcrypt": "^6.0.0",
     "dotenv": "^16.4.1",
@@ -19,7 +20,6 @@
     "zod": "^3.25.67"
   },
   "devDependencies": {
-    "@prisma/client": "^6.10.1",
     "@types/node": "^24.0.1",
     "cross-env": "^7.0.3",
     "fastify-tsconfig": "^3.0.0",
