@@ -12,6 +12,7 @@
   "author": "Matschik <mathieu.schimmerling@protonmail.com>",
   "license": "MIT",
   "dependencies": {
+    "@fastify/rate-limit": "^10.3.0",
     "@prisma/client": "^6.10.1",
     "@types/bcrypt": "^5.0.2",
     "bcrypt": "^6.0.0",
