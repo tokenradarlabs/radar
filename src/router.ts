@@ -1,4 +1,5 @@
 import { FastifyInstance } from "fastify";
+import rateLimit from '@fastify/rate-limit';
 import { loginController, registerController } from "./controller/auth";
 import userController from "./controller/userController";
 import indexController from "./controller/indexController";
@@ -7,8 +8,14 @@ import priceChangeController from "./controller/priceChangeController";
 import volumeController from "./controller/volumeController";
 
 export default async function router(fastify: FastifyInstance) {
-  // Auth endpoints
+  // Auth endpoints with rate limiting
   fastify.register(async (fastify) => {
+    // Enable rate limiting for all auth routes
+    await fastify.register(rateLimit, {
+      max: 5,
+      timeWindow: '1 minute'
+    });
+    
     fastify.register(loginController);
     fastify.register(registerController);
   }, { prefix: "/auth" });
