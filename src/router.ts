@@ -28,5 +28,5 @@ export default async function router(fastify: FastifyInstance) {
   fastify.register(priceController, { prefix: "/api/v1/price" });
   fastify.register(priceChangeController, { prefix: "/api/v1/priceChange" });
   fastify.register(volumeController, { prefix: "/api/v1/volume" });
-  fastify.register(devPriceController, { prefix: "/api/v1/dev/price" });
+  fastify.register(devPriceController, { prefix: "/api/v1/price/dev" });
 }
