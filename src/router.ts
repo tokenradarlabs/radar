@@ -6,6 +6,7 @@ import indexController from "./controller/indexController";
 import priceController from "./controller/priceController";
 import priceChangeController from "./controller/priceChangeController";
 import volumeController from "./controller/volumeController";
+import devPriceController from "./controller/devPriceController";
 
 export default async function router(fastify: FastifyInstance) {
   // Auth endpoints with rate limiting
@@ -27,4 +28,5 @@ export default async function router(fastify: FastifyInstance) {
   fastify.register(priceController, { prefix: "/api/v1/price" });
   fastify.register(priceChangeController, { prefix: "/api/v1/priceChange" });
   fastify.register(volumeController, { prefix: "/api/v1/volume" });
+  fastify.register(devPriceController, { prefix: "/api/v1/price/dev" });
 }
