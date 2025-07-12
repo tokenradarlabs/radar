@@ -1,7 +1,6 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
-import { fetchTokenPrice } from "../utils/coinGeckoPrice";
+import { getDevPrice } from "../utils/uniswapPrice";
 
-const DEV_TOKEN_ID = 'scout-protocol-token'; // CoinGecko ID for DEV token
 
 export default async function devPriceController(fastify: FastifyInstance) {
   // GET /api/v1/dev/price
@@ -9,7 +8,7 @@ export default async function devPriceController(fastify: FastifyInstance) {
     "/",
     async function (_request: FastifyRequest, reply: FastifyReply) {
       try {
-        const priceData = await fetchTokenPrice(DEV_TOKEN_ID);
+        const priceData = await getDevPrice();
         
         if (!priceData) {
           return reply.status(404).send({
@@ -19,8 +18,8 @@ export default async function devPriceController(fastify: FastifyInstance) {
         }
 
         return reply.send({
-          price: priceData.usd,
-          token: DEV_TOKEN_ID
+          price: priceData,
+          token: "scout-protocol-token"
         });
       } catch (error) {
         return reply.status(500).send({
