@@ -19,4 +19,36 @@ model User {
   password  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  alerts    Alert[]
+}
+
+model Token {
+  id      String  @id @default(uuid())
+  address String  @unique
+  alerts  Alert[]
+}
+
+enum PriceAlertDirection {
+  up
+  down
+}
+
+model Alert {
+  id         String        @id @default(uuid())
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  enabled    Boolean       @default(true)
+  priceAlert PriceAlert?  @relation("AlertToPriceAlert")
+  userId     String
+  user       User         @relation(fields: [userId], references: [id])
+  tokenId    String
+  token      Token        @relation(fields: [tokenId], references: [id])
+}
+
+model PriceAlert {
+  id        String              @id @default(uuid())
+  direction PriceAlertDirection
+  value     Float
+  alertId   String              @unique
+  alert     Alert               @relation("AlertToPriceAlert", fields: [alertId], references: [id])
 }
