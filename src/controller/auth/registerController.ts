@@ -2,6 +2,8 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { z } from "zod";
 import bcrypt from "bcrypt";
 import { prisma } from "../../utils/prisma";
+import { Response } from "../../types/responses";
+import { UserData } from "../../types/user";
 
 // Define the registration schema using Zod
 const registerSchema = z.object({
@@ -54,32 +56,39 @@ export default async function registerController(fastify: FastifyInstance) {
           },
         });
 
-        return reply.code(201).send({
-          message: "User registered successfully",
-          user,
-        });
+        const response: Response<UserData> = {
+          data: {
+            id: user.id,
+            email: user.email,
+            createdAt: user.createdAt
+          }
+        };
+        return reply.code(201).send(response);
       } catch (error) {
         if (error instanceof z.ZodError) {
           // Return validation errors
-          return reply.code(400).send({
+          const response: Response<UserData> = {
             error: error.errors[0].message
-          });
+          };
+          return reply.code(400).send(response);
         }
 
         if (isPrismaError(error)) {
           // Handle unique constraint violation (duplicate email)
           if (error.code === 'P2002') {
-            return reply.code(409).send({
+            const response: Response<UserData> = {
               error: "Email already exists"
-            });
+            };
+            return reply.code(409).send(response);
           }
         }
         
         // Handle unexpected errors
         console.error('Registration error:', error);
-        return reply.code(500).send({
+        const response: Response<UserData> = {
           error: "Internal server error"
-        });
+        };
+        return reply.code(500).send(response);
       }
     }
   );
