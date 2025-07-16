@@ -2,6 +2,8 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { z } from "zod";
 import bcrypt from "bcrypt";
 import { prisma } from "../../utils/prisma";
+import { Response } from "../../types/responses";
+import { UserData } from "../../types/user";
 
 // Define the login schema using Zod
 const loginSchema = z.object({
@@ -35,9 +37,10 @@ export default async function loginController(fastify: FastifyInstance) {
 
         // If user doesn't exist, return error
         if (!user) {
-          return reply.code(401).send({
+          const response: Response<UserData> = {
             error: "User Does Not Exist"
-          });
+          };
+          return reply.code(401).send(response);
         }
 
         // Compare password with hashed password
@@ -45,33 +48,36 @@ export default async function loginController(fastify: FastifyInstance) {
 
         // If password is invalid, return error
         if (!isValidPassword) {
-          return reply.code(401).send({
+          const response: Response<UserData> = {
             error: "Invalid credentials"
-          });
+          };
+          return reply.code(401).send(response);
         }
 
         // Return user data (excluding password)
-        return reply.code(200).send({
-          message: "Login successful",
-          user: {
+        const response: Response<UserData> = {
+          data: {
             id: user.id,
             email: user.email,
             createdAt: user.createdAt
           }
-        });
+        };
+        return reply.code(200).send(response);
       } catch (error) {
         if (error instanceof z.ZodError) {
           // Return validation errors
-          return reply.code(400).send({
+          const response: Response<UserData> = {
             error: error.errors[0].message
-          });
+          };
+          return reply.code(400).send(response);
         }
 
         // Handle unexpected errors
         console.error('Login error:', error);
-        return reply.code(500).send({
+        const response: Response<UserData> = {
           error: "Internal server error"
-        });
+        };
+        return reply.code(500).send(response);
       }
     }
   );
