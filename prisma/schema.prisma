@@ -20,6 +20,7 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   alerts    Alert[]
+  apiKeys   ApiKey[]
 }
 
 model Token {
@@ -51,4 +52,15 @@ model PriceAlert {
   value     Float
   alertId   String              @unique
   alert     Alert               @relation("AlertToPriceAlert", fields: [alertId], references: [id])
+}
+
+model ApiKey {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  name        String
+  createdAt   DateTime @default(now())
+  lastUsedAt  DateTime @default(now())
+  isActive    Boolean  @default(true)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
 }
