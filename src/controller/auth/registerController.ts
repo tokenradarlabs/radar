@@ -57,6 +57,7 @@ export default async function registerController(fastify: FastifyInstance) {
         });
 
         const response: Response<UserData> = {
+          success: true,
           data: {
             id: user.id,
             email: user.email,
@@ -68,6 +69,7 @@ export default async function registerController(fastify: FastifyInstance) {
         if (error instanceof z.ZodError) {
           // Return validation errors
           const response: Response<UserData> = {
+            success: false,
             error: error.errors[0].message
           };
           return reply.code(400).send(response);
@@ -77,6 +79,7 @@ export default async function registerController(fastify: FastifyInstance) {
           // Handle unique constraint violation (duplicate email)
           if (error.code === 'P2002') {
             const response: Response<UserData> = {
+              success: false,
               error: "Email already exists"
             };
             return reply.code(409).send(response);
@@ -86,6 +89,7 @@ export default async function registerController(fastify: FastifyInstance) {
         // Handle unexpected errors
         console.error('Registration error:', error);
         const response: Response<UserData> = {
+          success: false,
           error: "Internal server error"
         };
         return reply.code(500).send(response);

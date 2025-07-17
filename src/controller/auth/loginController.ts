@@ -38,6 +38,7 @@ export default async function loginController(fastify: FastifyInstance) {
         // If user doesn't exist, return error
         if (!user) {
           const response: Response<UserData> = {
+            success: false,
             error: "User Does Not Exist"
           };
           return reply.code(401).send(response);
@@ -49,6 +50,7 @@ export default async function loginController(fastify: FastifyInstance) {
         // If password is invalid, return error
         if (!isValidPassword) {
           const response: Response<UserData> = {
+            success: false,
             error: "Invalid credentials"
           };
           return reply.code(401).send(response);
@@ -56,6 +58,7 @@ export default async function loginController(fastify: FastifyInstance) {
 
         // Return user data (excluding password)
         const response: Response<UserData> = {
+          success: true,
           data: {
             id: user.id,
             email: user.email,
@@ -67,6 +70,7 @@ export default async function loginController(fastify: FastifyInstance) {
         if (error instanceof z.ZodError) {
           // Return validation errors
           const response: Response<UserData> = {
+            success: false,
             error: error.errors[0].message
           };
           return reply.code(400).send(response);
@@ -75,6 +79,7 @@ export default async function loginController(fastify: FastifyInstance) {
         // Handle unexpected errors
         console.error('Login error:', error);
         const response: Response<UserData> = {
+          success: false,
           error: "Internal server error"
         };
         return reply.code(500).send(response);
