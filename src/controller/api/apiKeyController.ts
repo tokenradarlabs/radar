@@ -48,6 +48,7 @@ export default async function apiKeyController(fastify: FastifyInstance) {
         // If user doesn't exist, return error
         if (!user) {
           const response: Response<ApiKeyResponse> = {
+            success: false,
             error: "Invalid user ID"
           };
           return reply.code(401).send(response);
@@ -65,6 +66,7 @@ export default async function apiKeyController(fastify: FastifyInstance) {
 
         // Return the API key
         const response: Response<ApiKeyResponse> = {
+          success: true,
           data: {
             apiKey: newApiKey.key
           }
@@ -74,6 +76,7 @@ export default async function apiKeyController(fastify: FastifyInstance) {
         if (error instanceof z.ZodError) {
           // Return validation errors
           const response: Response<ApiKeyResponse> = {
+            success: false,
             error: error.errors[0].message
           };
           return reply.code(400).send(response);
@@ -82,6 +85,7 @@ export default async function apiKeyController(fastify: FastifyInstance) {
         // Handle unexpected errors
         console.error('API key generation error:', error);
         const response: Response<ApiKeyResponse> = {
+          success: false,
           error: "Internal server error"
         };
         return reply.code(500).send(response);
