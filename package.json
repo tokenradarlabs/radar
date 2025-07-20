@@ -5,6 +5,7 @@
   "scripts": {
     "watch": "tsc --watch --preserveWatchOutput --pretty",
     "dev": "cross-env NODE_ENV=development nodemon",
+    "dev:watch": "cross-env NODE_ENV=development nodemon -L",
     "format": "prettier --write \"src/**/*.ts\"",
     "build": "rimraf dist && tsc",
     "start": "node dist/index.js"
@@ -29,6 +30,7 @@
     "prettier": "^3.5.2",
     "prisma": "^6.10.1",
     "rimraf": "^5.0.7",
+    "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.7.2"
   }
