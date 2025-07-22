@@ -1,7 +1,7 @@
 import { FastifyInstance } from "fastify";
 import rateLimit from '@fastify/rate-limit';
 import { loginController, registerController } from "./controller/auth";
-import { apiKeyController } from "./controller/api";
+import { apiKeyController ,getApiKeysController} from "./controller/api";
 import userController from "./controller/userController";
 import indexController from "./controller/indexController";
 import priceController from "./controller/priceController";
@@ -30,6 +30,7 @@ export default async function router(fastify: FastifyInstance) {
     });
     
     fastify.register(apiKeyController);
+    fastify.register(getApiKeysController);
   }, { prefix: "/api/v1/keys" });
   
   fastify.register(userController, { prefix: "/user" });
