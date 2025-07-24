@@ -8,6 +8,7 @@ import priceController from "./controller/priceController";
 import priceChangeController from "./controller/priceChangeController";
 import volumeController from "./controller/volumeController";
 import devPriceController from "./controller/devPriceController";
+import cronController from "./controller/cronController";
 
 export default async function router(fastify: FastifyInstance) {
   // Auth endpoints with rate limiting
@@ -40,4 +41,7 @@ export default async function router(fastify: FastifyInstance) {
   fastify.register(priceChangeController, { prefix: "/api/v1/priceChange" });
   fastify.register(volumeController, { prefix: "/api/v1/volume" });
   fastify.register(devPriceController, { prefix: "/api/v1/price/dev" });
+  
+  // Cron service management endpoints
+  fastify.register(cronController, { prefix: "/api/v1/cron" });
 }

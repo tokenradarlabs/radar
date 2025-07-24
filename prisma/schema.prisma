@@ -64,3 +64,15 @@ model ApiKey {
   userId      String
   user        User     @relation(fields: [userId], references: [id])
 }
+
+model PriceRecord {
+  id        String   @id @default(uuid())
+  timestamp DateTime @default(now())
+  btcPrice  Float
+  ethPrice  Float
+  devPrice  Float
+  btcSource String   @default("coingecko")
+  ethSource String   @default("coingecko")
+  devSource String   @default("uniswap")
+  createdAt DateTime @default(now())
+}
