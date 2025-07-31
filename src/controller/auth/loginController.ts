@@ -4,6 +4,7 @@ import bcrypt from "bcrypt";
 import { prisma } from "../../utils/prisma";
 import { Response } from "../../types/responses";
 import { UserData } from "../../types/user";
+import { generateToken } from "../../utils/auth";
 
 // Define the login schema using Zod
 const loginSchema = z.object({
@@ -37,9 +38,10 @@ export default async function loginController(fastify: FastifyInstance) {
 
         // If user doesn't exist, return error
         if (!user) {
+          const timestamp = new Date().toISOString();
           const response: Response<UserData> = {
             success: false,
-            error: "User Does Not Exist"
+            error: `User Does Not Exist (${timestamp})`
           };
           return reply.code(401).send(response);
         }
@@ -57,12 +59,16 @@ export default async function loginController(fastify: FastifyInstance) {
         }
 
         // Return user data (excluding password)
-        const response: Response<UserData> = {
+        // Generate JWT token
+        const token = generateToken({ id: user.id, email: user.email });
+        
+        const response: Response<UserData & { token: string }> = {
           success: true,
           data: {
             id: user.id,
             email: user.email,
-            createdAt: user.createdAt
+            createdAt: user.createdAt,
+            token: token
           }
         };
         return reply.code(200).send(response);
