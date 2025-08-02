@@ -1,6 +1,6 @@
 import { FastifyInstance } from "fastify";
 import rateLimit from '@fastify/rate-limit';
-import { loginController, registerController } from "./controller/auth";
+import { loginController, registerController, profileController } from "./controller/auth";
 import { apiKeyController ,getApiKeysController} from "./controller/api";
 import userController from "./controller/userController";
 import indexController from "./controller/indexController";
@@ -20,6 +20,7 @@ export default async function router(fastify: FastifyInstance) {
     
     fastify.register(loginController);
     fastify.register(registerController);
+    fastify.register(profileController);
   }, { prefix: "/auth" });
   
   // API key management endpoints with rate limiting
