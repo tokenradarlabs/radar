@@ -1,5 +1,5 @@
 import 'dotenv/config';
-
+import { getValidatedEnv } from './envValidation';
 
 // Interface for the Coingecko API response
 interface CoinGeckoPriceDetail {
@@ -10,24 +10,18 @@ interface CoinGeckoPriceResponse {
   [tokenId: string]: CoinGeckoPriceDetail;
 }
 
-const COINGECKO_API_KEY = process.env.COINGECKO_API_KEY;
-
-if (!COINGECKO_API_KEY) {
-    throw new Error('COINGECKO_API_KEY is required but not set in environment variables');
-}
-
 /**
  * Fetches the price data for a specific token from CoinGecko
  * @param tokenId The CoinGecko token ID (e.g., 'bitcoin')
  * @returns The price data including USD price
  */
 export async function fetchTokenPrice(tokenId: string): Promise<CoinGeckoPriceDetail | null> {
+    const { COINGECKO_API_KEY } = getValidatedEnv();
     const url = `https://api.coingecko.com/api/v3/simple/price?vs_currencies=usd&ids=${tokenId}&precision=5`;
     
-    // We can safely assert this type since we checked COINGECKO_API_KEY is not undefined above
     const headers: Record<string, string> = {
         'accept': 'application/json',
-        'x-cg-demo-api-key': COINGECKO_API_KEY as string
+        'x-cg-demo-api-key': COINGECKO_API_KEY
     };
 
     const options: RequestInit = {
