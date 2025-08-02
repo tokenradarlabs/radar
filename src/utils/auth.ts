@@ -1,5 +1,6 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import jwt from "jsonwebtoken";
+import { getValidatedEnv } from "./envValidation";
 
 // Define the shape of the token payload
 export interface JwtPayload {
@@ -21,7 +22,7 @@ export async function authenticateJwt(request: FastifyRequest, reply: FastifyRep
   }
 
   const token = authHeader.split(' ')[1]; // Extract the token from "Bearer <token>"
-  const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+  const { JWT_SECRET } = getValidatedEnv();
   
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
@@ -37,7 +38,7 @@ export async function authenticateJwt(request: FastifyRequest, reply: FastifyRep
 
 // This function generates a new JWT token
 export function generateToken(payload: Omit<JwtPayload, 'iat' | 'exp'>, expiresIn: number = 24 * 60 * 60): string {
-  const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+  const { JWT_SECRET } = getValidatedEnv();
   return jwt.sign(payload, JWT_SECRET, { expiresIn });
 }
 
