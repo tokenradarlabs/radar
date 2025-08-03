@@ -1,6 +1,16 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { getDevPrice } from "../utils/uniswapPrice";
+import {
+  sendSuccess,
+  sendNotFound,
+  sendInternalError,
+} from "../utils/responseHelper";
 
+interface DevPriceData {
+  price: number;
+  token: string;
+  symbol: string;
+}
 
 export default async function devPriceController(fastify: FastifyInstance) {
   // GET /api/v1/dev/price
@@ -9,24 +19,22 @@ export default async function devPriceController(fastify: FastifyInstance) {
     async function (_request: FastifyRequest, reply: FastifyReply) {
       try {
         const priceData = await getDevPrice();
-        
-        if (!priceData) {
-          return reply.status(404).send({
-            success: false,
-            error: "404 DEV token price data not found"
-          });
+
+        if (!priceData || priceData === 0) {
+          return sendNotFound(reply, "DEV token price data not found");
         }
 
-        return reply.send({
+        const responseData: DevPriceData = {
           price: priceData,
-          token: "scout-protocol-token"
-        });
+          token: "scout-protocol-token",
+          symbol: "DEV",
+        };
+
+        return sendSuccess(reply, responseData);
       } catch (error) {
-        return reply.status(500).send({
-          success: false,
-          error: "Failed to fetch DEV token price"
-        });
+        console.error("DEV price controller error:", error);
+        return sendInternalError(reply, "Failed to fetch DEV token price");
       }
     }
   );
-} 
+}
