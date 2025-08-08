@@ -1,8 +1,8 @@
-import { FastifyRequest, FastifyReply } from "fastify";
-import jwt from "jsonwebtoken";
-
-import { getValidatedEnv } from "./envValidation";
-import { prisma } from "./prisma";
+import { FastifyRequest, FastifyReply } from 'fastify';
+import jwt from 'jsonwebtoken';
+import { getValidatedEnv } from './envValidation';
+import { prisma } from './prisma';
+import { sendUnauthorized } from './responseHelper';
 
 // Define the shape of the token payload
 export interface JwtPayload {
@@ -20,14 +20,10 @@ export async function authenticateJwt(
   const authHeader = request.headers.authorization;
 
   if (!authHeader) {
-    return reply.code(401).send({
-      success: false,
-      error: "Authentication required",
-    });
+    return sendUnauthorized(reply, 'Authentication required');
   }
 
-  const token = authHeader.split(" ")[1]; // Extract the token from "Bearer <token>"
-
+  const token = authHeader.split(' ')[1]; // Extract the token from "Bearer <token>"
   const { JWT_SECRET } = getValidatedEnv();
 
   try {
@@ -35,10 +31,7 @@ export async function authenticateJwt(
     request.user = decoded; // Attach user info to the request
     return;
   } catch (error) {
-    return reply.code(401).send({
-      success: false,
-      error: "Invalid or expired token",
-    });
+    return sendUnauthorized(reply, 'Invalid or expired token');
   }
 }
 
@@ -48,8 +41,8 @@ export async function authenticateApiKey(
   reply: FastifyReply
 ) {
   const apiKey =
-    (request.headers["x-api-key"] as string) ||
-    ((request.query as any)?.["api_key"] as string);
+    (request.headers['x-api-key'] as string) ||
+    ((request.query as any)?.['api_key'] as string);
 
   if (!apiKey) {
     return reply.code(401).send({
@@ -79,7 +72,7 @@ export async function authenticateApiKey(
     if (!foundApiKey) {
       return reply.code(401).send({
         success: false,
-        error: "Invalid or inactive API key",
+        error: 'Invalid or inactive API key',
       });
     }
 
@@ -98,26 +91,25 @@ export async function authenticateApiKey(
     request.apiUser = foundApiKey.user;
     return;
   } catch (error) {
-    console.error("API key authentication error:", error);
+    console.error('API key authentication error:', error);
     return reply.code(500).send({
       success: false,
-      error: "Internal server error",
+      error: 'Internal server error',
     });
   }
 }
 
 // This function generates a new JWT token
 export function generateToken(
-  payload: Omit<JwtPayload, "iat" | "exp">,
+  payload: Omit<JwtPayload, 'iat' | 'exp'>,
   expiresIn: number = 24 * 60 * 60
 ): string {
   const { JWT_SECRET } = getValidatedEnv();
-
   return jwt.sign(payload, JWT_SECRET, { expiresIn });
 }
 
 // Declare module augmentation to add user property to FastifyRequest
-declare module "fastify" {
+declare module 'fastify' {
   interface FastifyRequest {
     user?: JwtPayload;
     apiKey?: {

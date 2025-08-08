@@ -1,7 +1,17 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { getDevPrice, getBtcPrice, getEthPrice } from "../utils/uniswapPrice";
+import {
+  sendSuccess,
+  sendNotFound,
+  sendInternalError,
+} from "../utils/responseHelper";
 
 interface TokenPriceParams {
+  tokenId: string;
+}
+
+interface TokenPriceData {
+  price: number;
   tokenId: string;
 }
 
@@ -9,47 +19,49 @@ export default async function priceController(fastify: FastifyInstance) {
   // GET /api/v1/price/:tokenId
   fastify.get<{ Params: TokenPriceParams }>(
     "/:tokenId",
-    async function (request: FastifyRequest<{ Params: TokenPriceParams }>, reply: FastifyReply) {
+    async function (
+      request: FastifyRequest<{ Params: TokenPriceParams }>,
+      reply: FastifyReply
+    ) {
       const { tokenId } = request.params;
 
       try {
         let price: number;
 
         switch (tokenId.toLowerCase()) {
-          case 'btc':
+          case "btc":
             price = await getBtcPrice();
             break;
-          case 'eth':
+          case "eth":
             price = await getEthPrice();
             break;
-          case 'scout-protocol-token':
+          case "scout-protocol-token":
             price = await getDevPrice();
             break;
           default:
-            return reply.status(404).send({
-              success: false,
-              error: "Invalid token selection. Supported tokens are: btc, eth, scout-protocol-token"
-            });
+            return sendNotFound(
+              reply,
+              "Invalid token selection. Supported tokens are: btc, eth, scout-protocol-token"
+            );
         }
 
         if (price === 0) {
-          return reply.status(500).send({
-            success: false,
-            error: "Failed to fetch token price from Uniswap"
-          });
+          return sendInternalError(
+            reply,
+            "Failed to fetch token price from Uniswap"
+          );
         }
 
-        return reply.send({
-          success: true,
-          price: price
-        });
+        const responseData: TokenPriceData = {
+          price,
+          tokenId: tokenId.toLowerCase(),
+        };
+
+        return sendSuccess(reply, responseData);
       } catch (error) {
         console.error("Price controller error:", error);
-        return reply.status(500).send({
-          success: false,
-          error: "Failed to fetch token price"
-        });
+        return sendInternalError(reply, "Failed to fetch token price");
       }
     }
   );
-} 
+}
