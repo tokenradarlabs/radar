@@ -1,10 +1,16 @@
-import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
-import { fetchTokenVolume } from "../utils/coinGeckoVolume";
+import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import { z } from 'zod';
+import { fetchTokenVolume } from '../utils/coinGeckoVolume';
 import {
   sendSuccess,
   sendNotFound,
   sendInternalError,
-} from "../utils/responseHelper";
+  sendBadRequest,
+} from '../utils/responseHelper';
+import {
+  volumeTokenIdSchema,
+  formatValidationError,
+} from '../utils/validation';
 
 interface TokenVolumeParams {
   tokenId: string;
@@ -19,30 +25,36 @@ interface TokenVolumeData {
 export default async function volumeController(fastify: FastifyInstance) {
   // GET /api/v1/volume/:tokenId
   fastify.get<{ Params: TokenVolumeParams }>(
-    "/:tokenId",
+    '/:tokenId',
     async function (
       request: FastifyRequest<{ Params: TokenVolumeParams }>,
       reply: FastifyReply
     ) {
-      const { tokenId } = request.params;
-
       try {
+        // Validate token ID parameter
+        const validatedParams = volumeTokenIdSchema.parse(request.params);
+        const { tokenId } = validatedParams;
+
         const volumeData = await fetchTokenVolume(tokenId);
 
         if (!volumeData) {
-          return sendNotFound(reply, "Token volume data not found");
+          return sendNotFound(reply, 'Token volume data not found');
         }
 
         const responseData: TokenVolumeData = {
           volume: volumeData.usd_24h_vol,
           tokenId,
-          period: "24h",
+          period: '24h',
         };
 
         return sendSuccess(reply, responseData);
       } catch (error) {
-        console.error("Volume controller error:", error);
-        return sendInternalError(reply, "Failed to fetch token volume");
+        if (error instanceof z.ZodError) {
+          return sendBadRequest(reply, formatValidationError(error));
+        }
+
+        console.error('Volume controller error:', error);
+        return sendInternalError(reply, 'Failed to fetch token volume');
       }
     }
   );
