@@ -1,10 +1,13 @@
-import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
-import { getDevPrice, getBtcPrice, getEthPrice } from "../utils/uniswapPrice";
+import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import { z } from 'zod';
+import { getDevPrice, getBtcPrice, getEthPrice } from '../utils/uniswapPrice';
 import {
   sendSuccess,
   sendNotFound,
   sendInternalError,
-} from "../utils/responseHelper";
+  sendBadRequest,
+} from '../utils/responseHelper';
+import { priceTokenIdSchema, formatValidationError } from '../utils/validation';
 
 interface TokenPriceParams {
   tokenId: string;
@@ -18,49 +21,55 @@ interface TokenPriceData {
 export default async function priceController(fastify: FastifyInstance) {
   // GET /api/v1/price/:tokenId
   fastify.get<{ Params: TokenPriceParams }>(
-    "/:tokenId",
+    '/:tokenId',
     async function (
       request: FastifyRequest<{ Params: TokenPriceParams }>,
       reply: FastifyReply
     ) {
-      const { tokenId } = request.params;
-
       try {
+        // Validate token ID parameter
+        const validatedParams = priceTokenIdSchema.parse(request.params);
+        const { tokenId } = validatedParams;
+
         let price: number;
 
-        switch (tokenId.toLowerCase()) {
-          case "btc":
+        switch (tokenId) {
+          case 'btc':
             price = await getBtcPrice();
             break;
-          case "eth":
+          case 'eth':
             price = await getEthPrice();
             break;
-          case "scout-protocol-token":
+          case 'scout-protocol-token':
             price = await getDevPrice();
             break;
           default:
             return sendNotFound(
               reply,
-              "Invalid token selection. Supported tokens are: btc, eth, scout-protocol-token"
+              'Invalid token selection. Supported tokens are: btc, eth, scout-protocol-token'
             );
         }
 
         if (price === 0) {
           return sendInternalError(
             reply,
-            "Failed to fetch token price from Uniswap"
+            'Failed to fetch token price from Uniswap'
           );
         }
 
         const responseData: TokenPriceData = {
           price,
-          tokenId: tokenId.toLowerCase(),
+          tokenId,
         };
 
         return sendSuccess(reply, responseData);
       } catch (error) {
-        console.error("Price controller error:", error);
-        return sendInternalError(reply, "Failed to fetch token price");
+        if (error instanceof z.ZodError) {
+          return sendBadRequest(reply, formatValidationError(error));
+        }
+
+        console.error('Price controller error:', error);
+        return sendInternalError(reply, 'Failed to fetch token price');
       }
     }
   );
