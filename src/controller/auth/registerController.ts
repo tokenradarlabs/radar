@@ -3,6 +3,7 @@ import { z } from "zod";
 import bcrypt from "bcrypt";
 import { prisma } from "../../utils/prisma";
 import { Response } from "../../types/responses";
+import { handleControllerError } from "../../utils/responseHelper";
 import { UserData } from "../../types/user";
 
 // Define the registration schema using Zod
@@ -86,13 +87,9 @@ export default async function registerController(fastify: FastifyInstance) {
           }
         }
         
-        // Handle unexpected errors
-        console.error('Registration error:', error);
-        const response: Response<UserData> = {
-          success: false,
-          error: "Internal server error"
-        };
-        return reply.code(500).send(response);
+        // Centralized error handling (maps DB outage to 503)
+        handleControllerError(reply, error, "Internal server error");
+        return;
       }
     }
   );
