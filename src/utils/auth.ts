@@ -2,7 +2,7 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 import jwt from 'jsonwebtoken';
 import { getValidatedEnv } from './envValidation';
 import { prisma } from './prisma';
-import { sendUnauthorized } from './responseHelper';
+import { sendUnauthorized, handleControllerError } from './responseHelper';
 
 // Define the shape of the token payload
 export interface JwtPayload {
@@ -91,11 +91,8 @@ export async function authenticateApiKey(
     request.apiUser = foundApiKey.user;
     return;
   } catch (error) {
-    console.error('API key authentication error:', error);
-    return reply.code(500).send({
-      success: false,
-      error: 'Internal server error',
-    });
+    handleControllerError(reply, error, 'Internal server error');
+    return;
   }
 }
 

@@ -4,6 +4,7 @@ import bcrypt from "bcrypt";
 import crypto from "crypto";
 import { prisma } from "../../utils/prisma";
 import { Response } from "../../types/responses";
+import { handleControllerError } from "../../utils/responseHelper";
 
 // Define the API key request schema
 const apiKeyRequestSchema = z.object({
@@ -92,13 +93,8 @@ export default async function apiKeyController(fastify: FastifyInstance) {
           };
           return reply.code(400).send(response);
         }
-        // Handle unexpected errors
-        console.error('API key generation error:', error);
-        const response: Response<ApiKeyResponse> = {
-          success: false,
-          error: "Internal server error"
-        };
-        return reply.code(500).send(response);
+        handleControllerError(reply, error, "Internal server error");
+        return;
       }
     }
   );

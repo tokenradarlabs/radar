@@ -3,6 +3,7 @@ import { z } from "zod";
 import bcrypt from "bcrypt";
 import { prisma } from "../../utils/prisma";
 import { Response } from "../../types/responses";
+import { handleControllerError } from "../../utils/responseHelper";
 
 // Define the request schema
 const getApiKeysRequestSchema = z.object({
@@ -96,13 +97,8 @@ export default async function getApiKeysController(fastify: FastifyInstance) {
           return reply.code(400).send(response);
         }
 
-        // Handle unexpected errors
-        console.error('API key fetch error:', error);
-        const response: Response<ApiKeyListResponse> = {
-          success: false,
-          error: "Internal server error"
-        };
-        return reply.code(500).send(response);
+        handleControllerError(reply, error, "Internal server error");
+        return;
       }
     }
   );

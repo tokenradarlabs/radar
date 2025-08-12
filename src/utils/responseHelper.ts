@@ -1,4 +1,5 @@
 import { FastifyReply } from "fastify";
+import { isDatabaseUnavailableError } from "./db";
 import { Response } from "../types/responses";
 
 /**
@@ -11,6 +12,7 @@ export const HTTP_STATUS = {
   UNAUTHORIZED: 401,
   FORBIDDEN: 403,
   NOT_FOUND: 404,
+  SERVICE_UNAVAILABLE: 503,
   INTERNAL_SERVER_ERROR: 500,
 } as const;
 
@@ -84,4 +86,29 @@ export function sendUnauthorized(
   error: string = "Authentication required"
 ): void {
   sendError(reply, error, HTTP_STATUS.UNAUTHORIZED);
+}
+
+/**
+ * Sends a 503 Service Unavailable error response
+ */
+export function sendServiceUnavailable(
+  reply: FastifyReply,
+  error: string = "Service temporarily unavailable"
+): void {
+  sendError(reply, error, HTTP_STATUS.SERVICE_UNAVAILABLE);
+}
+
+/**
+ * Standard controller catch-all handler that maps DB outages to 503
+ */
+export function handleControllerError(
+  reply: FastifyReply,
+  error: unknown,
+  fallbackMessage: string = "Internal server error"
+): void {
+  if (isDatabaseUnavailableError(error)) {
+    return sendServiceUnavailable(reply, "Database unavailable");
+  }
+  // Fallback to 500
+  sendInternalError(reply, fallbackMessage);
 }

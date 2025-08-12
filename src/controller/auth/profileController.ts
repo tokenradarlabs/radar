@@ -1,6 +1,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { authenticateJwt } from "../../utils/auth";
 import { Response } from "../../types/responses";
+import { handleControllerError } from "../../utils/responseHelper";
 import { UserData } from "../../types/user";
 import { prisma } from "../../utils/prisma";
 
@@ -58,12 +59,8 @@ export default async function profileController(fastify: FastifyInstance) {
         };
         return reply.code(200).send(response);
       } catch (error) {
-        console.error('Profile error:', error);
-        const response: Response<UserData> = {
-          success: false,
-          error: "Internal server error"
-        };
-        return reply.code(500).send(response);
+        handleControllerError(reply, error, "Internal server error");
+        return;
       }
     }
   );
