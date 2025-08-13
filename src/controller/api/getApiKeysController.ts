@@ -27,6 +27,7 @@ interface ApiKeyListResponse {
     key: string;
     name: string;
     createdAt: Date;
+    updatedAt: Date;
     lastUsedAt: Date;
     isActive: boolean;
   }[];
@@ -78,6 +79,7 @@ export default async function getApiKeysController(fastify: FastifyInstance) {
             key: true,
             name: true,
             createdAt: true,
+            updatedAt: true,
             lastUsedAt: true,
             isActive: true
           }

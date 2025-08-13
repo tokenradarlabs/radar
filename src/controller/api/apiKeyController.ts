@@ -34,9 +34,26 @@ const deleteApiKeyRequestSchema = z.object({
   }).uuid("Invalid API key ID format")
 });
 
+// Define the API key update request schema
+const updateApiKeyRequestSchema = z.object({
+  email: z.string({
+    required_error: "Email is required",
+    invalid_type_error: "Email must be a string"
+  }).email("Invalid email format"),
+  password: z.string({
+    required_error: "Password is required",
+    invalid_type_error: "Password must be a string"
+  }),
+  name: z.string({
+    required_error: "API key name is required",
+    invalid_type_error: "API key name must be a string"
+  }).min(1, "API key name cannot be empty").max(100, "API key name cannot exceed 100 characters")
+});
+
 // Type inference from the Zod schemas
 type ApiKeyRequest = z.infer<typeof apiKeyRequestSchema>;
 type DeleteApiKeyRequest = z.infer<typeof deleteApiKeyRequestSchema>;
+type UpdateApiKeyRequest = z.infer<typeof updateApiKeyRequestSchema>;
 
 // Type for API key response
 interface ApiKeyResponse {
@@ -46,6 +63,16 @@ interface ApiKeyResponse {
 // Type for deletion response
 interface DeleteApiKeyResponse {
   message: string;
+}
+
+// Type for update response
+interface UpdateApiKeyResponse {
+  message: string;
+  apiKey: {
+    id: string;
+    name: string;
+    updatedAt: Date;
+  };
 }
 // Generate a secure API key
 function generateApiKey(): string {
@@ -198,6 +225,98 @@ export default async function apiKeyController(fastify: FastifyInstance) {
         if (error instanceof z.ZodError) {
           // Return validation errors
           const response: Response<DeleteApiKeyResponse> = {
+            success: false,
+            error: error.errors[0].message
+          };
+          return reply.code(400).send(response);
+        }
+        handleControllerError(reply, error, "Internal server error");
+        return;
+      }
+    }
+  );
+
+  // PUT endpoint for API key update/rename
+  fastify.put<{ Body: UpdateApiKeyRequest; Params: { id: string } }>(
+    "/update/:id",
+    async function (request: FastifyRequest<{ Body: UpdateApiKeyRequest; Params: { id: string } }>, reply: FastifyReply) {
+      try {
+        const { id: apiKeyId } = request.params as { id: string };
+        
+        // Validate the request body against the schema
+        const validatedData = updateApiKeyRequestSchema.parse(request.body);
+
+        // Find user by email
+        const user = await prisma.user.findUnique({
+          where: {
+            email: validatedData.email
+          }
+        });
+
+        // If user doesn't exist, return error
+        if (!user) {
+          const response: Response<UpdateApiKeyResponse> = {
+            success: false,
+            error: "Invalid credentials"
+          };
+          return reply.code(401).send(response);
+        }
+
+        // Compare password with hashed password
+        const isValidPassword = await bcrypt.compare(validatedData.password, user.password);
+
+        // If password is invalid, return error
+        if (!isValidPassword) {
+          const response: Response<UpdateApiKeyResponse> = {
+            success: false,
+            error: "Invalid credentials"
+          };
+          return reply.code(401).send(response);
+        }
+
+        // Check if the API key exists and belongs to the user
+        const existingApiKey = await prisma.apiKey.findFirst({
+          where: {
+            id: apiKeyId,
+            userId: user.id
+          }
+        });
+
+        if (!existingApiKey) {
+          const response: Response<UpdateApiKeyResponse> = {
+            success: false,
+            error: "API key not found or access denied"
+          };
+          return reply.code(404).send(response);
+        }
+
+        // Update the API key name
+        const updatedApiKey = await prisma.apiKey.update({
+          where: {
+            id: apiKeyId
+          },
+          data: {
+            name: validatedData.name
+          }
+        });
+
+        // Return success response
+        const response: Response<UpdateApiKeyResponse> = {
+          success: true,
+          data: {
+            message: "API key updated successfully",
+            apiKey: {
+              id: updatedApiKey.id,
+              name: updatedApiKey.name,
+              updatedAt: updatedApiKey.updatedAt
+            }
+          }
+        };
+        return reply.code(200).send(response);
+      } catch (error) {
+        if (error instanceof z.ZodError) {
+          // Return validation errors
+          const response: Response<UpdateApiKeyResponse> = {
             success: false,
             error: error.errors[0].message
           };
