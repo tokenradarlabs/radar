@@ -5,51 +5,14 @@ import crypto from "crypto";
 import { prisma } from "../../utils/prisma";
 import { Response } from "../../types/responses";
 import { handleControllerError } from "../../utils/responseHelper";
-
-const apiKeyRequestSchema = z.object({
-  email: z.string({
-    required_error: "Email is required",
-    invalid_type_error: "Email must be a string"
-  }).email("Invalid email format"),
-  password: z.string({
-    required_error: "Password is required",
-    invalid_type_error: "Password must be a string"
-  })
-});
-
-const deleteApiKeyRequestSchema = z.object({
-  email: z.string({
-    required_error: "Email is required",
-    invalid_type_error: "Email must be a string"
-  }).email("Invalid email format"),
-  password: z.string({
-    required_error: "Password is required",
-    invalid_type_error: "Password must be a string"
-  }),
-  apiKeyId: z.string({
-    required_error: "API key ID is required",
-    invalid_type_error: "API key ID must be a string"
-  }).uuid("Invalid API key ID format")
-});
-
-const updateApiKeyRequestSchema = z.object({
-  email: z.string({
-    required_error: "Email is required",
-    invalid_type_error: "Email must be a string"
-  }).email("Invalid email format"),
-  password: z.string({
-    required_error: "Password is required",
-    invalid_type_error: "Password must be a string"
-  }),
-  name: z.string({
-    required_error: "API key name is required",
-    invalid_type_error: "API key name must be a string"
-  }).min(1, "API key name cannot be empty").max(100, "API key name cannot exceed 100 characters")
-});
-
-type ApiKeyRequest = z.infer<typeof apiKeyRequestSchema>;
-type DeleteApiKeyRequest = z.infer<typeof deleteApiKeyRequestSchema>;
-type UpdateApiKeyRequest = z.infer<typeof updateApiKeyRequestSchema>;
+import { 
+  apiKeyRequestSchema, 
+  deleteApiKeyRequestSchema, 
+  updateApiKeyRequestSchema,
+  type ApiKeyRequest,
+  type DeleteApiKeyRequest,
+  type UpdateApiKeyRequest
+} from "../../lib/api/schemas";
 
 interface ApiKeyResponse {
   apiKey: string;
