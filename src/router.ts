@@ -22,6 +22,12 @@ export default async function router(fastify: FastifyInstance) {
       await fastify.register(rateLimit, {
         max: 5,
         timeWindow: "1 minute",
+        errorResponseBuilder: function (_req, context) {
+          return {
+            success: false,
+            error: `Rate limit exceeded, retry in ${context.after}`,
+          };
+        },
       });
 
       fastify.register(loginController);
@@ -37,6 +43,12 @@ export default async function router(fastify: FastifyInstance) {
       await fastify.register(rateLimit, {
         max: 5,
         timeWindow: "1 minute",
+        errorResponseBuilder: function (_req, context) {
+          return {
+            success: false,
+            error: `Rate limit exceeded, retry in ${context.after}`,
+          };
+        },
       });
 
       fastify.register(apiKeyController);
