@@ -25,7 +25,9 @@ interface ApiKeyListResponse {
   apiKeys: {
     id: string;
     key: string;
+    name: string;
     createdAt: Date;
+    lastUsedAt: Date;
     isActive: boolean;
   }[];
 }
@@ -74,7 +76,9 @@ export default async function getApiKeysController(fastify: FastifyInstance) {
           select: {
             id: true,
             key: true,
+            name: true,
             createdAt: true,
+            lastUsedAt: true,
             isActive: true
           }
         });
