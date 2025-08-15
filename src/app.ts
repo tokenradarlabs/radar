@@ -3,7 +3,7 @@ import fastify from "fastify";
 import rateLimit from '@fastify/rate-limit';
 import router from "./router";
 import { checkDatabaseConnection, isDatabaseUnavailableError } from './utils/db';
-import { sendServiceUnavailable } from './utils/responseHelper';
+import { sendServiceUnavailable, handleGlobalError } from './utils/responseHelper';
 
 const server = fastify({
   // Logger only for production
@@ -15,11 +15,10 @@ server.register(rateLimit, {
   global: false, // Disable global rate limiting
   max: 5, // Maximum 5 requests
   timeWindow: '1 minute', // Per minute
-  errorResponseBuilder: function (_, context) {
+  errorResponseBuilder: function (_req, context) {
     return {
-      code: 429,
-      error: 'Too Many Requests',
-      message: `Rate limit exceeded, retry in ${context.after}`
+      success: false,
+      error: `Rate limit exceeded, retry in ${context.after}`
     }
   }
 });
@@ -36,13 +35,9 @@ server.get('/health', async (_request, reply) => {
   return reply.send({ status: 'ok' });
 });
 
-// Centralized error handler for DB outages
+// Centralized error handler for DB outages and rate limiting
 server.setErrorHandler((error, _request, reply) => {
-  if (isDatabaseUnavailableError(error)) {
-    return sendServiceUnavailable(reply, 'Database unavailable');
-  }
-  // Let Fastify default handle others
-  reply.status(500).send({ success: false, error: 'Internal server error' });
+  handleGlobalError(error, reply, isDatabaseUnavailableError);
 });
 
 export default server;

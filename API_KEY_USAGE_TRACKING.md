@@ -196,20 +196,6 @@ curl -X POST http://localhost:3000/api/v1/keys/getApiKeys \
 - Identify most-used keys for potential optimization
 - Understand usage patterns for capacity planning
 
-## Testing
-
-Use the provided test script to verify the functionality:
-
-```bash
-./test-api-usage-tracking.sh
-```
-
-The script will:
-1. Test API key generation
-2. Verify usage count display
-3. Test usage analytics endpoints
-4. Provide manual testing instructions
-
 ## Migration Notes
 
 ### Database Changes
