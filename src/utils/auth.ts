@@ -76,13 +76,16 @@ export async function authenticateApiKey(
       });
     }
 
-    // Update the last used timestamp
+    // Update the last used timestamp and increment usage count
     await prisma.apiKey.update({
       where: {
         id: foundApiKey.id,
       },
       data: {
         lastUsedAt: new Date(),
+        usageCount: {
+          increment: 1
+        }
       },
     });
 
@@ -115,6 +118,7 @@ declare module 'fastify' {
       name: string;
       createdAt: Date;
       lastUsedAt: Date;
+      usageCount: number;
       isActive: boolean;
       userId: string;
       user: {
