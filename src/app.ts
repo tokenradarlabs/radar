@@ -1,6 +1,8 @@
 import 'dotenv/config';
 import fastify from "fastify";
 import rateLimit from '@fastify/rate-limit';
+import cors from '@fastify/cors';
+import helmet from '@fastify/helmet';
 import router from "./router";
 import { checkDatabaseConnection, isDatabaseUnavailableError } from './utils/db';
 import { sendServiceUnavailable, handleGlobalError } from './utils/responseHelper';
@@ -8,6 +10,30 @@ import { sendServiceUnavailable, handleGlobalError } from './utils/responseHelpe
 const server = fastify({
   // Logger only for production
   logger: !!(process.env.NODE_ENV !== "development"),
+  // Set request size limits for security
+  bodyLimit: 1048576, // 1MB limit for request body
+});
+
+// Register security headers plugin (Helmet)
+server.register(helmet, {
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "https:"],
+    },
+  },
+});
+
+// Register CORS plugin
+server.register(cors, {
+  origin: process.env.NODE_ENV === 'production' 
+    ? [process.env.ALLOWED_ORIGINS?.split(',') || 'https://tokenradar.com'].flat()
+    : true, // Allow all origins in development
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-API-Key'],
+  credentials: true,
 });
 
 // Register rate limiter plugin

@@ -64,6 +64,23 @@ export default async function router(fastify: FastifyInstance) {
     // Apply API key authentication middleware to all routes in this context
     fastify.addHook("preHandler", authenticateApiKey);
 
+    // Enable rate limiting for authenticated API routes based on API key
+    await fastify.register(rateLimit, {
+      max: 20,
+      timeWindow: "1 minute",
+      keyGenerator: function (request) {
+        // Use API key from x-api-key header for rate limiting
+        const apiKey = request.headers['x-api-key'] as string;
+        return apiKey ? `auth_api_key:${apiKey}` : request.ip;
+      },
+      errorResponseBuilder: function (_req, context) {
+        return {
+          success: false,
+          error: `Rate limit exceeded, retry in ${context.after}`,
+        };
+      },
+    });
+
     fastify.register(priceController, { prefix: "/api/v1/price" });
     fastify.register(priceChangeController, { prefix: "/api/v1/priceChange" });
     fastify.register(volumeController, { prefix: "/api/v1/volume" });

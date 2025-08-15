@@ -4,38 +4,13 @@ import bcrypt from "bcrypt";
 import { prisma } from "../../utils/prisma";
 import { Response } from "../../types/responses";
 import { handleControllerError } from "../../utils/responseHelper";
+import { 
+  getApiKeysRequestSchema,
+  getUsageAnalyticsRequestSchema,
+  type GetApiKeysRequest,
+  type GetUsageAnalyticsRequest
+} from "../../lib/api/schemas";
 
-// Define the request schema
-const getApiKeysRequestSchema = z.object({
-  email: z.string({
-    required_error: "Email is required",
-    invalid_type_error: "Email must be a string"
-  }).email("Invalid email format"),
-  password: z.string({
-    required_error: "Password is required",
-    invalid_type_error: "Password must be a string"
-  })
-});
-
-// Define the usage analytics request schema
-const getUsageAnalyticsRequestSchema = z.object({
-  email: z.string({
-    required_error: "Email is required",
-    invalid_type_error: "Email must be a string"
-  }).email("Invalid email format"),
-  password: z.string({
-    required_error: "Password is required",
-    invalid_type_error: "Password must be a string"
-  }),
-  apiKeyId: z.string({
-    required_error: "API key ID is required",
-    invalid_type_error: "API key ID must be a string"
-  }).uuid("Invalid API key ID format").optional()
-});
-
-// Type inference from the Zod schemas
-type GetApiKeysRequest = z.infer<typeof getApiKeysRequestSchema>;
-type GetUsageAnalyticsRequest = z.infer<typeof getUsageAnalyticsRequestSchema>;
 
 // Type for API key list response
 interface ApiKeyListResponse {
