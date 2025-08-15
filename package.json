@@ -13,6 +13,8 @@
   "author": "Matschik <mathieu.schimmerling@protonmail.com>",
   "license": "MIT",
   "dependencies": {
+    "@fastify/cors": "^11.1.0",
+    "@fastify/helmet": "^13.0.1",
     "@fastify/rate-limit": "^10.3.0",
     "@prisma/client": "^6.10.1",
     "@types/bcrypt": "^5.0.2",
