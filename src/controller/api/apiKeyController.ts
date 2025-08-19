@@ -6,13 +6,17 @@ import { prisma } from "../../utils/prisma";
 import { Response } from "../../types/responses";
 import { handleControllerError } from "../../utils/responseHelper";
 import { 
-  apiKeyRequestSchema, 
-  deleteApiKeyRequestSchema, 
+  deleteApiKeyRequestSchema,
+  type DeleteApiKeyRequest
+} from "../../lib/api/deleteApiKey/deleteApiKey.schema";
+import { 
   updateApiKeyRequestSchema,
-  type ApiKeyRequest,
-  type DeleteApiKeyRequest,
   type UpdateApiKeyRequest
-} from "../../lib/api/schemas";
+} from "../../lib/api/updateApiKey/updateApiKey.schema";
+import { apiKeyGenerateSchema,
+  type ApiKeyRequest
+} from "../../lib/api/generateApi/generateApiKey.schema";
+
 
 interface ApiKeyResponse {
   apiKey: string;
@@ -43,7 +47,7 @@ export default async function apiKeyController(fastify: FastifyInstance) {
     "/generate",
     async function (request: FastifyRequest<{ Body: ApiKeyRequest }>, reply: FastifyReply) {
       try {
-        const validatedData = apiKeyRequestSchema.parse(request.body);
+        const validatedData = apiKeyGenerateSchema.parse(request.body);
 
         const user = await prisma.user.findUnique({
           where: {

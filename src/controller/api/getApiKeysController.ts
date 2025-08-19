@@ -6,10 +6,12 @@ import { Response } from "../../types/responses";
 import { handleControllerError } from "../../utils/responseHelper";
 import { 
   getApiKeysRequestSchema,
+  type GetApiKeysRequest
+} from "../../lib/api/getApiKeys/getApiKeys.schema";
+import { 
   getUsageAnalyticsRequestSchema,
-  type GetApiKeysRequest,
   type GetUsageAnalyticsRequest
-} from "../../lib/api/schemas";
+} from "../../lib/api/getUsageAnalytics/getUsageAnalytics.schema";
 
 
 // Type for API key list response
