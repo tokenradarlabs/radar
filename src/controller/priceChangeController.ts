@@ -1,26 +1,17 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
-import { fetchTokenPriceChange } from '../utils/coinGeckoPriceChange';
 import {
   sendSuccess,
-  sendNotFound,
-  sendInternalError,
   sendBadRequest,
 } from '../utils/responseHelper';
 import {
-  volumeTokenIdSchema,
   formatValidationError,
 } from '../utils/validation';
-
-interface TokenPriceChangeParams {
-  tokenId: string;
-}
-
-interface TokenPriceChangeData {
-  priceChange: number;
-  tokenId: string;
-  period: string;
-}
+import { 
+  PriceChangeService, 
+  priceChangeTokenIdSchema, 
+  type TokenPriceChangeParams
+} from '../lib/api/priceChange';
 
 export default async function priceChangeController(fastify: FastifyInstance) {
   // GET /api/v1/priceChange/:tokenId
@@ -32,20 +23,10 @@ export default async function priceChangeController(fastify: FastifyInstance) {
     ) {
       try {
         // Validate token ID parameter
-        const validatedParams = volumeTokenIdSchema.parse(request.params);
+        const validatedParams = priceChangeTokenIdSchema.parse(request.params);
         const { tokenId } = validatedParams;
 
-        const priceChangeData = await fetchTokenPriceChange(tokenId);
-
-        if (priceChangeData === null) {
-          return sendNotFound(reply, 'Token price change data not found');
-        }
-
-        const responseData: TokenPriceChangeData = {
-          priceChange: priceChangeData,
-          tokenId,
-          period: '24h',
-        };
+        const responseData = await PriceChangeService.getTokenPriceChange(tokenId);
 
         return sendSuccess(reply, responseData);
       } catch (error) {
@@ -54,7 +35,7 @@ export default async function priceChangeController(fastify: FastifyInstance) {
         }
 
         console.error('Price change controller error:', error);
-        return sendInternalError(reply, 'Failed to fetch token price change');
+        return sendBadRequest(reply, error instanceof Error ? error.message : 'Failed to fetch token price change');
       }
     }
   );
