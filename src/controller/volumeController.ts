@@ -1,26 +1,17 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
-import { fetchTokenVolume } from '../utils/coinGeckoVolume';
 import {
   sendSuccess,
-  sendNotFound,
-  sendInternalError,
   sendBadRequest,
 } from '../utils/responseHelper';
 import {
-  volumeTokenIdSchema,
   formatValidationError,
 } from '../utils/validation';
-
-interface TokenVolumeParams {
-  tokenId: string;
-}
-
-interface TokenVolumeData {
-  volume: number;
-  tokenId: string;
-  period: string;
-}
+import { VolumeService } from '../lib/api/volume/volume.service';
+import { 
+  volumeTokenIdSchema, 
+  type TokenVolumeParams
+} from '../lib/api/volume/volume.schema';
 
 export default async function volumeController(fastify: FastifyInstance) {
   // GET /api/v1/volume/:tokenId
@@ -35,17 +26,7 @@ export default async function volumeController(fastify: FastifyInstance) {
         const validatedParams = volumeTokenIdSchema.parse(request.params);
         const { tokenId } = validatedParams;
 
-        const volumeData = await fetchTokenVolume(tokenId);
-
-        if (!volumeData) {
-          return sendNotFound(reply, 'Token volume data not found');
-        }
-
-        const responseData: TokenVolumeData = {
-          volume: volumeData.usd_24h_vol,
-          tokenId,
-          period: '24h',
-        };
+        const responseData = await VolumeService.getTokenVolume(tokenId);
 
         return sendSuccess(reply, responseData);
       } catch (error) {
@@ -54,7 +35,7 @@ export default async function volumeController(fastify: FastifyInstance) {
         }
 
         console.error('Volume controller error:', error);
-        return sendInternalError(reply, 'Failed to fetch token volume');
+        return sendBadRequest(reply, error instanceof Error ? error.message : 'Failed to fetch token volume');
       }
     }
   );
