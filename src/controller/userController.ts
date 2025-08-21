@@ -1,4 +1,5 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
+import { UserService } from '../lib/api/user/user.service';
 
 export default async function userController(fastify: FastifyInstance) {
   // GET /auth/
@@ -6,14 +7,7 @@ export default async function userController(fastify: FastifyInstance) {
     _request: FastifyRequest,
     reply: FastifyReply
   ) {
-    reply.send({
-      balance: "$3,277.32",
-      picture: "http://placehold.it/32x32",
-      age: 30,
-      name: "Leonor Cross",
-      gender: "female",
-      company: "GRONK",
-      email: "leonorcross@gronk.com",
-    });
+    const userData = await UserService.getUserData();
+    reply.send(userData);
   });
 }
