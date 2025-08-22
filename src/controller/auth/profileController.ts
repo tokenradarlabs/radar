@@ -3,7 +3,7 @@ import { authenticateJwt } from "../../utils/auth";
 import { Response } from "../../types/responses";
 import { handleControllerError } from "../../utils/responseHelper";
 import { UserData } from "../../types/user";
-import { prisma } from "../../utils/prisma";
+import { ProfileService, ProfileResponse } from "../../lib/auth";
 
 export default async function profileController(fastify: FastifyInstance) {
   // GET /auth/profile - Protected route that requires authentication
@@ -23,25 +23,17 @@ export default async function profileController(fastify: FastifyInstance) {
           return reply.code(401).send(response);
         }
 
-        // Fetch the latest user data
-        const user = await prisma.user.findUnique({
-          where: { id: userId },
-          select: {
-            id: true,
-            email: true,
-            createdAt: true,
-            updatedAt: true,
-            // You can also include related data like alerts
-            _count: {
-              select: {
-                alerts: true,
-                apiKeys: true
-              }
-            }
-          }
-        });
+        // Use the ProfileService to get user profile
+        const userProfile = await ProfileService.getUserProfile(userId);
 
-        if (!user) {
+        // Return user profile data
+        const response: Response<ProfileResponse> = {
+          success: true,
+          data: userProfile
+        };
+        return reply.code(200).send(response);
+      } catch (error) {
+        if (error instanceof Error && error.message === "User not found") {
           const response: Response<UserData> = {
             success: false,
             error: "User not found"
@@ -49,16 +41,6 @@ export default async function profileController(fastify: FastifyInstance) {
           return reply.code(404).send(response);
         }
 
-        // Return user profile data
-        const response: Response<any> = {
-          success: true,
-          data: {
-            ...user,
-            // Don't include the actual JWT token in the response
-          }
-        };
-        return reply.code(200).send(response);
-      } catch (error) {
         handleControllerError(reply, error, "Internal server error");
         return;
       }
