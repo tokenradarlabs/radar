@@ -51,7 +51,7 @@ describe('User Login Endpoint', () => {
 
   it('should successfully login with valid credentials', async () => {
     const testUser = {
-      email: 'login-test@example.com',
+      email: 'login@example.com',
       password: 'TestPassword123!'
     }
 
@@ -116,7 +116,7 @@ describe('User Login Endpoint', () => {
       method: 'POST',
       url: '/auth/login',
       payload: {
-        email: 'login-test2@example.com'
+        email: 'login@example.com'
       }
     })
 
