@@ -18,9 +18,18 @@ describe("DEV Price Endpoint", () => {
     await app.ready();
   });
 
-  beforeEach(() => {
-    // Reset all mocks before each test
+  beforeEach(async () => {
+    // Clear all mocks before each test
     vi.clearAllMocks();
+    
+    // Suppress console.error during tests to avoid stderr output
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    
+    // Create a fresh Fastify instance for each test
+    app = Fastify();
+    
+    // Register the dev price controller
+    await app.register(devPriceController, { prefix: '/api/v1/price/dev' });
   });
 
   afterAll(async () => {
@@ -34,7 +43,7 @@ describe("DEV Price Endpoint", () => {
 
     const response = await app.inject({
       method: 'GET',
-      url: '/api/v1/price/dev/'
+      url: '/api/v1/price/dev'
     });
 
     expect(response.statusCode).toBe(200);
@@ -79,7 +88,7 @@ describe("DEV Price Endpoint", () => {
 
       const response = await app.inject({
         method: 'GET',
-        url: '/api/v1/price/dev/'
+        url: '/api/v1/price/dev'
       });
 
       expect(response.statusCode).toBe(200);
@@ -98,7 +107,7 @@ describe("DEV Price Endpoint", () => {
 
     const response = await app.inject({
       method: 'GET',
-      url: '/api/v1/price/dev/'
+      url: '/api/v1/price/dev'
     });
 
     expect(response.statusCode).toBe(400);
@@ -116,7 +125,7 @@ describe("DEV Price Endpoint", () => {
 
     const response = await app.inject({
       method: 'GET',
-      url: '/api/v1/price/dev/'
+      url: '/api/v1/price/dev'
     });
 
     expect(response.statusCode).toBe(400);
@@ -134,7 +143,7 @@ describe("DEV Price Endpoint", () => {
 
     const response = await app.inject({
       method: 'GET',
-      url: '/api/v1/price/dev/'
+      url: '/api/v1/price/dev'
     });
 
     expect(response.statusCode).toBe(400);
@@ -175,7 +184,7 @@ describe("DEV Price Endpoint", () => {
 
       const response = await app.inject({
         method: 'GET',
-        url: '/api/v1/price/dev/'
+        url: '/api/v1/price/dev'
       });
 
       expect(response.statusCode).toBe(400);
@@ -192,7 +201,7 @@ describe("DEV Price Endpoint", () => {
 
     const response = await app.inject({
       method: 'GET',
-      url: '/api/v1/price/dev/'
+      url: '/api/v1/price/dev'
     });
 
     expect(response.statusCode).toBe(400);
@@ -209,7 +218,7 @@ describe("DEV Price Endpoint", () => {
 
     const response = await app.inject({
       method: 'POST',
-      url: '/api/v1/price/dev/'
+      url: '/api/v1/price/dev'
     });
 
     expect(response.statusCode).toBe(404);
@@ -221,7 +230,7 @@ describe("DEV Price Endpoint", () => {
 
     const response = await app.inject({
       method: 'PUT',
-      url: '/api/v1/price/dev/'
+      url: '/api/v1/price/dev'
     });
 
     expect(response.statusCode).toBe(404);
@@ -233,7 +242,7 @@ describe("DEV Price Endpoint", () => {
 
     const response = await app.inject({
       method: 'DELETE',
-      url: '/api/v1/price/dev/'
+      url: '/api/v1/price/dev'
     });
 
     expect(response.statusCode).toBe(404);
@@ -248,7 +257,7 @@ describe("DEV Price Endpoint", () => {
 
       const response = await app.inject({
         method: 'GET',
-        url: '/api/v1/price/dev/'
+        url: '/api/v1/price/dev'
       });
 
       expect(response.statusCode).toBe(200);
@@ -283,7 +292,7 @@ describe("DEV Price Endpoint", () => {
 
     const response = await app.inject({
       method: 'GET',
-      url: '/api/v1/price/dev/'
+      url: '/api/v1/price/dev'
     });
 
     expect(response.statusCode).toBe(200);
@@ -305,7 +314,7 @@ describe("DEV Price Endpoint", () => {
     const requests = Array(5).fill(null).map(() => 
       app.inject({
         method: 'GET',
-        url: '/api/v1/price/dev/'
+        url: '/api/v1/price/dev'
       })
     );
 
