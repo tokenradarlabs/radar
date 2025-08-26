@@ -25,6 +25,9 @@ describe("Token Price Endpoint", () => {
   beforeEach(() => {
     // Reset all mocks before each test
     vi.clearAllMocks();
+    
+    // Suppress console.error during tests to avoid stderr output
+    vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
   afterAll(async () => {
