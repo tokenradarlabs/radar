@@ -1,4 +1,5 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import logger from '../utils/logger';
 import {
   sendSuccess,
   sendBadRequest,
@@ -15,7 +16,7 @@ export default async function devPriceController(fastify: FastifyInstance) {
 
         return sendSuccess(reply, responseData);
       } catch (error) {
-        console.error("DEV price controller error:", error);
+  logger.error('DEV price controller error:', { error });
         return sendBadRequest(reply, error instanceof Error ? error.message : "Failed to fetch DEV token price");
       }
     }
