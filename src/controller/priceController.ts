@@ -1,4 +1,5 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import logger from '../utils/logger';
 import { z } from 'zod';
 import {
   sendSuccess,
@@ -32,7 +33,7 @@ export default async function priceController(fastify: FastifyInstance) {
           return sendBadRequest(reply, formatValidationError(error));
         }
 
-        console.error('Price controller error:', error);
+  logger.error('Price controller error:', { error });
         return sendBadRequest(reply, error instanceof Error ? error.message : 'Failed to fetch token price');
       }
     }

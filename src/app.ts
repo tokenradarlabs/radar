@@ -6,6 +6,7 @@ import helmet from '@fastify/helmet';
 import router from "./router";
 import { checkDatabaseConnection, isDatabaseUnavailableError } from './utils/db';
 import { sendServiceUnavailable, handleGlobalError } from './utils/responseHelper';
+import logger from './utils/logger';
 
 const server = fastify({
   // Logger only for production
@@ -47,6 +48,25 @@ server.register(rateLimit, {
       error: `Rate limit exceeded, retry in ${context.after}`
     }
   }
+});
+
+// Request/Response Logging Middleware
+server.addHook('onRequest', async (request) => {
+  logger.info('Incoming request', {
+    method: request.method,
+    url: request.url,
+    headers: request.headers,
+    ip: request.ip
+  });
+});
+
+server.addHook('onSend', async (request, reply, payload) => {
+  logger.info('Outgoing response', {
+    method: request.method,
+    url: request.url,
+    statusCode: reply.statusCode,
+    payload
+  });
 });
 
 // Middleware: Router
