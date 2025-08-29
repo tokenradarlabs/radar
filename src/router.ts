@@ -12,7 +12,7 @@ import priceController from "./controller/priceController";
 import priceChangeController from "./controller/priceChangeController";
 import volumeController from "./controller/volumeController";
 import devPriceController from "./controller/devPriceController";
-import priceAlertController from './controller/priceAlertController';
+import priceAlertController from './controller/alerts/priceAlertController';
 import { authenticateApiKey } from "./utils/auth";
 
 export default async function router(fastify: FastifyInstance) {
