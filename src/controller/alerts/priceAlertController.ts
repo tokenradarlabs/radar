@@ -1,10 +1,10 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { priceAlertSchema } from '../lib/api/priceAlert/priceAlert.schema';
-import { PriceAlertService } from '../lib/api/priceAlert/priceAlert.service';
-import { sendSuccess, sendBadRequest, sendUnauthorized } from '../utils/responseHelper';
-import logger from '../utils/logger';
+import { priceAlertSchema } from '../../lib/api/priceAlert/priceAlert.schema';
+import { PriceAlertService } from '../../lib/api/priceAlert/priceAlert.service';
+import { sendSuccess, sendBadRequest, sendUnauthorized } from '../../utils/responseHelper';
+import logger from '../../utils/logger';
 import jwt from 'jsonwebtoken';
-import { getValidatedEnv } from '../utils/envValidation';
+import { getValidatedEnv } from '../../utils/envValidation';
 
 export default async function priceAlertController(fastify: FastifyInstance) {
   fastify.post('/api/v1/price-alert', async function (request: FastifyRequest, reply: FastifyReply) {
