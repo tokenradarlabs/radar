@@ -84,8 +84,8 @@ export async function authenticateApiKey(
       data: {
         lastUsedAt: new Date(),
         usageCount: {
-          increment: 1
-        }
+          increment: 1,
+        },
       },
     });
 

@@ -2,9 +2,9 @@ import { z } from 'zod';
 
 export const priceChangeTokenIdSchema = z.object({
   tokenId: z.string({
-    required_error: "Token ID is required",
-    invalid_type_error: "Token ID must be a string"
-  })
+    required_error: 'Token ID is required',
+    invalid_type_error: 'Token ID must be a string',
+  }),
 });
 
 export interface TokenPriceChangeParams {
@@ -17,4 +17,6 @@ export interface TokenPriceChangeData {
   period: string;
 }
 
-export type PriceChangeTokenIdRequest = z.infer<typeof priceChangeTokenIdSchema>;
+export type PriceChangeTokenIdRequest = z.infer<
+  typeof priceChangeTokenIdSchema
+>;

@@ -1,17 +1,25 @@
-import { describe, it, expect, beforeAll, afterAll, vi, beforeEach } from "vitest";
-import Fastify, { FastifyInstance } from "fastify";
-import priceController from "../../controller/priceController";
-import * as uniswapPriceUtils from "../../utils/uniswapPrice";
-import { PriceService } from "../../lib/api/price";
+import {
+  describe,
+  it,
+  expect,
+  beforeAll,
+  afterAll,
+  vi,
+  beforeEach,
+} from 'vitest';
+import Fastify, { FastifyInstance } from 'fastify';
+import priceController from '../../controller/priceController';
+import * as uniswapPriceUtils from '../../utils/uniswapPrice';
+import { PriceService } from '../../lib/api/price';
 
 // Mock the uniswap price utility
-vi.mock("../../utils/uniswapPrice", () => ({
+vi.mock('../../utils/uniswapPrice', () => ({
   getDevPrice: vi.fn(),
   getBtcPrice: vi.fn(),
-  getEthPrice: vi.fn()
+  getEthPrice: vi.fn(),
 }));
 
-describe("Token Price Endpoint", () => {
+describe('Token Price Endpoint', () => {
   let app: FastifyInstance;
   const mockGetDevPrice = vi.mocked(uniswapPriceUtils.getDevPrice);
   const mockGetBtcPrice = vi.mocked(uniswapPriceUtils.getBtcPrice);
@@ -26,7 +34,7 @@ describe("Token Price Endpoint", () => {
   beforeEach(() => {
     // Reset all mocks before each test
     vi.clearAllMocks();
-    
+
     // Suppress console.error during tests to avoid stderr output
     vi.spyOn(console, 'error').mockImplementation(() => {});
   });
@@ -36,21 +44,21 @@ describe("Token Price Endpoint", () => {
   });
 
   it('should successfully return BTC price data', async () => {
-    const mockPrice = 45000.50;
+    const mockPrice = 45000.5;
     mockGetBtcPrice.mockResolvedValue(mockPrice);
 
     const response = await app.inject({
       method: 'GET',
-      url: '/api/v1/price/btc'
+      url: '/api/v1/price/btc',
     });
 
     expect(response.statusCode).toBe(200);
-    
+
     const body = JSON.parse(response.body);
     expect(body.success).toBe(true);
     expect(body.data).toBeDefined();
     expect(body.data.price).toBe(mockPrice);
-    expect(body.data.tokenId).toBe("btc");
+    expect(body.data.tokenId).toBe('btc');
 
     expect(mockGetBtcPrice).toHaveBeenCalledTimes(1);
   });
@@ -61,16 +69,16 @@ describe("Token Price Endpoint", () => {
 
     const response = await app.inject({
       method: 'GET',
-      url: '/api/v1/price/eth'
+      url: '/api/v1/price/eth',
     });
 
     expect(response.statusCode).toBe(200);
-    
+
     const body = JSON.parse(response.body);
     expect(body.success).toBe(true);
     expect(body.data).toBeDefined();
     expect(body.data.price).toBe(mockPrice);
-    expect(body.data.tokenId).toBe("eth");
+    expect(body.data.tokenId).toBe('eth');
 
     expect(mockGetEthPrice).toHaveBeenCalledTimes(1);
   });
@@ -81,16 +89,16 @@ describe("Token Price Endpoint", () => {
 
     const response = await app.inject({
       method: 'GET',
-      url: '/api/v1/price/scout-protocol-token'
+      url: '/api/v1/price/scout-protocol-token',
     });
 
     expect(response.statusCode).toBe(200);
-    
+
     const body = JSON.parse(response.body);
     expect(body.success).toBe(true);
     expect(body.data).toBeDefined();
     expect(body.data.price).toBe(mockPrice);
-    expect(body.data.tokenId).toBe("scout-protocol-token");
+    expect(body.data.tokenId).toBe('scout-protocol-token');
 
     expect(mockGetDevPrice).toHaveBeenCalledTimes(1);
   });
@@ -101,14 +109,16 @@ describe("Token Price Endpoint", () => {
     for (const tokenId of invalidTokenIds) {
       const response = await app.inject({
         method: 'GET',
-        url: `/api/v1/price/${tokenId}`
+        url: `/api/v1/price/${tokenId}`,
       });
 
       expect(response.statusCode).toBe(400);
-      
+
       const body = JSON.parse(response.body);
       expect(body.success).toBe(false);
-      expect(body.error).toBe("Invalid token selection. Supported tokens are: btc, eth, scout-protocol-token");
+      expect(body.error).toBe(
+        'Invalid token selection. Supported tokens are: btc, eth, scout-protocol-token'
+      );
     }
 
     // Ensure no price fetching functions were called
@@ -118,40 +128,48 @@ describe("Token Price Endpoint", () => {
   });
 
   it('should handle zero price values as error', async () => {
-    vi.spyOn(PriceService, 'getTokenPrice').mockRejectedValue(new Error('Failed to fetch token price from Uniswap'));
+    vi.spyOn(PriceService, 'getTokenPrice').mockRejectedValue(
+      new Error('Failed to fetch token price from Uniswap')
+    );
 
     const response = await app.inject({
       method: 'GET',
-      url: '/api/v1/price/btc'
+      url: '/api/v1/price/btc',
     });
 
     expect(response.statusCode).toBe(500);
-    
+
     const body = JSON.parse(response.body);
     expect(body.success).toBe(false);
-    expect(body.error).toBe("Failed to fetch token price");
+    expect(body.error).toBe('Failed to fetch token price');
   });
 
   it('should handle API errors gracefully', async () => {
-    mockPriceServiceGetTokenPrice.mockRejectedValue(new Error('Network request failed'));
+    mockPriceServiceGetTokenPrice.mockRejectedValue(
+      new Error('Network request failed')
+    );
 
     const response = await app.inject({
       method: 'GET',
-      url: '/api/v1/price/btc'
+      url: '/api/v1/price/btc',
     });
 
     expect(response.statusCode).toBe(500);
-    
+
     const body = JSON.parse(response.body);
     expect(body.success).toBe(false);
-    expect(body.error).toBe("Failed to fetch token price");
+    expect(body.error).toBe('Failed to fetch token price');
   });
 
   it('should handle different price value ranges correctly', async () => {
     const testCases = [
       { tokenId: 'btc', price: 100000.99, mockFn: mockGetBtcPrice },
       { tokenId: 'eth', price: 0.01, mockFn: mockGetEthPrice },
-      { tokenId: 'scout-protocol-token', price: 0.000000001, mockFn: mockGetDevPrice }
+      {
+        tokenId: 'scout-protocol-token',
+        price: 0.000000001,
+        mockFn: mockGetDevPrice,
+      },
     ];
 
     for (const testCase of testCases) {
@@ -159,16 +177,16 @@ describe("Token Price Endpoint", () => {
 
       const response = await app.inject({
         method: 'GET',
-        url: `/api/v1/price/${testCase.tokenId}`
+        url: `/api/v1/price/${testCase.tokenId}`,
       });
 
       expect(response.statusCode).toBe(200);
-      
+
       const body = JSON.parse(response.body);
       expect(body.success).toBe(true);
       expect(body.data.price).toBe(testCase.price);
       expect(body.data.tokenId).toBe(testCase.tokenId);
-      
+
       // Verify correct function was called
       expect(testCase.mockFn).toHaveBeenCalledTimes(1);
     }
@@ -177,7 +195,7 @@ describe("Token Price Endpoint", () => {
   it('should not accept POST requests', async () => {
     const response = await app.inject({
       method: 'POST',
-      url: '/api/v1/price/btc'
+      url: '/api/v1/price/btc',
     });
 
     expect(response.statusCode).toBe(404);
@@ -187,7 +205,7 @@ describe("Token Price Endpoint", () => {
   it('should not accept PUT requests', async () => {
     const response = await app.inject({
       method: 'PUT',
-      url: '/api/v1/price/eth'
+      url: '/api/v1/price/eth',
     });
 
     expect(response.statusCode).toBe(404);
@@ -197,7 +215,7 @@ describe("Token Price Endpoint", () => {
   it('should not accept DELETE requests', async () => {
     const response = await app.inject({
       method: 'DELETE',
-      url: '/api/v1/price/scout-protocol-token'
+      url: '/api/v1/price/scout-protocol-token',
     });
 
     expect(response.statusCode).toBe(404);
@@ -208,7 +226,7 @@ describe("Token Price Endpoint", () => {
     const tokens = [
       { id: 'btc', price: 45000, mockFn: mockGetBtcPrice },
       { id: 'eth', price: 3200, mockFn: mockGetEthPrice },
-      { id: 'scout-protocol-token', price: 0.001, mockFn: mockGetDevPrice }
+      { id: 'scout-protocol-token', price: 0.001, mockFn: mockGetDevPrice },
     ];
 
     for (const token of tokens) {
@@ -216,25 +234,25 @@ describe("Token Price Endpoint", () => {
 
       const response = await app.inject({
         method: 'GET',
-        url: `/api/v1/price/${token.id}`
+        url: `/api/v1/price/${token.id}`,
       });
 
       expect(response.statusCode).toBe(200);
-      
+
       const body = JSON.parse(response.body);
-      
+
       // Verify consistent structure
       expect(body).toHaveProperty('success');
       expect(body).toHaveProperty('data');
       expect(body.success).toBe(true);
-      
+
       expect(body.data).toHaveProperty('price');
       expect(body.data).toHaveProperty('tokenId');
-      
+
       // Verify values
       expect(body.data.price).toBe(token.price);
       expect(body.data.tokenId).toBe(token.id);
-      
+
       // Verify data types
       expect(typeof body.data.price).toBe('number');
       expect(typeof body.data.tokenId).toBe('string');
@@ -244,11 +262,14 @@ describe("Token Price Endpoint", () => {
   it('should return a successful response with correct data structure for a mocked price', async () => {
     const mockPrice = 123.45;
     const tokenId = 'eth';
-    mockPriceServiceGetTokenPrice.mockResolvedValue({ price: mockPrice, tokenId });
+    mockPriceServiceGetTokenPrice.mockResolvedValue({
+      price: mockPrice,
+      tokenId,
+    });
 
     const response = await app.inject({
       method: 'GET',
-      url: `/api/v1/price/${tokenId}`
+      url: `/api/v1/price/${tokenId}`,
     });
 
     expect(response.statusCode).toBe(200);
@@ -268,7 +289,7 @@ describe("Token Price Endpoint", () => {
     const requests = [
       app.inject({ method: 'GET', url: '/api/v1/price/btc' }),
       app.inject({ method: 'GET', url: '/api/v1/price/eth' }),
-      app.inject({ method: 'GET', url: '/api/v1/price/scout-protocol-token' })
+      app.inject({ method: 'GET', url: '/api/v1/price/scout-protocol-token' }),
     ];
 
     const responses = await Promise.all(requests);
@@ -276,7 +297,7 @@ describe("Token Price Endpoint", () => {
     // All requests should succeed
     responses.forEach((response) => {
       expect(response.statusCode).toBe(200);
-      
+
       const body = JSON.parse(response.body);
       expect(body.success).toBe(true);
       expect(body.data).toBeDefined();
@@ -293,13 +314,13 @@ describe("Token Price Endpoint", () => {
 
     const response = await app.inject({
       method: 'GET',
-      url: '/api/v1/price/btc'
+      url: '/api/v1/price/btc',
     });
 
     expect(response.statusCode).toBe(500);
-    
+
     const body = JSON.parse(response.body);
     expect(body.success).toBe(false);
-    expect(body.error).toBe("Failed to fetch token price");
+    expect(body.error).toBe('Failed to fetch token price');
   });
 });

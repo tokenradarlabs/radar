@@ -1,5 +1,5 @@
-import { prisma } from "../../../utils/prisma";
-import { ProfileResponse } from "./profile.schema";
+import { prisma } from '../../../utils/prisma';
+import { ProfileResponse } from './profile.schema';
 
 export class ProfileService {
   static async getUserProfile(userId: string): Promise<ProfileResponse> {
@@ -13,14 +13,14 @@ export class ProfileService {
         _count: {
           select: {
             alerts: true,
-            apiKeys: true
-          }
-        }
-      }
+            apiKeys: true,
+          },
+        },
+      },
     });
 
     if (!user) {
-      throw new Error("User not found");
+      throw new Error('User not found');
     }
 
     return user;

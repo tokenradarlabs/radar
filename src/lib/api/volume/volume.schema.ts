@@ -2,9 +2,9 @@ import { z } from 'zod';
 
 export const volumeTokenIdSchema = z.object({
   tokenId: z.string({
-    required_error: "Token ID is required",
-    invalid_type_error: "Token ID must be a string"
-  })
+    required_error: 'Token ID is required',
+    invalid_type_error: 'Token ID must be a string',
+  }),
 });
 
 export interface TokenVolumeParams {

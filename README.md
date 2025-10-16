@@ -20,6 +20,8 @@ $ npm run watch
 # Required: development server with hot reload (nodemon)
 $ npm run dev
 
+# Optional: Set LOG_PRETTY=true in your .env to force pretty logging output.
+
 # Format with prettier
 $ npm run format
 ```

@@ -6,13 +6,13 @@ export class DevPriceService {
     const priceData = await getDevPrice();
 
     if (!priceData || priceData === 0) {
-      throw new Error("DEV token price data not found");
+      throw new Error('DEV token price data not found');
     }
 
     return {
       price: priceData,
-      token: "scout-protocol-token",
-      symbol: "DEV",
+      token: 'scout-protocol-token',
+      symbol: 'DEV',
     };
   }
 }

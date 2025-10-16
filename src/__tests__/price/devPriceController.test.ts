@@ -1,14 +1,22 @@
-import { describe, it, expect, beforeAll, afterAll, vi, beforeEach } from "vitest";
-import Fastify, { FastifyInstance } from "fastify";
-import devPriceController from "../../controller/devPriceController";
-import * as uniswapPriceUtils from "../../utils/uniswapPrice";
+import {
+  describe,
+  it,
+  expect,
+  beforeAll,
+  afterAll,
+  vi,
+  beforeEach,
+} from 'vitest';
+import Fastify, { FastifyInstance } from 'fastify';
+import devPriceController from '../../controller/devPriceController';
+import * as uniswapPriceUtils from '../../utils/uniswapPrice';
 
 // Mock the uniswap price utility
-vi.mock("../../utils/uniswapPrice", () => ({
-  getDevPrice: vi.fn()
+vi.mock('../../utils/uniswapPrice', () => ({
+  getDevPrice: vi.fn(),
 }));
 
-describe("DEV Price Endpoint", () => {
+describe('DEV Price Endpoint', () => {
   let app: FastifyInstance;
   const mockGetDevPrice = vi.mocked(uniswapPriceUtils.getDevPrice);
 
@@ -21,13 +29,13 @@ describe("DEV Price Endpoint", () => {
   beforeEach(async () => {
     // Clear all mocks before each test
     vi.clearAllMocks();
-    
+
     // Suppress console.error during tests to avoid stderr output
     vi.spyOn(console, 'error').mockImplementation(() => {});
-    
+
     // Create a fresh Fastify instance for each test
     app = Fastify();
-    
+
     // Register the dev price controller
     await app.register(devPriceController, { prefix: '/api/v1/price/dev' });
   });
@@ -43,17 +51,17 @@ describe("DEV Price Endpoint", () => {
 
     const response = await app.inject({
       method: 'GET',
-      url: '/api/v1/price/dev'
+      url: '/api/v1/price/dev',
     });
 
     expect(response.statusCode).toBe(200);
-    
+
     const body = JSON.parse(response.body);
     expect(body.success).toBe(true);
     expect(body.data).toBeDefined();
     expect(body.data.price).toBe(mockPrice);
-    expect(body.data.token).toBe("scout-protocol-token");
-    expect(body.data.symbol).toBe("DEV");
+    expect(body.data.token).toBe('scout-protocol-token');
+    expect(body.data.symbol).toBe('DEV');
 
     // Verify the mock was called
     expect(mockGetDevPrice).toHaveBeenCalledTimes(1);
@@ -64,23 +72,23 @@ describe("DEV Price Endpoint", () => {
       {
         name: 'small price value',
         mockPrice: 0.000001,
-        expectedPrice: 0.000001
+        expectedPrice: 0.000001,
       },
       {
         name: 'larger price value',
         mockPrice: 1.25,
-        expectedPrice: 1.25
+        expectedPrice: 1.25,
       },
       {
         name: 'integer price value',
         mockPrice: 5,
-        expectedPrice: 5
+        expectedPrice: 5,
       },
       {
         name: 'high precision decimal',
         mockPrice: 0.123456789,
-        expectedPrice: 0.123456789
-      }
+        expectedPrice: 0.123456789,
+      },
     ];
 
     for (const testCase of testCases) {
@@ -88,16 +96,16 @@ describe("DEV Price Endpoint", () => {
 
       const response = await app.inject({
         method: 'GET',
-        url: '/api/v1/price/dev'
+        url: '/api/v1/price/dev',
       });
 
       expect(response.statusCode).toBe(200);
-      
+
       const body = JSON.parse(response.body);
       expect(body.success).toBe(true);
       expect(body.data.price).toBe(testCase.expectedPrice);
-      expect(body.data.token).toBe("scout-protocol-token");
-      expect(body.data.symbol).toBe("DEV");
+      expect(body.data.token).toBe('scout-protocol-token');
+      expect(body.data.symbol).toBe('DEV');
     }
   });
 
@@ -107,14 +115,14 @@ describe("DEV Price Endpoint", () => {
 
     const response = await app.inject({
       method: 'GET',
-      url: '/api/v1/price/dev'
+      url: '/api/v1/price/dev',
     });
 
     expect(response.statusCode).toBe(400);
-    
+
     const body = JSON.parse(response.body);
     expect(body.success).toBe(false);
-    expect(body.error).toBe("DEV token price data not found");
+    expect(body.error).toBe('DEV token price data not found');
 
     expect(mockGetDevPrice).toHaveBeenCalledTimes(1);
   });
@@ -125,14 +133,14 @@ describe("DEV Price Endpoint", () => {
 
     const response = await app.inject({
       method: 'GET',
-      url: '/api/v1/price/dev'
+      url: '/api/v1/price/dev',
     });
 
     expect(response.statusCode).toBe(400);
-    
+
     const body = JSON.parse(response.body);
     expect(body.success).toBe(false);
-    expect(body.error).toBe("DEV token price data not found");
+    expect(body.error).toBe('DEV token price data not found');
 
     expect(mockGetDevPrice).toHaveBeenCalledTimes(1);
   });
@@ -143,14 +151,14 @@ describe("DEV Price Endpoint", () => {
 
     const response = await app.inject({
       method: 'GET',
-      url: '/api/v1/price/dev'
+      url: '/api/v1/price/dev',
     });
 
     expect(response.statusCode).toBe(400);
-    
+
     const body = JSON.parse(response.body);
     expect(body.success).toBe(false);
-    expect(body.error).toBe("DEV token price data not found");
+    expect(body.error).toBe('DEV token price data not found');
 
     expect(mockGetDevPrice).toHaveBeenCalledTimes(1);
   });
@@ -160,23 +168,23 @@ describe("DEV Price Endpoint", () => {
       {
         name: 'network error',
         error: new Error('Network request failed'),
-        expectedMessage: 'Network request failed'
+        expectedMessage: 'Network request failed',
       },
       {
         name: 'timeout error',
         error: new Error('Request timeout'),
-        expectedMessage: 'Request timeout'
+        expectedMessage: 'Request timeout',
       },
       {
         name: 'RPC error',
         error: new Error('RPC endpoint error'),
-        expectedMessage: 'RPC endpoint error'
+        expectedMessage: 'RPC endpoint error',
       },
       {
         name: 'generic error',
         error: new Error('Something went wrong'),
-        expectedMessage: 'Something went wrong'
-      }
+        expectedMessage: 'Something went wrong',
+      },
     ];
 
     for (const testCase of errorTestCases) {
@@ -184,11 +192,11 @@ describe("DEV Price Endpoint", () => {
 
       const response = await app.inject({
         method: 'GET',
-        url: '/api/v1/price/dev'
+        url: '/api/v1/price/dev',
       });
 
       expect(response.statusCode).toBe(400);
-      
+
       const body = JSON.parse(response.body);
       expect(body.success).toBe(false);
       expect(body.error).toBe(testCase.expectedMessage);
@@ -201,14 +209,14 @@ describe("DEV Price Endpoint", () => {
 
     const response = await app.inject({
       method: 'GET',
-      url: '/api/v1/price/dev'
+      url: '/api/v1/price/dev',
     });
 
     expect(response.statusCode).toBe(400);
-    
+
     const body = JSON.parse(response.body);
     expect(body.success).toBe(false);
-    expect(body.error).toBe("Failed to fetch DEV token price");
+    expect(body.error).toBe('Failed to fetch DEV token price');
 
     expect(mockGetDevPrice).toHaveBeenCalledTimes(1);
   });
@@ -218,7 +226,7 @@ describe("DEV Price Endpoint", () => {
 
     const response = await app.inject({
       method: 'POST',
-      url: '/api/v1/price/dev'
+      url: '/api/v1/price/dev',
     });
 
     expect(response.statusCode).toBe(404);
@@ -230,7 +238,7 @@ describe("DEV Price Endpoint", () => {
 
     const response = await app.inject({
       method: 'PUT',
-      url: '/api/v1/price/dev'
+      url: '/api/v1/price/dev',
     });
 
     expect(response.statusCode).toBe(404);
@@ -242,7 +250,7 @@ describe("DEV Price Endpoint", () => {
 
     const response = await app.inject({
       method: 'DELETE',
-      url: '/api/v1/price/dev'
+      url: '/api/v1/price/dev',
     });
 
     expect(response.statusCode).toBe(404);
@@ -257,27 +265,27 @@ describe("DEV Price Endpoint", () => {
 
       const response = await app.inject({
         method: 'GET',
-        url: '/api/v1/price/dev'
+        url: '/api/v1/price/dev',
       });
 
       expect(response.statusCode).toBe(200);
-      
+
       const body = JSON.parse(response.body);
-      
+
       // Verify consistent structure
       expect(body).toHaveProperty('success');
       expect(body).toHaveProperty('data');
       expect(body.success).toBe(true);
-      
+
       expect(body.data).toHaveProperty('price');
       expect(body.data).toHaveProperty('token');
       expect(body.data).toHaveProperty('symbol');
-      
+
       // Verify consistent values
       expect(body.data.price).toBe(price);
-      expect(body.data.token).toBe("scout-protocol-token");
-      expect(body.data.symbol).toBe("DEV");
-      
+      expect(body.data.token).toBe('scout-protocol-token');
+      expect(body.data.symbol).toBe('DEV');
+
       // Verify data types
       expect(typeof body.data.price).toBe('number');
       expect(typeof body.data.token).toBe('string');
@@ -292,15 +300,15 @@ describe("DEV Price Endpoint", () => {
 
     const response = await app.inject({
       method: 'GET',
-      url: '/api/v1/price/dev'
+      url: '/api/v1/price/dev',
     });
 
     expect(response.statusCode).toBe(200);
-    
+
     const body = JSON.parse(response.body);
     expect(body.success).toBe(true);
     expect(body.data.price).toBe(verySmallPrice);
-    
+
     // Ensure the price is still a valid number
     expect(typeof body.data.price).toBe('number');
     expect(body.data.price).toBeGreaterThan(0);
@@ -311,24 +319,26 @@ describe("DEV Price Endpoint", () => {
     mockGetDevPrice.mockResolvedValue(mockPrice);
 
     // Make multiple concurrent requests
-    const requests = Array(5).fill(null).map(() => 
-      app.inject({
-        method: 'GET',
-        url: '/api/v1/price/dev'
-      })
-    );
+    const requests = Array(5)
+      .fill(null)
+      .map(() =>
+        app.inject({
+          method: 'GET',
+          url: '/api/v1/price/dev',
+        })
+      );
 
     const responses = await Promise.all(requests);
 
     // All requests should succeed
     responses.forEach((response) => {
       expect(response.statusCode).toBe(200);
-      
+
       const body = JSON.parse(response.body);
       expect(body.success).toBe(true);
       expect(body.data.price).toBe(mockPrice);
-      expect(body.data.token).toBe("scout-protocol-token");
-      expect(body.data.symbol).toBe("DEV");
+      expect(body.data.token).toBe('scout-protocol-token');
+      expect(body.data.symbol).toBe('DEV');
     });
 
     // The mock should have been called for each request

@@ -6,14 +6,13 @@ export const PriceAlertService = {
     const tokenId = params.tokenId;
     const direction = params.direction;
     const value = params.value;
-    
+
     let token = await prisma.token.findUnique({ where: { id: tokenId } });
     if (!token) {
       token = await prisma.token.create({ data: { id: tokenId, address: '' } });
     }
 
-   
-    const user = await prisma.user.findUnique({ where: { id: userId } })
+    const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new Error('No user found for alert creation');
 
     // Create Alert
@@ -33,6 +32,14 @@ export const PriceAlertService = {
       },
     });
 
-    return { success: true, alert: { ...params, userId: user.id, alertId: alert.id, priceAlertId: priceAlert.id } };
+    return {
+      success: true,
+      alert: {
+        ...params,
+        userId: user.id,
+        alertId: alert.id,
+        priceAlertId: priceAlert.id,
+      },
+    };
   },
 };

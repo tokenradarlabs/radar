@@ -1,14 +1,14 @@
-import { prisma } from "../../../utils/prisma";
-import { generateToken } from "../../../utils/auth";
-import { verifyPassword } from "../common/utils";
-import { LoginRequest, LoginResponse } from "./login.schema";
+import { prisma } from '../../../utils/prisma';
+import { generateToken } from '../../../utils/auth';
+import { verifyPassword } from '../common/utils';
+import { LoginRequest, LoginResponse } from './login.schema';
 
 export class LoginService {
   static async loginUser(data: LoginRequest): Promise<LoginResponse> {
     const user = await prisma.user.findUnique({
       where: {
-        email: data.email
-      }
+        email: data.email,
+      },
     });
 
     if (!user) {
@@ -19,7 +19,7 @@ export class LoginService {
     const isValidPassword = await verifyPassword(data.password, user.password);
 
     if (!isValidPassword) {
-      throw new Error("Invalid credentials");
+      throw new Error('Invalid credentials');
     }
 
     const token = generateToken({ id: user.id, email: user.email });
@@ -28,7 +28,7 @@ export class LoginService {
       id: user.id,
       email: user.email,
       createdAt: user.createdAt,
-      token: token
+      token: token,
     };
   }
 }
