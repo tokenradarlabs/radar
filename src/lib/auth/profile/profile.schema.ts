@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 // Profile response schema
 export const profileResponseSchema = z.object({
@@ -8,8 +8,8 @@ export const profileResponseSchema = z.object({
   updatedAt: z.date(),
   _count: z.object({
     alerts: z.number(),
-    apiKeys: z.number()
-  })
+    apiKeys: z.number(),
+  }),
 });
 
 export type ProfileResponse = z.infer<typeof profileResponseSchema>;

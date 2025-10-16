@@ -1,4 +1,4 @@
-import bcrypt from "bcrypt";
+import bcrypt from 'bcrypt';
 import { prisma } from '../../../utils/prisma';
 import { GetUsageAnalyticsRequest } from './getUsageAnalytics.schema';
 
@@ -31,28 +31,30 @@ export interface UsageAnalyticsResponse {
 }
 
 export class GetUsageAnalyticsService {
-  static async getUsageAnalytics(data: GetUsageAnalyticsRequest): Promise<UsageAnalyticsResponse> {
+  static async getUsageAnalytics(
+    data: GetUsageAnalyticsRequest
+  ): Promise<UsageAnalyticsResponse> {
     // Find user by email
     const user = await prisma.user.findUnique({
       where: {
-        email: data.email
-      }
+        email: data.email,
+      },
     });
 
     if (!user) {
-      throw new Error("Invalid credentials");
+      throw new Error('Invalid credentials');
     }
 
     // Compare password with hashed password
     const isValidPassword = await bcrypt.compare(data.password, user.password);
 
     if (!isValidPassword) {
-      throw new Error("Invalid credentials");
+      throw new Error('Invalid credentials');
     }
 
     // Build where clause for API keys
     const whereClause: any = {
-      userId: user.id
+      userId: user.id,
     };
 
     // If specific API key ID is provided, filter by it
@@ -69,21 +71,21 @@ export class GetUsageAnalyticsService {
         usageCount: true,
         lastUsedAt: true,
         isActive: true,
-        createdAt: true
+        createdAt: true,
       },
       orderBy: {
-        usageCount: 'desc'
-      }
+        usageCount: 'desc',
+      },
     });
 
     if (apiKeys.length === 0) {
-      throw new Error("No API keys found");
+      throw new Error('No API keys found');
     }
 
     // Calculate analytics
     const totalApiKeys = apiKeys.length;
     const totalUsage = apiKeys.reduce((sum, key) => sum + key.usageCount, 0);
-    const activeApiKeys = apiKeys.filter(key => key.isActive).length;
+    const activeApiKeys = apiKeys.filter((key) => key.isActive).length;
     const inactiveApiKeys = totalApiKeys - activeApiKeys;
     const averageUsagePerKey = totalUsage / totalApiKeys;
 
@@ -100,16 +102,16 @@ export class GetUsageAnalyticsService {
         id: mostUsedApiKey.id,
         name: mostUsedApiKey.name,
         usageCount: mostUsedApiKey.usageCount,
-        lastUsedAt: mostUsedApiKey.lastUsedAt
+        lastUsedAt: mostUsedApiKey.lastUsedAt,
       },
       leastUsedApiKey: {
         id: leastUsedApiKey.id,
         name: leastUsedApiKey.name,
         usageCount: leastUsedApiKey.usageCount,
-        lastUsedAt: leastUsedApiKey.lastUsedAt
+        lastUsedAt: leastUsedApiKey.lastUsedAt,
       },
       averageUsagePerKey: Math.round(averageUsagePerKey * 100) / 100, // Round to 2 decimal places
-      apiKeyDetails: apiKeys
+      apiKeyDetails: apiKeys,
     };
   }
 }

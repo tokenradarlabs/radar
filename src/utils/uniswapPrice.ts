@@ -1,15 +1,17 @@
-import { Address, createPublicClient, http, parseAbiItem } from "viem";
-import { base } from "viem/chains";
-import { getValidatedEnv } from "./envValidation";
+import { Address, createPublicClient, http, parseAbiItem } from 'viem';
+import { base } from 'viem/chains';
+import { getValidatedEnv } from './envValidation';
 
 // Pool and token addresses
 const DEV_WETH_POOL_ADDRESS_BASE: Address =
-  "0xbC9dF7F489B3D5D38DA7c5a6f7D751Bdaa88f254";
-const DEV_ADDRESS_BASE: Address = "0x047157cffb8841a64db93fd4e29fa3796b78466c";
-const WETH_ADDRESS_BASE: Address = "0x4200000000000000000000000000000000000006";
-const USDC_ADDRESS_BASE: Address = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
-const CBBTC_ADDRESS_BASE: Address = "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf";
-const CBBTC_USDC_POOL_ADDRESS_BASE: Address = "0xfbb6eed8e7aa03b138556eedaf5d271a5e1e43ef";
+  '0xbC9dF7F489B3D5D38DA7c5a6f7D751Bdaa88f254';
+const DEV_ADDRESS_BASE: Address = '0x047157cffb8841a64db93fd4e29fa3796b78466c';
+const WETH_ADDRESS_BASE: Address = '0x4200000000000000000000000000000000000006';
+const USDC_ADDRESS_BASE: Address = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913';
+const CBBTC_ADDRESS_BASE: Address =
+  '0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf';
+const CBBTC_USDC_POOL_ADDRESS_BASE: Address =
+  '0xfbb6eed8e7aa03b138556eedaf5d271a5e1e43ef';
 
 // Token configurations
 const USDC: TokenConfig = {
@@ -35,10 +37,10 @@ const CBBTC: TokenConfig = {
 // Minimal ABI for Uniswap V3 Pool state
 const uniswapV3PoolAbi = [
   parseAbiItem(
-    "function slot0() external view returns (uint160 sqrtPriceX96, int24 tick, uint16 observationIndex, uint16 observationCardinality, uint16 observationCardinalityNext, uint8 feeProtocol, bool unlocked)"
+    'function slot0() external view returns (uint160 sqrtPriceX96, int24 tick, uint16 observationIndex, uint16 observationCardinality, uint16 observationCardinalityNext, uint8 feeProtocol, bool unlocked)'
   ),
-  parseAbiItem("function token0() external view returns (address)"),
-  parseAbiItem("function token1() external view returns (address)"),
+  parseAbiItem('function token0() external view returns (address)'),
+  parseAbiItem('function token1() external view returns (address)'),
 ];
 
 interface TokenConfig {
@@ -67,17 +69,17 @@ async function getTokenPriceFromV3Pool(
       publicClient.readContract({
         address: poolAddress,
         abi: uniswapV3PoolAbi,
-        functionName: "slot0",
+        functionName: 'slot0',
       }),
       publicClient.readContract({
         address: poolAddress,
         abi: uniswapV3PoolAbi,
-        functionName: "token0",
+        functionName: 'token0',
       }),
       publicClient.readContract({
         address: poolAddress,
         abi: uniswapV3PoolAbi,
-        functionName: "token1",
+        functionName: 'token1',
       }),
     ]);
 
@@ -121,7 +123,7 @@ async function getTokenPriceFromV3Pool(
 
     return baseQuotePrice;
   } catch (error) {
-    console.error("Error fetching price from V3 pool", error as Error, {
+    console.error('Error fetching price from V3 pool', error as Error, {
       poolAddress,
       baseToken: baseToken.address,
       quoteToken: quoteToken.address,
@@ -146,7 +148,7 @@ export async function getTokenPrice(
 export async function getEthPrice(): Promise<number> {
   // You'll need to provide the ETH/USDC pool address here
   const ETH_USDC_POOL_ADDRESS: Address =
-    "0xd0b53D9277642d899DF5C87A3966A349A798F224";
+    '0xd0b53D9277642d899DF5C87A3966A349A798F224';
   return getTokenPrice(ETH_USDC_POOL_ADDRESS, WETH);
 }
 
@@ -168,7 +170,7 @@ export async function getDevPrice(): Promise<number> {
     // Calculate DEV price in USDC
     return devEthPrice * ethUsdcPrice;
   } catch (error) {
-    console.error("Error fetching DEV price", error as Error);
+    console.error('Error fetching DEV price', error as Error);
     return 0;
   }
 }

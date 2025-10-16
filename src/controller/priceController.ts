@@ -1,15 +1,12 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import logger from '../utils/logger';
 import { z } from 'zod';
-import {
-  sendSuccess,
-  sendBadRequest,
-} from '../utils/responseHelper';
+import { sendSuccess, sendBadRequest } from '../utils/responseHelper';
 import { formatValidationError } from '../utils/validation';
-import { 
-  PriceService, 
-  priceTokenIdSchema, 
-  type TokenPriceParams
+import {
+  PriceService,
+  priceTokenIdSchema,
+  type TokenPriceParams,
 } from '../lib/api/price';
 
 export default async function priceController(fastify: FastifyInstance) {
@@ -33,7 +30,11 @@ export default async function priceController(fastify: FastifyInstance) {
           return sendBadRequest(reply, formatValidationError(error));
         }
 
-        logger.error({ message: 'Price controller error', error: error instanceof Error ? error.message : 'Unknown error', stack: error instanceof Error ? error.stack : undefined });
+        logger.error({
+          message: 'Price controller error',
+          error: error instanceof Error ? error.message : 'Unknown error',
+          stack: error instanceof Error ? error.stack : undefined,
+        });
         return sendInternalError(reply, 'Failed to fetch token price');
       }
     }

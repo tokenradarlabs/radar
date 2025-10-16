@@ -3,4 +3,4 @@ export type UserData = {
   email: string;
   createdAt: Date;
   token?: string; // Optional to maintain backward compatibility
-}; 
+};
