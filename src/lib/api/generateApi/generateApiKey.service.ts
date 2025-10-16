@@ -1,5 +1,5 @@
-import bcrypt from "bcrypt";
-import crypto from "crypto";
+import bcrypt from 'bcrypt';
+import crypto from 'crypto';
 import { prisma } from '../../../utils/prisma';
 import { ApiKeyRequest } from './generateApiKey.schema';
 
@@ -19,18 +19,18 @@ export class GenerateApiKeyService {
   static async generateApiKey(data: ApiKeyRequest): Promise<ApiKeyResponse> {
     const user = await prisma.user.findUnique({
       where: {
-        email: data.email
-      }
+        email: data.email,
+      },
     });
 
     if (!user) {
-      throw new Error("Invalid credentials");
+      throw new Error('Invalid credentials');
     }
 
     const isValidPassword = await bcrypt.compare(data.password, user.password);
 
     if (!isValidPassword) {
-      throw new Error("Invalid credentials");
+      throw new Error('Invalid credentials');
     }
 
     const apiKey = generateApiKey();
@@ -38,12 +38,12 @@ export class GenerateApiKeyService {
       data: {
         key: apiKey,
         name: generateKeyName(),
-        userId: user.id
-      }
+        userId: user.id,
+      },
     });
 
     return {
-      apiKey: newApiKey.key
+      apiKey: newApiKey.key,
     };
   }
 }
