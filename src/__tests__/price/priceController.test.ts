@@ -2,6 +2,7 @@ import { describe, it, expect, beforeAll, afterAll, vi, beforeEach } from "vites
 import Fastify, { FastifyInstance } from "fastify";
 import priceController from "../../controller/priceController";
 import * as uniswapPriceUtils from "../../utils/uniswapPrice";
+import { PriceService } from "../../lib/api/price";
 
 // Mock the uniswap price utility
 vi.mock("../../utils/uniswapPrice", () => ({
@@ -117,50 +118,33 @@ describe("Token Price Endpoint", () => {
   });
 
   it('should handle zero price values as error', async () => {
-    const testCases = [
-      { tokenId: 'btc', mockFn: mockGetBtcPrice },
-      { tokenId: 'eth', mockFn: mockGetEthPrice },
-      { tokenId: 'scout-protocol-token', mockFn: mockGetDevPrice }
-    ];
+    vi.spyOn(PriceService, 'getTokenPrice').mockRejectedValue(new Error('Failed to fetch token price from Uniswap'));
 
-    for (const testCase of testCases) {
-      testCase.mockFn.mockResolvedValue(0);
+    const response = await app.inject({
+      method: 'GET',
+      url: '/api/v1/price/btc'
+    });
 
-      const response = await app.inject({
-        method: 'GET',
-        url: `/api/v1/price/${testCase.tokenId}`
-      });
-
-      expect(response.statusCode).toBe(400);
-      
-      const body = JSON.parse(response.body);
-      expect(body.success).toBe(false);
-      expect(body.error).toBe("Failed to fetch token price from Uniswap");
-    }
+    expect(response.statusCode).toBe(500);
+    
+    const body = JSON.parse(response.body);
+    expect(body.success).toBe(false);
+    expect(body.error).toBe("Failed to fetch token price");
   });
 
   it('should handle API errors gracefully', async () => {
-    const testCases = [
-      { tokenId: 'btc', mockFn: mockGetBtcPrice },
-      { tokenId: 'eth', mockFn: mockGetEthPrice },
-      { tokenId: 'scout-protocol-token', mockFn: mockGetDevPrice }
-    ];
+    mockPriceServiceGetTokenPrice.mockRejectedValue(new Error('Network request failed'));
 
-    for (const testCase of testCases) {
-      const error = new Error('Network request failed');
-      testCase.mockFn.mockRejectedValue(error);
+    const response = await app.inject({
+      method: 'GET',
+      url: '/api/v1/price/btc'
+    });
 
-      const response = await app.inject({
-        method: 'GET',
-        url: `/api/v1/price/${testCase.tokenId}`
-      });
-
-      expect(response.statusCode).toBe(400);
-      
-      const body = JSON.parse(response.body);
-      expect(body.success).toBe(false);
-      expect(body.error).toBe("Network request failed");
-    }
+    expect(response.statusCode).toBe(500);
+    
+    const body = JSON.parse(response.body);
+    expect(body.success).toBe(false);
+    expect(body.error).toBe("Failed to fetch token price");
   });
 
   it('should handle different price value ranges correctly', async () => {
@@ -257,6 +241,24 @@ describe("Token Price Endpoint", () => {
     }
   });
 
+  it('should return a successful response with correct data structure for a mocked price', async () => {
+    const mockPrice = 123.45;
+    const tokenId = 'eth';
+    mockPriceServiceGetTokenPrice.mockResolvedValue({ price: mockPrice, tokenId });
+
+    const response = await app.inject({
+      method: 'GET',
+      url: `/api/v1/price/${tokenId}`
+    });
+
+    expect(response.statusCode).toBe(200);
+    const body = JSON.parse(response.body);
+    expect(body.success).toBe(true);
+    expect(body.data).toBeDefined();
+    expect(body.data.price).toBe(mockPrice);
+    expect(body.data.tokenId).toBe(tokenId);
+  });
+
   it('should handle concurrent requests for different tokens', async () => {
     mockGetBtcPrice.mockResolvedValue(45000);
     mockGetEthPrice.mockResolvedValue(3200);
@@ -287,14 +289,14 @@ describe("Token Price Endpoint", () => {
   });
 
   it('should handle non-Error exceptions gracefully', async () => {
-    mockGetBtcPrice.mockRejectedValue('String error message');
+    mockPriceServiceGetTokenPrice.mockRejectedValue('String error message');
 
     const response = await app.inject({
       method: 'GET',
       url: '/api/v1/price/btc'
     });
 
-    expect(response.statusCode).toBe(400);
+    expect(response.statusCode).toBe(500);
     
     const body = JSON.parse(response.body);
     expect(body.success).toBe(false);

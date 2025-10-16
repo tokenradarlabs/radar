@@ -33,8 +33,8 @@ export default async function priceController(fastify: FastifyInstance) {
           return sendBadRequest(reply, formatValidationError(error));
         }
 
-  logger.error('Price controller error:', { error });
-        return sendBadRequest(reply, error instanceof Error ? error.message : 'Failed to fetch token price');
+        logger.error({ message: 'Price controller error', error: error instanceof Error ? error.message : 'Unknown error', stack: error instanceof Error ? error.stack : undefined });
+        return sendInternalError(reply, 'Failed to fetch token price');
       }
     }
   );
