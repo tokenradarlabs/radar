@@ -166,6 +166,10 @@ export function isRateLimitError(error: unknown, reply: FastifyReply): boolean {
     rlHeaderOnReply ||
     messageIndicatesRl
   );
+  const rlHeaderOnReply = (reply.getHeader('x-ratelimit-limit') ?? reply.getHeader('X-RateLimit-Limit') ?? reply.getHeader('retry-after') ?? reply.getHeader('Retry-After')) !== undefined;
+  const messageIndicatesRl = typeof asAny?.message === 'string' && (asAny.message.includes('Too Many Requests') || asAny.message.toLowerCase().includes('rate limit'));
+  
+  return (statusCode === 429) || (code?.includes('RATE_LIMIT') ?? false) || hasRateLimitHeaders || rlHeaderOnReply || messageIndicatesRl;
 }
 
 /**
