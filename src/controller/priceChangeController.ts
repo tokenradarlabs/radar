@@ -1,17 +1,12 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import logger from '../utils/logger';
 import { z } from 'zod';
+import { sendSuccess, sendBadRequest } from '../utils/responseHelper';
+import { formatValidationError } from '../utils/validation';
 import {
-  sendSuccess,
-  sendBadRequest,
-} from '../utils/responseHelper';
-import {
-  formatValidationError,
-} from '../utils/validation';
-import { 
-  PriceChangeService, 
-  priceChangeTokenIdSchema, 
-  type TokenPriceChangeParams
+  PriceChangeService,
+  priceChangeTokenIdSchema,
+  type TokenPriceChangeParams,
 } from '../lib/api/priceChange';
 
 export default async function priceChangeController(fastify: FastifyInstance) {
@@ -27,7 +22,8 @@ export default async function priceChangeController(fastify: FastifyInstance) {
         const validatedParams = priceChangeTokenIdSchema.parse(request.params);
         const { tokenId } = validatedParams;
 
-        const responseData = await PriceChangeService.getTokenPriceChange(tokenId);
+        const responseData =
+          await PriceChangeService.getTokenPriceChange(tokenId);
 
         return sendSuccess(reply, responseData);
       } catch (error) {
@@ -35,8 +31,13 @@ export default async function priceChangeController(fastify: FastifyInstance) {
           return sendBadRequest(reply, formatValidationError(error));
         }
 
-  logger.error('Price change controller error:', { error });
-        return sendBadRequest(reply, error instanceof Error ? error.message : 'Failed to fetch token price change');
+        logger.error('Price change controller error:', { error });
+        return sendBadRequest(
+          reply,
+          error instanceof Error
+            ? error.message
+            : 'Failed to fetch token price change'
+        );
       }
     }
   );

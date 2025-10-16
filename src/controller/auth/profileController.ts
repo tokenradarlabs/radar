@@ -1,24 +1,24 @@
-import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
-import { authenticateJwt } from "../../utils/auth";
-import { Response } from "../../types/responses";
-import { handleControllerError } from "../../utils/responseHelper";
-import { UserData } from "../../types/user";
-import { ProfileService, ProfileResponse } from "../../lib/auth";
+import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import { authenticateJwt } from '../../utils/auth';
+import { Response } from '../../types/responses';
+import { handleControllerError } from '../../utils/responseHelper';
+import { UserData } from '../../types/user';
+import { ProfileService, ProfileResponse } from '../../lib/auth';
 
 export default async function profileController(fastify: FastifyInstance) {
   // GET /auth/profile - Protected route that requires authentication
   fastify.get(
-    "/profile",
+    '/profile',
     { preHandler: authenticateJwt }, // Use the JWT authentication middleware
     async function (request: FastifyRequest, reply: FastifyReply) {
       try {
         // Get the authenticated user data
         const userId = request.user?.id;
-        
+
         if (!userId) {
           const response: Response<UserData> = {
             success: false,
-            error: "Authentication required"
+            error: 'Authentication required',
           };
           return reply.code(401).send(response);
         }
@@ -29,19 +29,19 @@ export default async function profileController(fastify: FastifyInstance) {
         // Return user profile data
         const response: Response<ProfileResponse> = {
           success: true,
-          data: userProfile
+          data: userProfile,
         };
         return reply.code(200).send(response);
       } catch (error) {
-        if (error instanceof Error && error.message === "User not found") {
+        if (error instanceof Error && error.message === 'User not found') {
           const response: Response<UserData> = {
             success: false,
-            error: "User not found"
+            error: 'User not found',
           };
           return reply.code(404).send(response);
         }
 
-        handleControllerError(reply, error, "Internal server error");
+        handleControllerError(reply, error, 'Internal server error');
         return;
       }
     }

@@ -14,7 +14,8 @@ interface OptionalEnvVars {
  * Validates that all required environment variables are present and not empty
  * @throws Error if any required environment variable is missing or empty
  */
-export function validateEnvironmentVariables(): RequiredEnvVars & OptionalEnvVars {
+export function validateEnvironmentVariables(): RequiredEnvVars &
+  OptionalEnvVars {
   const missingVars: string[] = [];
   const emptyVars: string[] = [];
 
@@ -23,12 +24,12 @@ export function validateEnvironmentVariables(): RequiredEnvVars & OptionalEnvVar
     'DATABASE_URL',
     'JWT_SECRET',
     'ANKR_API_KEY',
-    'COINGECKO_API_KEY'
+    'COINGECKO_API_KEY',
   ];
 
   for (const varName of requiredVars) {
     const value = process.env[varName];
-    
+
     if (value === undefined) {
       missingVars.push(varName);
     } else if (value.trim() === '') {
@@ -40,7 +41,7 @@ export function validateEnvironmentVariables(): RequiredEnvVars & OptionalEnvVar
   if (process.env.JWT_SECRET === 'your-secret-key') {
     throw new Error(
       'Security Error: JWT_SECRET is set to the default insecure value. ' +
-      'Please set a secure random JWT_SECRET in your environment variables.'
+        'Please set a secure random JWT_SECRET in your environment variables.'
     );
   }
 
@@ -48,7 +49,7 @@ export function validateEnvironmentVariables(): RequiredEnvVars & OptionalEnvVar
   if (missingVars.length > 0) {
     throw new Error(
       `Missing required environment variables: ${missingVars.join(', ')}. ` +
-      'Please ensure these are set in your environment or .env file.'
+        'Please ensure these are set in your environment or .env file.'
     );
   }
 
@@ -56,7 +57,7 @@ export function validateEnvironmentVariables(): RequiredEnvVars & OptionalEnvVar
   if (emptyVars.length > 0) {
     throw new Error(
       `Environment variables cannot be empty: ${emptyVars.join(', ')}. ` +
-      'Please provide valid values for these variables.'
+        'Please provide valid values for these variables.'
     );
   }
 
@@ -66,7 +67,7 @@ export function validateEnvironmentVariables(): RequiredEnvVars & OptionalEnvVar
     ANKR_API_KEY: process.env.ANKR_API_KEY!,
     COINGECKO_API_KEY: process.env.COINGECKO_API_KEY!,
     FASTIFY_PORT: process.env.FASTIFY_PORT,
-    NODE_ENV: process.env.NODE_ENV
+    NODE_ENV: process.env.NODE_ENV,
   };
 }
 
@@ -81,6 +82,6 @@ export function getValidatedEnv(): RequiredEnvVars & OptionalEnvVars {
     ANKR_API_KEY: process.env.ANKR_API_KEY!,
     COINGECKO_API_KEY: process.env.COINGECKO_API_KEY!,
     FASTIFY_PORT: process.env.FASTIFY_PORT,
-    NODE_ENV: process.env.NODE_ENV
+    NODE_ENV: process.env.NODE_ENV,
   };
 }

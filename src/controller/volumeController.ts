@@ -1,17 +1,12 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import logger from '../utils/logger';
 import { z } from 'zod';
-import {
-  sendSuccess,
-  sendBadRequest,
-} from '../utils/responseHelper';
-import {
-  formatValidationError,
-} from '../utils/validation';
+import { sendSuccess, sendBadRequest } from '../utils/responseHelper';
+import { formatValidationError } from '../utils/validation';
 import { VolumeService } from '../lib/api/volume/volume.service';
-import { 
-  volumeTokenIdSchema, 
-  type TokenVolumeParams
+import {
+  volumeTokenIdSchema,
+  type TokenVolumeParams,
 } from '../lib/api/volume/volume.schema';
 
 export default async function volumeController(fastify: FastifyInstance) {
@@ -35,8 +30,13 @@ export default async function volumeController(fastify: FastifyInstance) {
           return sendBadRequest(reply, formatValidationError(error));
         }
 
-  logger.error('Volume controller error:', { error });
-        return sendBadRequest(reply, error instanceof Error ? error.message : 'Failed to fetch token volume');
+        logger.error('Volume controller error:', { error });
+        return sendBadRequest(
+          reply,
+          error instanceof Error
+            ? error.message
+            : 'Failed to fetch token volume'
+        );
       }
     }
   );

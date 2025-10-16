@@ -1,16 +1,22 @@
 import 'dotenv/config';
-import fastify from "fastify";
+import fastify from 'fastify';
 import rateLimit from '@fastify/rate-limit';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
-import router from "./router";
-import { checkDatabaseConnection, isDatabaseUnavailableError } from './utils/db';
-import { sendServiceUnavailable, handleGlobalError } from './utils/responseHelper';
+import router from './router';
+import {
+  checkDatabaseConnection,
+  isDatabaseUnavailableError,
+} from './utils/db';
+import {
+  sendServiceUnavailable,
+  handleGlobalError,
+} from './utils/responseHelper';
 import logger from './utils/logger';
 
 const server = fastify({
   // Logger only for production
-  logger: !!(process.env.NODE_ENV !== "development"),
+  logger: true,
   // Set request size limits for security
   bodyLimit: 1048576, // 1MB limit for request body
 });
@@ -22,16 +28,19 @@ server.register(helmet, {
       defaultSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'"],
       scriptSrc: ["'self'"],
-      imgSrc: ["'self'", "data:", "https:"],
+      imgSrc: ["'self'", 'data:', 'https:'],
     },
   },
 });
 
 // Register CORS plugin
 server.register(cors, {
-  origin: process.env.NODE_ENV === 'production' 
-    ? [process.env.ALLOWED_ORIGINS?.split(',') || 'https://tokenradar.com'].flat()
-    : true, // Allow all origins in development
+  origin:
+    process.env.NODE_ENV === 'production'
+      ? [
+          process.env.ALLOWED_ORIGINS?.split(',') || 'https://tokenradar.com',
+        ].flat()
+      : true, // Allow all origins in development
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-API-Key'],
   credentials: true,
@@ -45,9 +54,9 @@ server.register(rateLimit, {
   errorResponseBuilder: function (_req, context) {
     return {
       success: false,
-      error: `Rate limit exceeded, retry in ${context.after}`
-    }
-  }
+      error: `Rate limit exceeded, retry in ${context.after}`,
+    };
+  },
 });
 
 // Request/Response Logging Middleware
@@ -56,7 +65,7 @@ server.addHook('onRequest', async (request) => {
     method: request.method,
     url: request.url,
     headers: request.headers,
-    ip: request.ip
+    ip: request.ip,
   });
 });
 
@@ -65,7 +74,7 @@ server.addHook('onSend', async (request, reply, payload) => {
     method: request.method,
     url: request.url,
     statusCode: reply.statusCode,
-    payload
+    payload,
   });
 });
 

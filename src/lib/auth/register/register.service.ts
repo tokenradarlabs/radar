@@ -1,6 +1,6 @@
-import { prisma } from "../../../utils/prisma";
-import { hashPassword, isDuplicateEmailError } from "../common/utils";
-import { RegisterRequest, RegisterResponse } from "./register.schema";
+import { prisma } from '../../../utils/prisma';
+import { hashPassword, isDuplicateEmailError } from '../common/utils';
+import { RegisterRequest, RegisterResponse } from './register.schema';
 
 export class RegisterService {
   static async registerUser(data: RegisterRequest): Promise<RegisterResponse> {
@@ -26,7 +26,7 @@ export class RegisterService {
       };
     } catch (error) {
       if (isDuplicateEmailError(error)) {
-        throw new Error("Email already exists");
+        throw new Error('Email already exists');
       }
       throw error;
     }

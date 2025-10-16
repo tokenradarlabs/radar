@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import Fastify from 'fastify';
-import priceChangeController from "../../controller/priceChangeController";
+import priceChangeController from '../../controller/priceChangeController';
 
 // Mock the CoinGecko price change utility
 vi.mock('../../utils/coinGeckoPriceChange', () => ({
-  fetchTokenPriceChange: vi.fn()
+  fetchTokenPriceChange: vi.fn(),
 }));
 
 // Import the mocked function
@@ -17,15 +17,17 @@ describe('Token Price Change Endpoint', () => {
   beforeEach(async () => {
     // Clear all mocks before each test
     vi.clearAllMocks();
-    
+
     // Suppress console.error during tests to avoid stderr output
     vi.spyOn(console, 'error').mockImplementation(() => {});
-    
+
     // Create a fresh Fastify instance for each test
     app = Fastify();
-    
+
     // Register the price change controller
-    await app.register(priceChangeController, { prefix: '/api/v1/priceChange' });
+    await app.register(priceChangeController, {
+      prefix: '/api/v1/priceChange',
+    });
   });
 
   it('should successfully return positive price change data', async () => {
@@ -40,13 +42,13 @@ describe('Token Price Change Endpoint', () => {
     });
 
     expect(response.statusCode).toBe(200);
-    
+
     const body = JSON.parse(response.body);
     expect(body.success).toBe(true);
     expect(body.data).toEqual({
       priceChange: mockPriceChange,
       tokenId: tokenId,
-      period: '24h'
+      period: '24h',
     });
 
     expect(mockFetchTokenPriceChange).toHaveBeenCalledTimes(1);
@@ -65,13 +67,13 @@ describe('Token Price Change Endpoint', () => {
     });
 
     expect(response.statusCode).toBe(200);
-    
+
     const body = JSON.parse(response.body);
     expect(body.success).toBe(true);
     expect(body.data).toEqual({
       priceChange: mockPriceChange,
       tokenId: tokenId,
-      period: '24h'
+      period: '24h',
     });
 
     expect(mockFetchTokenPriceChange).toHaveBeenCalledTimes(1);
@@ -90,13 +92,13 @@ describe('Token Price Change Endpoint', () => {
     });
 
     expect(response.statusCode).toBe(200);
-    
+
     const body = JSON.parse(response.body);
     expect(body.success).toBe(true);
     expect(body.data).toEqual({
       priceChange: mockPriceChange,
       tokenId: tokenId,
-      period: '24h'
+      period: '24h',
     });
 
     expect(mockFetchTokenPriceChange).toHaveBeenCalledTimes(1);
@@ -115,13 +117,13 @@ describe('Token Price Change Endpoint', () => {
     });
 
     expect(response.statusCode).toBe(200);
-    
+
     const body = JSON.parse(response.body);
     expect(body.success).toBe(true);
     expect(body.data).toEqual({
       priceChange: mockPriceChange,
       tokenId: tokenId,
-      period: '24h'
+      period: '24h',
     });
 
     expect(mockFetchTokenPriceChange).toHaveBeenCalledTimes(1);
@@ -139,7 +141,7 @@ describe('Token Price Change Endpoint', () => {
     });
 
     expect(response.statusCode).toBe(400);
-    
+
     const body = JSON.parse(response.body);
     expect(body.success).toBe(false);
     expect(body.error).toBe('Token price change data not found');
@@ -168,8 +170,10 @@ describe('Token Price Change Endpoint', () => {
     const tokenId = 'bitcoin';
 
     // Test network error
-    mockFetchTokenPriceChange.mockRejectedValueOnce(new Error('Network request failed'));
-    
+    mockFetchTokenPriceChange.mockRejectedValueOnce(
+      new Error('Network request failed')
+    );
+
     let response = await app.inject({
       method: 'GET',
       url: `/api/v1/priceChange/${tokenId}`,
@@ -181,8 +185,10 @@ describe('Token Price Change Endpoint', () => {
     expect(body.error).toBe('Network request failed'); // Actual error message
 
     // Test API rate limit error
-    mockFetchTokenPriceChange.mockRejectedValueOnce(new Error('API rate limit exceeded'));
-    
+    mockFetchTokenPriceChange.mockRejectedValueOnce(
+      new Error('API rate limit exceeded')
+    );
+
     response = await app.inject({
       method: 'GET',
       url: `/api/v1/priceChange/${tokenId}`,
@@ -194,8 +200,10 @@ describe('Token Price Change Endpoint', () => {
     expect(body.error).toBe('API rate limit exceeded'); // Actual error message
 
     // Test timeout error
-    mockFetchTokenPriceChange.mockRejectedValueOnce(new Error('Request timeout'));
-    
+    mockFetchTokenPriceChange.mockRejectedValueOnce(
+      new Error('Request timeout')
+    );
+
     response = await app.inject({
       method: 'GET',
       url: `/api/v1/priceChange/${tokenId}`,
@@ -220,7 +228,7 @@ describe('Token Price Change Endpoint', () => {
     });
 
     expect(response.statusCode).toBe(400);
-    
+
     const body = JSON.parse(response.body);
     expect(body.success).toBe(false);
     expect(body.error).toBe('Failed to fetch token price change'); // Non-Error exception message
@@ -241,13 +249,13 @@ describe('Token Price Change Endpoint', () => {
     });
 
     expect(response.statusCode).toBe(200);
-    
+
     const body = JSON.parse(response.body);
     expect(body.success).toBe(true);
     expect(body.data).toEqual({
       priceChange: mockPriceChange,
       tokenId: tokenId,
-      period: '24h'
+      period: '24h',
     });
 
     expect(mockFetchTokenPriceChange).toHaveBeenCalledTimes(1);
@@ -291,7 +299,7 @@ describe('Token Price Change Endpoint', () => {
     for (let i = 0; i < tokens.length; i++) {
       const token = tokens[i];
       const change = mockChanges[i];
-      
+
       mockFetchTokenPriceChange.mockResolvedValueOnce(change);
 
       const response = await app.inject({
@@ -300,7 +308,7 @@ describe('Token Price Change Endpoint', () => {
       });
 
       expect(response.statusCode).toBe(200);
-      
+
       const body = JSON.parse(response.body);
       expect(body).toHaveProperty('success', true);
       expect(body).toHaveProperty('data');
@@ -334,13 +342,13 @@ describe('Token Price Change Endpoint', () => {
 
     responses.forEach((response, index) => {
       expect(response.statusCode).toBe(200);
-      
+
       const body = JSON.parse(response.body);
       expect(body.success).toBe(true);
       expect(body.data).toEqual({
         priceChange: tokenData[index].change,
         tokenId: tokenData[index].token,
-        period: '24h'
+        period: '24h',
       });
     });
 
@@ -359,13 +367,13 @@ describe('Token Price Change Endpoint', () => {
     });
 
     expect(response.statusCode).toBe(200);
-    
+
     const body = JSON.parse(response.body);
     expect(body.success).toBe(true);
     expect(body.data).toEqual({
       priceChange: mockPriceChange,
       tokenId: tokenId,
-      period: '24h'
+      period: '24h',
     });
 
     expect(mockFetchTokenPriceChange).toHaveBeenCalledTimes(1);
@@ -384,13 +392,13 @@ describe('Token Price Change Endpoint', () => {
     });
 
     expect(response.statusCode).toBe(200);
-    
+
     const body = JSON.parse(response.body);
     expect(body.success).toBe(true);
     expect(body.data).toEqual({
       priceChange: mockPriceChange,
       tokenId: tokenId,
-      period: '24h'
+      period: '24h',
     });
 
     expect(mockFetchTokenPriceChange).toHaveBeenCalledTimes(1);
@@ -409,13 +417,13 @@ describe('Token Price Change Endpoint', () => {
     });
 
     expect(response.statusCode).toBe(200);
-    
+
     const body = JSON.parse(response.body);
     expect(body.success).toBe(true);
     expect(body.data).toEqual({
       priceChange: mockPriceChange,
       tokenId: tokenId,
-      period: '24h'
+      period: '24h',
     });
 
     expect(mockFetchTokenPriceChange).toHaveBeenCalledTimes(1);

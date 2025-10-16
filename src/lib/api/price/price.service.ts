@@ -1,4 +1,8 @@
-import { getDevPrice, getBtcPrice, getEthPrice } from '../../../utils/uniswapPrice';
+import {
+  getDevPrice,
+  getBtcPrice,
+  getEthPrice,
+} from '../../../utils/uniswapPrice';
 import { TokenPriceData } from './price.schema';
 
 export class PriceService {
@@ -16,7 +20,9 @@ export class PriceService {
         price = await getDevPrice();
         break;
       default:
-        throw new Error('Invalid token selection. Supported tokens are: btc, eth, scout-protocol-token');
+        throw new Error(
+          'Invalid token selection. Supported tokens are: btc, eth, scout-protocol-token'
+        );
     }
 
     if (price === 0) {

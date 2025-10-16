@@ -1,14 +1,22 @@
-import { describe, it, expect, beforeAll, afterAll, vi, beforeEach } from "vitest";
-import Fastify, { FastifyInstance } from "fastify";
-import volumeController from "../../controller/volumeController";
-import * as coinGeckoVolumeUtils from "../../utils/coinGeckoVolume";
+import {
+  describe,
+  it,
+  expect,
+  beforeAll,
+  afterAll,
+  vi,
+  beforeEach,
+} from 'vitest';
+import Fastify, { FastifyInstance } from 'fastify';
+import volumeController from '../../controller/volumeController';
+import * as coinGeckoVolumeUtils from '../../utils/coinGeckoVolume';
 
 // Mock the CoinGecko volume utility
-vi.mock("../../utils/coinGeckoVolume", () => ({
-  fetchTokenVolume: vi.fn()
+vi.mock('../../utils/coinGeckoVolume', () => ({
+  fetchTokenVolume: vi.fn(),
 }));
 
-describe("Token Volume Endpoint", () => {
+describe('Token Volume Endpoint', () => {
   let app: FastifyInstance;
   const mockFetchTokenVolume = vi.mocked(coinGeckoVolumeUtils.fetchTokenVolume);
 
@@ -21,13 +29,13 @@ describe("Token Volume Endpoint", () => {
   beforeEach(async () => {
     // Clear all mocks before each test
     vi.clearAllMocks();
-    
+
     // Suppress console.error during tests to avoid stderr output
     vi.spyOn(console, 'error').mockImplementation(() => {});
-    
+
     // Create a fresh Fastify instance for each test
     app = Fastify();
-    
+
     // Register the volume controller
     await app.register(volumeController, { prefix: '/api/v1/volume' });
   });
@@ -38,18 +46,18 @@ describe("Token Volume Endpoint", () => {
 
   it('should successfully return token volume data', async () => {
     const mockVolumeData = {
-      usd_24h_vol: 1234567890.50
+      usd_24h_vol: 1234567890.5,
     };
     const tokenId = 'bitcoin';
     mockFetchTokenVolume.mockResolvedValue(mockVolumeData);
 
     const response = await app.inject({
       method: 'GET',
-      url: `/api/v1/volume/${tokenId}`
+      url: `/api/v1/volume/${tokenId}`,
     });
 
     expect(response.statusCode).toBe(200);
-    
+
     const body = JSON.parse(response.body);
     expect(body.success).toBe(true);
     expect(body.data).toBeDefined();
@@ -66,23 +74,23 @@ describe("Token Volume Endpoint", () => {
       {
         tokenId: 'bitcoin',
         volumeData: { usd_24h_vol: 25000000000 }, // $25B
-        expectedVolume: 25000000000
+        expectedVolume: 25000000000,
       },
       {
         tokenId: 'ethereum',
         volumeData: { usd_24h_vol: 15000000000 }, // $15B
-        expectedVolume: 15000000000
+        expectedVolume: 15000000000,
       },
       {
         tokenId: 'scout-protocol-token',
-        volumeData: { usd_24h_vol: 1000000.50 }, // $1M
-        expectedVolume: 1000000.50
+        volumeData: { usd_24h_vol: 1000000.5 }, // $1M
+        expectedVolume: 1000000.5,
       },
       {
         tokenId: 'small-cap-token',
         volumeData: { usd_24h_vol: 10000 }, // $10K
-        expectedVolume: 10000
-      }
+        expectedVolume: 10000,
+      },
     ];
 
     for (const testCase of testCases) {
@@ -90,11 +98,11 @@ describe("Token Volume Endpoint", () => {
 
       const response = await app.inject({
         method: 'GET',
-        url: `/api/v1/volume/${testCase.tokenId}`
+        url: `/api/v1/volume/${testCase.tokenId}`,
       });
 
       expect(response.statusCode).toBe(200);
-      
+
       const body = JSON.parse(response.body);
       expect(body.success).toBe(true);
       expect(body.data.volume).toBe(testCase.expectedVolume);
@@ -105,18 +113,18 @@ describe("Token Volume Endpoint", () => {
 
   it('should handle zero volume correctly', async () => {
     const mockVolumeData = {
-      usd_24h_vol: 0
+      usd_24h_vol: 0,
     };
     const tokenId = 'zero-volume-token';
     mockFetchTokenVolume.mockResolvedValue(mockVolumeData);
 
     const response = await app.inject({
       method: 'GET',
-      url: `/api/v1/volume/${tokenId}`
+      url: `/api/v1/volume/${tokenId}`,
     });
 
     expect(response.statusCode).toBe(200);
-    
+
     const body = JSON.parse(response.body);
     expect(body.success).toBe(true);
     expect(body.data.volume).toBe(0);
@@ -126,18 +134,18 @@ describe("Token Volume Endpoint", () => {
 
   it('should handle very small volume values correctly', async () => {
     const mockVolumeData = {
-      usd_24h_vol: 0.01
+      usd_24h_vol: 0.01,
     };
     const tokenId = 'micro-cap-token';
     mockFetchTokenVolume.mockResolvedValue(mockVolumeData);
 
     const response = await app.inject({
       method: 'GET',
-      url: `/api/v1/volume/${tokenId}`
+      url: `/api/v1/volume/${tokenId}`,
     });
 
     expect(response.statusCode).toBe(200);
-    
+
     const body = JSON.parse(response.body);
     expect(body.success).toBe(true);
     expect(body.data.volume).toBe(0.01);
@@ -148,18 +156,18 @@ describe("Token Volume Endpoint", () => {
 
   it('should handle very large volume values correctly', async () => {
     const mockVolumeData = {
-      usd_24h_vol: 999999999999.99 // Nearly $1T
+      usd_24h_vol: 999999999999.99, // Nearly $1T
     };
     const tokenId = 'mega-cap-token';
     mockFetchTokenVolume.mockResolvedValue(mockVolumeData);
 
     const response = await app.inject({
       method: 'GET',
-      url: `/api/v1/volume/${tokenId}`
+      url: `/api/v1/volume/${tokenId}`,
     });
 
     expect(response.statusCode).toBe(200);
-    
+
     const body = JSON.parse(response.body);
     expect(body.success).toBe(true);
     expect(body.data.volume).toBe(999999999999.99);
@@ -178,7 +186,7 @@ describe("Token Volume Endpoint", () => {
     });
 
     expect(response.statusCode).toBe(400);
-    
+
     const body = JSON.parse(response.body);
     expect(body.success).toBe(false);
     expect(body.error).toBe('Token volume data not found');
@@ -208,23 +216,23 @@ describe("Token Volume Endpoint", () => {
       {
         name: 'network error',
         error: new Error('Network request failed'),
-        expectedMessage: 'Network request failed'
+        expectedMessage: 'Network request failed',
       },
       {
         name: 'API rate limit error',
         error: new Error('API rate limit exceeded'),
-        expectedMessage: 'API rate limit exceeded'
+        expectedMessage: 'API rate limit exceeded',
       },
       {
         name: 'timeout error',
         error: new Error('Request timeout'),
-        expectedMessage: 'Request timeout'
+        expectedMessage: 'Request timeout',
       },
       {
         name: 'server error',
         error: new Error('CoinGecko API server error'),
-        expectedMessage: 'CoinGecko API server error'
-      }
+        expectedMessage: 'CoinGecko API server error',
+      },
     ];
 
     const tokenId = 'bitcoin';
@@ -234,11 +242,11 @@ describe("Token Volume Endpoint", () => {
 
       const response = await app.inject({
         method: 'GET',
-        url: `/api/v1/volume/${tokenId}`
+        url: `/api/v1/volume/${tokenId}`,
       });
 
       expect(response.statusCode).toBe(400);
-      
+
       const body = JSON.parse(response.body);
       expect(body.success).toBe(false);
       expect(body.error).toBe(testCase.expectedMessage);
@@ -251,11 +259,11 @@ describe("Token Volume Endpoint", () => {
 
     const response = await app.inject({
       method: 'GET',
-      url: `/api/v1/volume/${tokenId}`
+      url: `/api/v1/volume/${tokenId}`,
     });
 
     expect(response.statusCode).toBe(400);
-    
+
     const body = JSON.parse(response.body);
     expect(body.success).toBe(false);
     expect(body.error).toBe('Failed to fetch token volume');
@@ -264,7 +272,7 @@ describe("Token Volume Endpoint", () => {
   it('should not accept POST requests', async () => {
     const response = await app.inject({
       method: 'POST',
-      url: '/api/v1/volume/bitcoin'
+      url: '/api/v1/volume/bitcoin',
     });
 
     expect(response.statusCode).toBe(404);
@@ -274,7 +282,7 @@ describe("Token Volume Endpoint", () => {
   it('should not accept PUT requests', async () => {
     const response = await app.inject({
       method: 'PUT',
-      url: '/api/v1/volume/ethereum'
+      url: '/api/v1/volume/ethereum',
     });
 
     expect(response.statusCode).toBe(404);
@@ -284,7 +292,7 @@ describe("Token Volume Endpoint", () => {
   it('should not accept DELETE requests', async () => {
     const response = await app.inject({
       method: 'DELETE',
-      url: '/api/v1/volume/bitcoin'
+      url: '/api/v1/volume/bitcoin',
     });
 
     expect(response.statusCode).toBe(404);
@@ -295,7 +303,7 @@ describe("Token Volume Endpoint", () => {
     const tokens = [
       { id: 'bitcoin', volume: 25000000000 },
       { id: 'ethereum', volume: 15000000000 },
-      { id: 'scout-protocol-token', volume: 1000000 }
+      { id: 'scout-protocol-token', volume: 1000000 },
     ];
 
     for (const token of tokens) {
@@ -304,27 +312,27 @@ describe("Token Volume Endpoint", () => {
 
       const response = await app.inject({
         method: 'GET',
-        url: `/api/v1/volume/${token.id}`
+        url: `/api/v1/volume/${token.id}`,
       });
 
       expect(response.statusCode).toBe(200);
-      
+
       const body = JSON.parse(response.body);
-      
+
       // Verify consistent structure
       expect(body).toHaveProperty('success');
       expect(body).toHaveProperty('data');
       expect(body.success).toBe(true);
-      
+
       expect(body.data).toHaveProperty('volume');
       expect(body.data).toHaveProperty('tokenId');
       expect(body.data).toHaveProperty('period');
-      
+
       // Verify values
       expect(body.data.volume).toBe(token.volume);
       expect(body.data.tokenId).toBe(token.id);
       expect(body.data.period).toBe('24h');
-      
+
       // Verify data types
       expect(typeof body.data.volume).toBe('number');
       expect(typeof body.data.tokenId).toBe('string');
@@ -336,22 +344,25 @@ describe("Token Volume Endpoint", () => {
     const concurrentTokens = [
       { id: 'bitcoin', volume: 25000000000 },
       { id: 'ethereum', volume: 15000000000 },
-      { id: 'cardano', volume: 500000000 }
+      { id: 'cardano', volume: 500000000 },
     ];
 
     // Setup mocks to return different values based on call count
     let callCount = 0;
     mockFetchTokenVolume.mockImplementation(() => {
-      const result = { usd_24h_vol: concurrentTokens[callCount % concurrentTokens.length].volume };
+      const result = {
+        usd_24h_vol:
+          concurrentTokens[callCount % concurrentTokens.length].volume,
+      };
       callCount++;
       return Promise.resolve(result);
     });
 
     // Make concurrent requests
-    const requests = concurrentTokens.map(token => 
+    const requests = concurrentTokens.map((token) =>
       app.inject({
         method: 'GET',
-        url: `/api/v1/volume/${token.id}`
+        url: `/api/v1/volume/${token.id}`,
       })
     );
 
@@ -360,7 +371,7 @@ describe("Token Volume Endpoint", () => {
     // All requests should succeed
     responses.forEach((response) => {
       expect(response.statusCode).toBe(200);
-      
+
       const body = JSON.parse(response.body);
       expect(body.success).toBe(true);
       expect(body.data).toBeDefined();
@@ -376,7 +387,7 @@ describe("Token Volume Endpoint", () => {
       'token-with-dashes',
       'token_with_underscores',
       'token123',
-      'token.with.dots'
+      'token.with.dots',
     ];
 
     for (const tokenId of tokensWithSpecialChars) {
@@ -385,11 +396,11 @@ describe("Token Volume Endpoint", () => {
 
       const response = await app.inject({
         method: 'GET',
-        url: `/api/v1/volume/${tokenId}`
+        url: `/api/v1/volume/${tokenId}`,
       });
 
       expect(response.statusCode).toBe(200);
-      
+
       const body = JSON.parse(response.body);
       expect(body.success).toBe(true);
       expect(body.data.tokenId).toBe(tokenId);
@@ -402,7 +413,7 @@ describe("Token Volume Endpoint", () => {
       { volume: 123456789.123456, description: 'high precision decimal' },
       { volume: 0.000001, description: 'very small decimal' },
       { volume: 999.99, description: 'standard decimal' },
-      { volume: 1000000.50, description: 'million with cents' }
+      { volume: 1000000.5, description: 'million with cents' },
     ];
 
     const tokenId = 'decimal-volume-token';
@@ -413,11 +424,11 @@ describe("Token Volume Endpoint", () => {
 
       const response = await app.inject({
         method: 'GET',
-        url: `/api/v1/volume/${tokenId}`
+        url: `/api/v1/volume/${tokenId}`,
       });
 
       expect(response.statusCode).toBe(200);
-      
+
       const body = JSON.parse(response.body);
       expect(body.success).toBe(true);
       expect(body.data.volume).toBe(testCase.volume);
@@ -431,25 +442,25 @@ describe("Token Volume Endpoint", () => {
       other_field: 'should be ignored',
       another_field: 12345,
       nested: {
-        field: 'also ignored'
-      }
+        field: 'also ignored',
+      },
     };
     const tokenId = 'token-with-extra-data';
     mockFetchTokenVolume.mockResolvedValue(mockVolumeData);
 
     const response = await app.inject({
       method: 'GET',
-      url: `/api/v1/volume/${tokenId}`
+      url: `/api/v1/volume/${tokenId}`,
     });
 
     expect(response.statusCode).toBe(200);
-    
+
     const body = JSON.parse(response.body);
     expect(body.success).toBe(true);
     expect(body.data.volume).toBe(5000000);
     expect(body.data.tokenId).toBe(tokenId);
     expect(body.data.period).toBe('24h');
-    
+
     // Should not include extra fields from the API response
     expect(body.data).not.toHaveProperty('other_field');
     expect(body.data).not.toHaveProperty('another_field');
