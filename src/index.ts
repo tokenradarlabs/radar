@@ -1,8 +1,5 @@
-import app from './app';
-import {
-  validateEnvironmentVariables,
-  getValidatedEnv,
-} from './utils/envValidation';
+import { buildApp } from "./app"; // Changed import
+import { validateEnvironmentVariables, getValidatedEnv } from "./utils/envValidation";
 
 // Validate environment variables before starting the server
 try {
@@ -19,6 +16,7 @@ try {
 const env = getValidatedEnv();
 const FASTIFY_PORT = Number(env.FASTIFY_PORT) || 3006;
 
+const app = await buildApp(); // Call buildApp to get the server instance
 app.listen({ port: FASTIFY_PORT });
 
 console.log(
