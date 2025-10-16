@@ -15,21 +15,24 @@ import devPriceController from "./controller/devPriceController";
 import priceAlertController from './controller/alerts/priceAlertController';
 import { authenticateApiKey } from "./utils/auth";
 
+const createRateLimitOptions = (max: number, timeWindow: string, keyGenerator?: (request: any) => string) => ({
+  max,
+  timeWindow,
+  errorResponseBuilder: function (_req: any, context: any) {
+    return {
+      success: false,
+      error: `Rate limit exceeded, retry in ${context.after}`,
+    };
+  },
+  keyGenerator,
+});
+
 export default async function router(fastify: FastifyInstance) {
   // Auth endpoints with rate limiting
   fastify.register(
     async (fastify) => {
       // Enable rate limiting for all auth routes
-      await fastify.register(rateLimit, {
-        max: 5,
-        timeWindow: "1 minute",
-        errorResponseBuilder: function (_req, context) {
-          return {
-            success: false,
-            error: `Rate limit exceeded, retry in ${context.after}`,
-          };
-        },
-      });
+      await fastify.register(rateLimit, createRateLimitOptions(5, "1 minute"));
 
       fastify.register(loginController);
       fastify.register(registerController);
@@ -41,16 +44,7 @@ export default async function router(fastify: FastifyInstance) {
   // API key management endpoints with rate limiting
   fastify.register(
     async (fastify) => {
-      await fastify.register(rateLimit, {
-        max: 5,
-        timeWindow: "1 minute",
-        errorResponseBuilder: function (_req, context) {
-          return {
-            success: false,
-            error: `Rate limit exceeded, retry in ${context.after}`,
-          };
-        },
-      });
+      await fastify.register(rateLimit, createRateLimitOptions(5, "1 minute"));
 
       fastify.register(apiKeyController);
       fastify.register(getApiKeysController);
@@ -66,21 +60,11 @@ export default async function router(fastify: FastifyInstance) {
     fastify.addHook("preHandler", authenticateApiKey);
 
     // Enable rate limiting for authenticated API routes based on API key
-    await fastify.register(rateLimit, {
-      max: 20,
-      timeWindow: "1 minute",
-      keyGenerator: function (request) {
-        // Use API key from x-api-key header for rate limiting
-        const apiKey = request.headers['x-api-key'] as string;
-        return apiKey ? `auth_api_key:${apiKey}` : request.ip;
-      },
-      errorResponseBuilder: function (_req, context) {
-        return {
-          success: false,
-          error: `Rate limit exceeded, retry in ${context.after}`,
-        };
-      },
-    });
+    await fastify.register(rateLimit, createRateLimitOptions(20, "1 minute", function (request: any) {
+      // Use API key from x-api-key header for rate limiting
+      const apiKey = request.headers['x-api-key'] as string;
+      return apiKey ? `auth_api_key:${apiKey}` : request.ip;
+    }));
 
   fastify.register(priceController, { prefix: "/api/v1/price" });
   fastify.register(priceChangeController, { prefix: "/api/v1/priceChange" });
