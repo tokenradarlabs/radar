@@ -29,10 +29,11 @@ export function validateEnvironmentVariables(): RequiredEnvVars &
 
   for (const varName of requiredVars) {
     const value = process.env[varName];
+    const trimmedValue = value?.trim();
 
     if (value === undefined) {
       missingVars.push(varName);
-    } else if (value.trim() === '') {
+    } else if (trimmedValue === '') {
       emptyVars.push(varName);
     }
   }
@@ -61,13 +62,16 @@ export function validateEnvironmentVariables(): RequiredEnvVars &
     );
   }
 
+  const nodeEnv = process.env.NODE_ENV?.trim();
+  const fastifyPort = process.env.FASTIFY_PORT?.trim();
+
   return {
     DATABASE_URL: process.env.DATABASE_URL!,
     JWT_SECRET: process.env.JWT_SECRET!,
     ANKR_API_KEY: process.env.ANKR_API_KEY!,
     COINGECKO_API_KEY: process.env.COINGECKO_API_KEY!,
-    FASTIFY_PORT: process.env.FASTIFY_PORT,
-    NODE_ENV: process.env.NODE_ENV,
+    FASTIFY_PORT: fastifyPort || (nodeEnv === 'development' || nodeEnv === 'test' ? '4000' : undefined),
+    NODE_ENV: nodeEnv,
   };
 }
 
@@ -76,12 +80,15 @@ export function validateEnvironmentVariables(): RequiredEnvVars &
  * This should be called after validateEnvironmentVariables()
  */
 export function getValidatedEnv(): RequiredEnvVars & OptionalEnvVars {
+  const nodeEnv = process.env.NODE_ENV?.trim();
+  const fastifyPort = process.env.FASTIFY_PORT?.trim();
+
   return {
     DATABASE_URL: process.env.DATABASE_URL!,
     JWT_SECRET: process.env.JWT_SECRET!,
     ANKR_API_KEY: process.env.ANKR_API_KEY!,
     COINGECKO_API_KEY: process.env.COINGECKO_API_KEY!,
-    FASTIFY_PORT: process.env.FASTIFY_PORT,
-    NODE_ENV: process.env.NODE_ENV,
+    FASTIFY_PORT: fastifyPort || (nodeEnv === 'development' || nodeEnv === 'test' ? '4000' : undefined),
+    NODE_ENV: nodeEnv,
   };
 }
