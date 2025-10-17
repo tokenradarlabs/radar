@@ -9,7 +9,7 @@
     "format": "prettier --write \"src/**/*.ts\"",
     "build": "rimraf dist && tsc",
     "start": "node dist/index.js",
-    "test": "vitest",
+    "test": "cross-env NODE_ENV=test DATABASE_URL=\"postgresql://testuser:testpassword@localhost:5433/test_radar_db\" JWT_SECRET=\"test-jwt-secret\" vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui"
