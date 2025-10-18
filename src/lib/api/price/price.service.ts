@@ -9,11 +9,15 @@ export class PriceService {
   static async getTokenPrice(tokenId: string): Promise<TokenPriceData> {
     let price: number;
 
-    switch (tokenId) {
+    const normalizedTokenId = tokenId.toLowerCase();
+
+    switch (normalizedTokenId) {
       case 'btc':
+      case 'bitcoin':
         price = await getBtcPrice();
         break;
       case 'eth':
+      case 'ethereum':
         price = await getEthPrice();
         break;
       case 'scout-protocol-token':

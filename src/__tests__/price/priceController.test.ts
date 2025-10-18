@@ -24,6 +24,7 @@ describe('Token Price Endpoint', () => {
   const mockGetDevPrice = vi.mocked(uniswapPriceUtils.getDevPrice);
   const mockGetBtcPrice = vi.mocked(uniswapPriceUtils.getBtcPrice);
   const mockGetEthPrice = vi.mocked(uniswapPriceUtils.getEthPrice);
+  const mockPriceServiceGetTokenPrice = vi.spyOn(PriceService, 'getTokenPrice');
 
   beforeAll(async () => {
     app = Fastify();
@@ -34,6 +35,7 @@ describe('Token Price Endpoint', () => {
   beforeEach(() => {
     // Reset all mocks before each test
     vi.clearAllMocks();
+    mockPriceServiceGetTokenPrice.mockClear();
 
     // Suppress console.error during tests to avoid stderr output
     vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -128,7 +130,7 @@ describe('Token Price Endpoint', () => {
   });
 
   it('should handle zero price values as error', async () => {
-    vi.spyOn(PriceService, 'getTokenPrice').mockRejectedValue(
+    mockPriceServiceGetTokenPrice.mockRejectedValue(
       new Error('Failed to fetch token price from Uniswap')
     );
 
@@ -163,17 +165,19 @@ describe('Token Price Endpoint', () => {
 
   it('should handle different price value ranges correctly', async () => {
     const testCases = [
-      { tokenId: 'btc', price: 100000.99, mockFn: mockGetBtcPrice },
-      { tokenId: 'eth', price: 0.01, mockFn: mockGetEthPrice },
+      { tokenId: 'btc', price: 100000.99 },
+      { tokenId: 'eth', price: 0.01 },
       {
         tokenId: 'scout-protocol-token',
         price: 0.000000001,
-        mockFn: mockGetDevPrice,
       },
     ];
 
     for (const testCase of testCases) {
-      testCase.mockFn.mockResolvedValue(testCase.price);
+      mockPriceServiceGetTokenPrice.mockResolvedValueOnce({
+        price: testCase.price,
+        tokenId: testCase.tokenId,
+      });
 
       const response = await app.inject({
         method: 'GET',
@@ -188,7 +192,7 @@ describe('Token Price Endpoint', () => {
       expect(body.data.tokenId).toBe(testCase.tokenId);
 
       // Verify correct function was called
-      expect(testCase.mockFn).toHaveBeenCalledTimes(1);
+      expect(mockPriceServiceGetTokenPrice).toHaveBeenCalledWith(testCase.tokenId);
     }
   });
 
@@ -224,13 +228,16 @@ describe('Token Price Endpoint', () => {
 
   it('should return consistent data structure for all supported tokens', async () => {
     const tokens = [
-      { id: 'btc', price: 45000, mockFn: mockGetBtcPrice },
-      { id: 'eth', price: 3200, mockFn: mockGetEthPrice },
-      { id: 'scout-protocol-token', price: 0.001, mockFn: mockGetDevPrice },
+      { id: 'btc', price: 45000 },
+      { id: 'eth', price: 3200 },
+      { id: 'scout-protocol-token', price: 0.001 },
     ];
 
     for (const token of tokens) {
-      token.mockFn.mockResolvedValue(token.price);
+      mockPriceServiceGetTokenPrice.mockResolvedValueOnce({
+        price: token.price,
+        tokenId: token.id,
+      });
 
       const response = await app.inject({
         method: 'GET',
@@ -281,9 +288,18 @@ describe('Token Price Endpoint', () => {
   });
 
   it('should handle concurrent requests for different tokens', async () => {
-    mockGetBtcPrice.mockResolvedValue(45000);
-    mockGetEthPrice.mockResolvedValue(3200);
-    mockGetDevPrice.mockResolvedValue(0.001);
+    mockPriceServiceGetTokenPrice.mockResolvedValueOnce({
+      price: 45000,
+      tokenId: 'btc',
+    });
+    mockPriceServiceGetTokenPrice.mockResolvedValueOnce({
+      price: 3200,
+      tokenId: 'eth',
+    });
+    mockPriceServiceGetTokenPrice.mockResolvedValueOnce({
+      price: 0.001,
+      tokenId: 'scout-protocol-token',
+    });
 
     // Make concurrent requests for all tokens
     const requests = [
@@ -304,9 +320,9 @@ describe('Token Price Endpoint', () => {
     });
 
     // Verify each mock was called once
-    expect(mockGetBtcPrice).toHaveBeenCalledTimes(1);
-    expect(mockGetEthPrice).toHaveBeenCalledTimes(1);
-    expect(mockGetDevPrice).toHaveBeenCalledTimes(1);
+    expect(mockPriceServiceGetTokenPrice).toHaveBeenCalledWith('btc');
+    expect(mockPriceServiceGetTokenPrice).toHaveBeenCalledWith('eth');
+    expect(mockPriceServiceGetTokenPrice).toHaveBeenCalledWith('scout-protocol-token');
   });
 
   it('should handle non-Error exceptions gracefully', async () => {
