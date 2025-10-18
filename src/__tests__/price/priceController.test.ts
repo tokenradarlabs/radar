@@ -106,21 +106,26 @@ describe('Token Price Endpoint', () => {
   });
 
   it('should handle invalid token IDs with validation error', async () => {
-    const invalidTokenIds = ['invalid-token', 'doge', 'unknown', '123', ''];
+    const invalidTokenIdTestCases = [
+      { tokenId: 'invalid-token', expectedError: 'Invalid token selection. Supported tokens are: btc, eth, scout-protocol-token' },
+      { tokenId: 'doge', expectedError: 'Invalid token selection. Supported tokens are: btc, eth, scout-protocol-token' },
+      { tokenId: 'unknown', expectedError: 'Invalid token selection. Supported tokens are: btc, eth, scout-protocol-token' },
+      { tokenId: '123', expectedError: 'Invalid token selection. Supported tokens are: btc, eth, scout-protocol-token' },
+      { tokenId: '', expectedError: 'Token ID cannot be empty' },
+      { tokenId: ' ', expectedError: 'Token ID cannot be empty' }, // Empty string after trim
+    ];
 
-    for (const tokenId of invalidTokenIds) {
+    for (const testCase of invalidTokenIdTestCases) {
       const response = await app.inject({
         method: 'GET',
-        url: `/api/v1/price/${tokenId}`,
+        url: `/api/v1/price/${testCase.tokenId}`,
       });
 
       expect(response.statusCode).toBe(400);
 
       const body = JSON.parse(response.body);
       expect(body.success).toBe(false);
-      expect(body.error).toBe(
-        'Invalid token selection. Supported tokens are: btc, eth, scout-protocol-token'
-      );
+      expect(body.error).toBe(testCase.expectedError);
     }
 
     // Ensure no price fetching functions were called
