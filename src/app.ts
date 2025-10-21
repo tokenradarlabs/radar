@@ -31,7 +31,8 @@ export async function buildApp(): Promise<FastifyInstance> {
         scriptSrc: ["'self'"],
         imgSrc: ["'self'", "data:", "https:"],
       },
-    });
+    },
+  });
 
   // Register CORS plugin
   server.register(cors, {
@@ -64,6 +65,7 @@ export async function buildApp(): Promise<FastifyInstance> {
       headers: request.headers,
       ip: request.ip
     });
+  });
 
   server.addHook('onSend', async (request, reply, payload) => {
     logger.info('Outgoing response', {
