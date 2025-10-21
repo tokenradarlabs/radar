@@ -109,5 +109,15 @@ export default async function router(fastify: FastifyInstance) {
   });
 
   // Public endpoints (no authentication required)
+  fastify.addHook('preHandler', (request, reply, done) => {
+    if (request.url === '//') {
+      reply.redirect('/');
+      return done();
+    } else if (request.url === '') {
+      reply.redirect('/');
+      return done();
+    }
+    done();
+  });
   fastify.register(indexController, { prefix: '/' });
 }
