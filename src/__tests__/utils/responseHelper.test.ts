@@ -1,7 +1,7 @@
 import { FastifyReply } from 'fastify';
 import {
   sendSuccess,
-  sendError,
+  errorResponse,
   HTTP_STATUS,
 } from '../../utils/responseHelper';
 import { vi } from 'vitest';
@@ -44,7 +44,7 @@ describe('Response Helpers', () => {
 
   it('sendError should send an error response with correct shape and status', () => {
     const errorMessage = 'Something went wrong';
-    sendError(mockReply, errorMessage, HTTP_STATUS.BAD_REQUEST);
+    errorResponse(mockReply, HTTP_STATUS.BAD_REQUEST, errorMessage);
 
     expect(mockReply.status).toHaveBeenCalledWith(HTTP_STATUS.BAD_REQUEST);
     expect(mockReply.send).toHaveBeenCalledWith({

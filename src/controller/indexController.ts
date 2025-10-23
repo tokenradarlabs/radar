@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { promises } from 'fs';
 import { resolve } from 'path';
-import { sendInternalError } from '../utils/responseHelper';
+
 
 const { readFile } = promises;
 
@@ -18,7 +18,8 @@ export default async function indexController(fastify: FastifyInstance) {
           .send(indexHtmlContent);
       } catch (error) {
         fastify.log.error(error);
-        sendInternalError(reply, 'Failed to load index.html');
+        reply.send(error);
+
       }
     }
   );
