@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import fastify, { FastifyInstance } from "fastify";
+import fastify, { FastifyInstance } from 'fastify';
 import rateLimit from '@fastify/rate-limit';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
@@ -17,7 +17,7 @@ import logger from './utils/logger';
 export async function buildApp(): Promise<FastifyInstance> {
   const server = fastify({
     // Logger only for production
-    logger: !!(process.env.NODE_ENV !== "development"),
+    logger: !!(process.env.NODE_ENV !== 'development'),
     // Set request size limits for security
     bodyLimit: 1048576, // 1MB limit for request body
   });
@@ -29,16 +29,19 @@ export async function buildApp(): Promise<FastifyInstance> {
         defaultSrc: ["'self'"],
         styleSrc: ["'self'", "'unsafe-inline'"],
         scriptSrc: ["'self'"],
-        imgSrc: ["'self'", "data:", "https:"],
+        imgSrc: ["'self'", 'data:', 'https:'],
       },
     },
   });
 
   // Register CORS plugin
   server.register(cors, {
-    origin: process.env.NODE_ENV === 'production' 
-      ? [process.env.ALLOWED_ORIGINS?.split(',') || 'https://tokenradar.com'].flat()
-      : true, // Allow all origins in development
+    origin:
+      process.env.NODE_ENV === 'production'
+        ? [
+            process.env.ALLOWED_ORIGINS?.split(',') || 'https://tokenradar.com',
+          ].flat()
+        : true, // Allow all origins in development
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-API-Key'],
     credentials: true,
@@ -52,9 +55,9 @@ export async function buildApp(): Promise<FastifyInstance> {
     errorResponseBuilder: function (_req, context) {
       return {
         success: false,
-        error: `Rate limit exceeded, retry in ${context.after}`
-      }
-    }
+        error: `Rate limit exceeded, retry in ${context.after}`,
+      };
+    },
   });
 
   // Request/Response Logging Middleware
@@ -63,7 +66,7 @@ export async function buildApp(): Promise<FastifyInstance> {
       method: request.method,
       url: request.url,
       headers: request.headers,
-      ip: request.ip
+      ip: request.ip,
     });
   });
 
@@ -72,7 +75,7 @@ export async function buildApp(): Promise<FastifyInstance> {
       method: request.method,
       url: request.url,
       statusCode: reply.statusCode,
-      payload
+      payload,
     });
   });
 
@@ -96,6 +99,4 @@ export async function buildApp(): Promise<FastifyInstance> {
   return server;
 }
 
-// Export the server instance directly for non-test environments (e.g., index.ts)
-const app = await buildApp();
-export default app;
+export default buildApp;

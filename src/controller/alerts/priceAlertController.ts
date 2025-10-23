@@ -8,7 +8,7 @@ import {
 } from '../../utils/responseHelper';
 import logger from '../../utils/logger';
 import jwt from 'jsonwebtoken';
-import { getValidatedEnv } from '../../utils/envValidation';
+import { validateEnvironmentVariables } from '../../utils/envValidation';
 
 export default async function priceAlertController(fastify: FastifyInstance) {
   fastify.post(
@@ -26,7 +26,7 @@ export default async function priceAlertController(fastify: FastifyInstance) {
           return sendUnauthorized(reply, 'Valid API key and JWT required');
         }
         const token = authHeader.split(' ')[1];
-        const { JWT_SECRET } = getValidatedEnv();
+        const { JWT_SECRET } = validateEnvironmentVariables();
         let user;
         try {
           user = jwt.verify(token, JWT_SECRET) as { id: string };

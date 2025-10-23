@@ -107,10 +107,26 @@ describe('Token Price Endpoint', () => {
 
   it('should handle invalid token IDs with validation error', async () => {
     const invalidTokenIdTestCases = [
-      { tokenId: 'invalid-token', expectedError: 'Invalid token selection. Supported tokens are: btc, eth, scout-protocol-token' },
-      { tokenId: 'doge', expectedError: 'Invalid token selection. Supported tokens are: btc, eth, scout-protocol-token' },
-      { tokenId: 'unknown', expectedError: 'Invalid token selection. Supported tokens are: btc, eth, scout-protocol-token' },
-      { tokenId: '123', expectedError: 'Invalid token selection. Supported tokens are: btc, eth, scout-protocol-token' },
+      {
+        tokenId: 'invalid-token',
+        expectedError:
+          'Invalid token selection. Supported tokens are: btc, eth, scout-protocol-token',
+      },
+      {
+        tokenId: 'doge',
+        expectedError:
+          'Invalid token selection. Supported tokens are: btc, eth, scout-protocol-token',
+      },
+      {
+        tokenId: 'unknown',
+        expectedError:
+          'Invalid token selection. Supported tokens are: btc, eth, scout-protocol-token',
+      },
+      {
+        tokenId: '123',
+        expectedError:
+          'Invalid token selection. Supported tokens are: btc, eth, scout-protocol-token',
+      },
       { tokenId: '', expectedError: 'Token ID cannot be empty' },
       { tokenId: ' ', expectedError: 'Token ID cannot be empty' }, // Empty string after trim
     ];
@@ -197,7 +213,9 @@ describe('Token Price Endpoint', () => {
       expect(body.data.tokenId).toBe(testCase.tokenId);
 
       // Verify correct function was called
-      expect(mockPriceServiceGetTokenPrice).toHaveBeenCalledWith(testCase.tokenId);
+      expect(mockPriceServiceGetTokenPrice).toHaveBeenCalledWith(
+        testCase.tokenId
+      );
     }
   });
 
@@ -327,7 +345,9 @@ describe('Token Price Endpoint', () => {
     // Verify each mock was called once
     expect(mockPriceServiceGetTokenPrice).toHaveBeenCalledWith('btc');
     expect(mockPriceServiceGetTokenPrice).toHaveBeenCalledWith('eth');
-    expect(mockPriceServiceGetTokenPrice).toHaveBeenCalledWith('scout-protocol-token');
+    expect(mockPriceServiceGetTokenPrice).toHaveBeenCalledWith(
+      'scout-protocol-token'
+    );
   });
 
   it('should handle non-Error exceptions gracefully', async () => {

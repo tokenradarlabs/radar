@@ -1,5 +1,9 @@
 import { FastifyReply } from 'fastify';
-import { sendSuccess, sendError, HTTP_STATUS } from '../../utils/responseHelper';
+import {
+  sendSuccess,
+  sendError,
+  HTTP_STATUS,
+} from '../../utils/responseHelper';
 import { vi } from 'vitest';
 
 describe('Response Helpers', () => {

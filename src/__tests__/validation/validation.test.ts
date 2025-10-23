@@ -3,9 +3,15 @@ import { priceTokenIdSchema } from '../../utils/validation';
 
 describe('priceTokenIdSchema', () => {
   it('should accept valid token IDs', () => {
-    expect(priceTokenIdSchema.parse({ tokenId: 'btc' })).toEqual({ tokenId: 'btc' });
-    expect(priceTokenIdSchema.parse({ tokenId: 'eth' })).toEqual({ tokenId: 'eth' });
-    expect(priceTokenIdSchema.parse({ tokenId: 'scout-protocol-token' })).toEqual({ tokenId: 'scout-protocol-token' });
+    expect(priceTokenIdSchema.parse({ tokenId: 'btc' })).toEqual({
+      tokenId: 'btc',
+    });
+    expect(priceTokenIdSchema.parse({ tokenId: 'eth' })).toEqual({
+      tokenId: 'eth',
+    });
+    expect(
+      priceTokenIdSchema.parse({ tokenId: 'scout-protocol-token' })
+    ).toEqual({ tokenId: 'scout-protocol-token' });
   });
 
   it('should reject invalid token IDs', () => {
@@ -17,8 +23,14 @@ describe('priceTokenIdSchema', () => {
   });
 
   it('should trim and lowercase token IDs before validation', () => {
-    expect(priceTokenIdSchema.parse({ tokenId: '  BTC  ' })).toEqual({ tokenId: 'btc' });
-    expect(priceTokenIdSchema.parse({ tokenId: '  ETH  ' })).toEqual({ tokenId: 'eth' });
-    expect(priceTokenIdSchema.parse({ tokenId: '  Scout-Protocol-Token  ' })).toEqual({ tokenId: 'scout-protocol-token' });
+    expect(priceTokenIdSchema.parse({ tokenId: '  BTC  ' })).toEqual({
+      tokenId: 'btc',
+    });
+    expect(priceTokenIdSchema.parse({ tokenId: '  ETH  ' })).toEqual({
+      tokenId: 'eth',
+    });
+    expect(
+      priceTokenIdSchema.parse({ tokenId: '  Scout-Protocol-Token  ' })
+    ).toEqual({ tokenId: 'scout-protocol-token' });
   });
 });

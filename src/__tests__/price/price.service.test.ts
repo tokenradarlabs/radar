@@ -1,10 +1,4 @@
-import {
-  describe,
-  it,
-  expect,
-  vi,
-  beforeEach,
-} from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { PriceService } from '../../lib/api/price/price.service';
 import * as uniswapPriceUtils from '../../utils/uniswapPrice';
 
@@ -28,49 +22,49 @@ describe('PriceService', () => {
     mockGetDevPrice.mockResolvedValue(0.0001);
   });
 
-  it('should return BTC price for \'btc\'', async () => {
+  it("should return BTC price for 'btc'", async () => {
     const result = await PriceService.getTokenPrice('btc');
     expect(result.price).toBe(45000);
     expect(result.tokenId).toBe('btc');
     expect(mockGetBtcPrice).toHaveBeenCalledTimes(1);
   });
 
-  it('should return BTC price for alias \'bitcoin\'', async () => {
+  it("should return BTC price for alias 'bitcoin'", async () => {
     const result = await PriceService.getTokenPrice('bitcoin');
     expect(result.price).toBe(45000);
     expect(result.tokenId).toBe('bitcoin');
     expect(mockGetBtcPrice).toHaveBeenCalledTimes(1);
   });
 
-  it('should return BTC price for alias \'BITCOIN\' (case-insensitive)', async () => {
+  it("should return BTC price for alias 'BITCOIN' (case-insensitive)", async () => {
     const result = await PriceService.getTokenPrice('BITCOIN');
     expect(result.price).toBe(45000);
     expect(result.tokenId).toBe('BITCOIN');
     expect(mockGetBtcPrice).toHaveBeenCalledTimes(1);
   });
 
-  it('should return ETH price for \'eth\'', async () => {
+  it("should return ETH price for 'eth'", async () => {
     const result = await PriceService.getTokenPrice('eth');
     expect(result.price).toBe(3200);
     expect(result.tokenId).toBe('eth');
     expect(mockGetEthPrice).toHaveBeenCalledTimes(1);
   });
 
-  it('should return ETH price for alias \'ethereum\'', async () => {
+  it("should return ETH price for alias 'ethereum'", async () => {
     const result = await PriceService.getTokenPrice('ethereum');
     expect(result.price).toBe(3200);
     expect(result.tokenId).toBe('ethereum');
     expect(mockGetEthPrice).toHaveBeenCalledTimes(1);
   });
 
-  it('should return ETH price for alias \'ETHEREUM\' (case-insensitive)', async () => {
+  it("should return ETH price for alias 'ETHEREUM' (case-insensitive)", async () => {
     const result = await PriceService.getTokenPrice('ETHEREUM');
     expect(result.price).toBe(3200);
     expect(result.tokenId).toBe('ETHEREUM');
     expect(mockGetEthPrice).toHaveBeenCalledTimes(1);
   });
 
-  it('should return DEV price for \'scout-protocol-token\'', async () => {
+  it("should return DEV price for 'scout-protocol-token'", async () => {
     const result = await PriceService.getTokenPrice('scout-protocol-token');
     expect(result.price).toBe(0.0001);
     expect(result.tokenId).toBe('scout-protocol-token');

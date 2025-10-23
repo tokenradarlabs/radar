@@ -73,7 +73,9 @@ export function validateEnvironmentVariables(): RequiredEnvVars &
     ANKR_API_KEY: process.env.ANKR_API_KEY!,
     COINGECKO_API_KEY: process.env.COINGECKO_API_KEY!,
     ALLOWED_ORIGINS: process.env.ALLOWED_ORIGINS!,
-    FASTIFY_PORT: fastifyPort || (nodeEnv === 'development' || nodeEnv === 'test' ? '4000' : undefined),
+    FASTIFY_PORT:
+      fastifyPort ||
+      (nodeEnv === 'development' || nodeEnv === 'test' ? '4000' : undefined),
     NODE_ENV: nodeEnv,
   };
 }
