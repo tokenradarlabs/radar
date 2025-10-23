@@ -7,6 +7,7 @@ describe('validateEnvironmentVariables', () => {
     vi.stubEnv('JWT_SECRET', 'some_secret');
     vi.stubEnv('ANKR_API_KEY', 'some_key');
     vi.stubEnv('COINGECKO_API_KEY', 'some_other_key');
+    vi.stubEnv('ALLOWED_ORIGINS', 'https://example.com');
     vi.stubEnv('NODE_ENV', 'production'); // Default to production for most tests
     vi.stubEnv('FASTIFY_PORT', '3000'); // Default port
   });
@@ -82,6 +83,33 @@ describe('validateEnvironmentVariables', () => {
     vi.stubEnv('FASTIFY_PORT', undefined as any);
     const env = validateEnvironmentVariables();
     expect(env.FASTIFY_PORT).toBeUndefined();
+  });
+
+  it('should throw an error if ALLOWED_ORIGINS is missing', () => {
+    vi.stubEnv('ALLOWED_ORIGINS', undefined as any);
+    expect(() => validateEnvironmentVariables()).toThrow(
+      'Missing required environment variables: ALLOWED_ORIGINS. Please ensure these are set in your environment or .env file.'
+    );
+  });
+
+  it('should throw an error if ALLOWED_ORIGINS is empty', () => {
+    vi.stubEnv('ALLOWED_ORIGINS', '');
+    expect(() => validateEnvironmentVariables()).toThrow(
+      'Environment variables cannot be empty: ALLOWED_ORIGINS. Please provide valid values for these variables.'
+    );
+  });
+
+  it('should throw an error if ALLOWED_ORIGINS is only whitespace', () => {
+    vi.stubEnv('ALLOWED_ORIGINS', '   ');
+    expect(() => validateEnvironmentVariables()).toThrow(
+      'Environment variables cannot be empty: ALLOWED_ORIGINS. Please provide valid values for these variables.'
+    );
+  });
+
+  it('should return the correct ALLOWED_ORIGINS if present and valid', () => {
+    vi.stubEnv('ALLOWED_ORIGINS', 'https://test.com');
+    const env = validateEnvironmentVariables();
+    expect(env.ALLOWED_ORIGINS).toBe('https://test.com');
   });
 
   it('should throw security error if JWT_SECRET is default insecure value', () => {

@@ -3,6 +3,7 @@ interface RequiredEnvVars {
   JWT_SECRET: string;
   ANKR_API_KEY: string;
   COINGECKO_API_KEY: string;
+  ALLOWED_ORIGINS: string;
 }
 
 interface OptionalEnvVars {
@@ -25,6 +26,7 @@ export function validateEnvironmentVariables(): RequiredEnvVars &
     'JWT_SECRET',
     'ANKR_API_KEY',
     'COINGECKO_API_KEY',
+    'ALLOWED_ORIGINS',
   ];
 
   for (const varName of requiredVars) {
@@ -70,24 +72,7 @@ export function validateEnvironmentVariables(): RequiredEnvVars &
     JWT_SECRET: process.env.JWT_SECRET!,
     ANKR_API_KEY: process.env.ANKR_API_KEY!,
     COINGECKO_API_KEY: process.env.COINGECKO_API_KEY!,
-    FASTIFY_PORT: fastifyPort || (nodeEnv === 'development' || nodeEnv === 'test' ? '4000' : undefined),
-    NODE_ENV: nodeEnv,
-  };
-}
-
-/**
- * Gets validated environment variables
- * This should be called after validateEnvironmentVariables()
- */
-export function getValidatedEnv(): RequiredEnvVars & OptionalEnvVars {
-  const nodeEnv = process.env.NODE_ENV?.trim();
-  const fastifyPort = process.env.FASTIFY_PORT?.trim();
-
-  return {
-    DATABASE_URL: process.env.DATABASE_URL!,
-    JWT_SECRET: process.env.JWT_SECRET!,
-    ANKR_API_KEY: process.env.ANKR_API_KEY!,
-    COINGECKO_API_KEY: process.env.COINGECKO_API_KEY!,
+    ALLOWED_ORIGINS: process.env.ALLOWED_ORIGINS!,
     FASTIFY_PORT: fastifyPort || (nodeEnv === 'development' || nodeEnv === 'test' ? '4000' : undefined),
     NODE_ENV: nodeEnv,
   };
