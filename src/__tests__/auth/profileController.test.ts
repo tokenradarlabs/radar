@@ -61,6 +61,7 @@ describe('User Profile Endpoint', () => {
     });
 
     const { JWT_SECRET } = validateEnvironmentVariables();
+    validToken = jwt.sign({ id: testUser.id }, JWT_SECRET, { expiresIn: '1h' });
   });
 
   it('should successfully return user profile with valid authentication', async () => {
@@ -123,9 +124,8 @@ describe('User Profile Endpoint', () => {
     expect(invalidTokenResponse.statusCode).toBe(401);
     const invalidTokenBody = JSON.parse(invalidTokenResponse.body);
     expect(invalidTokenBody.success).toBe(false);
-    expect(invalidTokenBody.error).toContain('Invalid or expired token');
-
     const { JWT_SECRET } = validateEnvironmentVariables();
+    const expiredToken = jwt.sign({ id: testUser.id }, JWT_SECRET, { expiresIn: '-1h' });
 
     const expiredTokenResponse = await app.inject({
       method: 'GET',

@@ -102,9 +102,10 @@ export async function authenticateApiKey(
 // This function generates a new JWT token
 export function generateToken(
   payload: Omit<JwtPayload, 'iat' | 'exp'>,
-  expiresIn: number = 24 * 60 * 60
+  expiresIn: string | number = '1h'
 ): string {
   const { JWT_SECRET } = validateEnvironmentVariables();
+  return jwt.sign(payload, JWT_SECRET, { expiresIn });
 }
 
 // Declare module augmentation to add user property to FastifyRequest
