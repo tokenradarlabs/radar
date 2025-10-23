@@ -1,6 +1,6 @@
 import { Address, createPublicClient, http, parseAbiItem } from 'viem';
 import { base } from 'viem/chains';
-import { getValidatedEnv } from './envValidation';
+import { validateEnvironmentVariables } from './envValidation';
 
 // Pool and token addresses
 const DEV_WETH_POOL_ADDRESS_BASE: Address =
@@ -56,7 +56,7 @@ async function getTokenPriceFromV3Pool(
   baseToken: TokenConfig,
   quoteToken: TokenConfig
 ): Promise<number> {
-  const { ANKR_API_KEY } = getValidatedEnv();
+  const { ANKR_API_KEY } = validateEnvironmentVariables();
   const BASE_RPC_URL = `https://rpc.ankr.com/base/${ANKR_API_KEY}`;
 
   const publicClient = createPublicClient({

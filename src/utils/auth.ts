@@ -1,6 +1,6 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import jwt from 'jsonwebtoken';
-import { getValidatedEnv } from './envValidation';
+import { validateEnvironmentVariables } from './envValidation';
 import { prisma } from './prisma';
 import { sendUnauthorized, handleControllerError } from './responseHelper';
 
@@ -24,7 +24,7 @@ export async function authenticateJwt(
   }
 
   const token = authHeader.split(' ')[1]; // Extract the token from "Bearer <token>"
-  const { JWT_SECRET } = getValidatedEnv();
+  const { JWT_SECRET } = validateEnvironmentVariables();
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
@@ -102,9 +102,9 @@ export async function authenticateApiKey(
 // This function generates a new JWT token
 export function generateToken(
   payload: Omit<JwtPayload, 'iat' | 'exp'>,
-  expiresIn: number = 24 * 60 * 60
+  expiresIn: string | number = '1h'
 ): string {
-  const { JWT_SECRET } = getValidatedEnv();
+  const { JWT_SECRET } = validateEnvironmentVariables();
   return jwt.sign(payload, JWT_SECRET, { expiresIn });
 }
 

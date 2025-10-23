@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { getValidatedEnv } from './envValidation';
+import { validateEnvironmentVariables } from './envValidation';
 
 // Interface for the Coingecko API response
 interface CoinGeckoPriceChangeDetail {
@@ -18,7 +18,7 @@ interface CoinGeckoPriceChangeResponse {
 export async function fetchTokenPriceChange(
   tokenId: string
 ): Promise<number | null> {
-  const { COINGECKO_API_KEY } = getValidatedEnv();
+  const { COINGECKO_API_KEY } = validateEnvironmentVariables();
   const url = `https://api.coingecko.com/api/v3/simple/price?vs_currencies=usd&ids=${tokenId}&include_24hr_change=true&precision=5`;
 
   const headers: Record<string, string> = {

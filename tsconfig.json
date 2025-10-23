@@ -13,6 +13,7 @@
     "esModuleInterop": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
+    "types": ["vitest/globals"]
   },
   "exclude": [
     "node_modules"

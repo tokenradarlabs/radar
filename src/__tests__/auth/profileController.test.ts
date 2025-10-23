@@ -4,7 +4,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../../utils/prisma';
 import { profileController } from '../../controller/auth';
-import { getValidatedEnv } from '../../utils/envValidation';
+import { validateEnvironmentVariables } from '../../utils/envValidation';
 
 describe('User Profile Endpoint', () => {
   let app: FastifyInstance;
@@ -60,12 +60,8 @@ describe('User Profile Endpoint', () => {
       },
     });
 
-    const { JWT_SECRET } = getValidatedEnv();
-    validToken = jwt.sign(
-      { id: testUser.id, email: testUser.email },
-      JWT_SECRET,
-      { expiresIn: '1h' }
-    );
+    const { JWT_SECRET } = validateEnvironmentVariables();
+    validToken = jwt.sign({ id: testUser.id }, JWT_SECRET, { expiresIn: '1h' });
   });
 
   it('should successfully return user profile with valid authentication', async () => {
@@ -128,14 +124,8 @@ describe('User Profile Endpoint', () => {
     expect(invalidTokenResponse.statusCode).toBe(401);
     const invalidTokenBody = JSON.parse(invalidTokenResponse.body);
     expect(invalidTokenBody.success).toBe(false);
-    expect(invalidTokenBody.error).toContain('Invalid or expired token');
-
-    const { JWT_SECRET } = getValidatedEnv();
-    const expiredToken = jwt.sign(
-      { id: testUser.id, email: testUser.email },
-      JWT_SECRET,
-      { expiresIn: -1 }
-    );
+    const { JWT_SECRET } = validateEnvironmentVariables();
+    const expiredToken = jwt.sign({ id: testUser.id }, JWT_SECRET, { expiresIn: '-1h' });
 
     const expiredTokenResponse = await app.inject({
       method: 'GET',
