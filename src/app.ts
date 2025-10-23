@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import fastify, { FastifyInstance } from 'fastify';
+import fastify, { FastifyError, FastifyInstance } from 'fastify';
 import rateLimit from '@fastify/rate-limit';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
@@ -8,10 +8,7 @@ import {
   checkDatabaseConnection,
   isDatabaseUnavailableError,
 } from './utils/db';
-import {
-  sendServiceUnavailable,
-  handleGlobalError,
-} from './utils/responseHelper';
+import { sendServiceUnavailable, errorResponse } from './utils/responseHelper';
 import logger from './utils/logger';
 
 export async function buildApp(): Promise<FastifyInstance> {
@@ -91,9 +88,26 @@ export async function buildApp(): Promise<FastifyInstance> {
     return reply.send({ status: 'ok' });
   });
 
-  // Centralized error handler for DB outages and rate limiting
-  server.setErrorHandler((error, _request, reply) => {
-    handleGlobalError(error, reply, isDatabaseUnavailableError);
+  // Express-style error handler
+  server.setErrorHandler((error: FastifyError, request, reply) => {
+    logger.error('Global error handler caught an error', {
+      message: error.message,
+      stack: error.stack,
+      statusCode: error.statusCode,
+      requestUrl: request.url,
+    });
+
+    if (isDatabaseUnavailableError(error)) {
+      return sendServiceUnavailable(reply, 'Database unavailable');
+    }
+
+    // Operational, trusted error: send message to client
+    if (error.statusCode && error.statusCode >= 400 && error.statusCode < 500) {
+      return errorResponse(reply, error.statusCode, error.message);
+    }
+
+    // Programming or other unknown error: don't leak error details
+    return errorResponse(reply, 500, 'An unexpected error occurred');
   });
 
   return server;

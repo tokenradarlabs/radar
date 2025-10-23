@@ -42,14 +42,14 @@ export function sendSuccess<T>(
  * @param error Error message
  * @param statusCode HTTP status code
  */
-export function sendError(
+export function errorResponse(
   reply: FastifyReply,
-  error: string,
-  statusCode: number
+  statusCode: number,
+  message: string
 ): void {
   const response: Response<never> = {
     success: false,
-    error,
+    error: message,
   };
 
   reply.status(statusCode).send(response);
@@ -59,14 +59,14 @@ export function sendError(
  * Sends a 400 Bad Request error response
  */
 export function sendBadRequest(reply: FastifyReply, error: string): void {
-  sendError(reply, error, HTTP_STATUS.BAD_REQUEST);
+  errorResponse(reply, HTTP_STATUS.BAD_REQUEST, error);
 }
 
 /**
  * Sends a 404 Not Found error response
  */
 export function sendNotFound(reply: FastifyReply, error: string): void {
-  sendError(reply, error, HTTP_STATUS.NOT_FOUND);
+  errorResponse(reply, HTTP_STATUS.NOT_FOUND, error);
 }
 
 /**
@@ -76,7 +76,7 @@ export function sendInternalError(
   reply: FastifyReply,
   error: string = 'Internal server error'
 ): void {
-  sendError(reply, error, HTTP_STATUS.INTERNAL_SERVER_ERROR);
+  errorResponse(reply, HTTP_STATUS.INTERNAL_SERVER_ERROR, error);
 }
 
 /**
@@ -86,7 +86,7 @@ export function sendUnauthorized(
   reply: FastifyReply,
   error: string = 'Authentication required'
 ): void {
-  sendError(reply, error, HTTP_STATUS.UNAUTHORIZED);
+  errorResponse(reply, HTTP_STATUS.UNAUTHORIZED, error);
 }
 
 /**
@@ -96,7 +96,7 @@ export function sendTooManyRequests(
   reply: FastifyReply,
   error: string = 'Rate limit exceeded'
 ): void {
-  sendError(reply, error, HTTP_STATUS.TOO_MANY_REQUESTS);
+  errorResponse(reply, HTTP_STATUS.TOO_MANY_REQUESTS, error);
 }
 
 /**
@@ -106,137 +106,5 @@ export function sendServiceUnavailable(
   reply: FastifyReply,
   error: string = 'Service temporarily unavailable'
 ): void {
-  sendError(reply, error, HTTP_STATUS.SERVICE_UNAVAILABLE);
-}
-
-/**
- * Standard controller catch-all handler that maps DB outages to 503
- */
-export function handleControllerError(
-  reply: FastifyReply,
-  error: unknown,
-  fallbackMessage: string = 'Internal server error'
-): void {
-  if (isDatabaseUnavailableError(error)) {
-    return sendServiceUnavailable(reply, 'Database unavailable');
-  }
-  // Fallback to 500
-  sendInternalError(reply, fallbackMessage);
-}
-
-/**
- * Detects if an error is related to rate limiting
- */
-export function isRateLimitError(error: unknown, reply: FastifyReply): boolean {
-  const asAny = error as any;
-  const rawStatusCode = (asAny?.statusCode ?? asAny?.status) as
-    | number
-    | string
-    | undefined;
-  const statusCode =
-    typeof rawStatusCode === 'string'
-      ? parseInt(rawStatusCode, 10)
-      : rawStatusCode;
-  const code = (asAny?.code as string | undefined)?.toUpperCase();
-  const headers =
-    (asAny?.headers as Record<string, any> | undefined) ?? undefined;
-  const hasRateLimitHeaders = !!(
-    headers &&
-    (headers['retry-after'] ||
-      headers['Retry-After'] ||
-      headers['x-ratelimit-limit'])
-  );
-
-  // Also detect if rate limit headers were already attached to the reply
-  const rlHeaderOnReply =
-    (reply.getHeader('x-ratelimit-limit') ??
-      reply.getHeader('X-RateLimit-Limit') ??
-      reply.getHeader('retry-after') ??
-      reply.getHeader('Retry-After')) !== undefined;
-  const messageIndicatesRl =
-    typeof asAny?.message === 'string' &&
-    (asAny.message.includes('Too Many Requests') ||
-      asAny.message.toLowerCase().includes('rate limit'));
-
-  return (
-    statusCode === 429 ||
-    (code?.includes('RATE_LIMIT') ?? false) ||
-    hasRateLimitHeaders ||
-    rlHeaderOnReply ||
-    messageIndicatesRl
-  );
-}
-
-/**
- * Handles rate limit errors by sending a 429 response with appropriate headers
- */
-export function handleRateLimitError(
-  reply: FastifyReply,
-  error: unknown
-): void {
-  const asAny = error as any;
-  const headers =
-    (asAny?.headers as Record<string, any> | undefined) ?? undefined;
-
-  const message =
-    typeof asAny?.message === 'string' && asAny.message.length > 0
-      ? asAny.message
-      : 'Rate limit exceeded';
-
-  if (headers) reply.headers(headers);
-  reply.status(429).send({ success: false, error: message });
-}
-
-/**
- * Global error handler that processes various error types
- */
-export function handleGlobalError(
-  error: unknown,
-  reply: FastifyReply,
-  isDatabaseUnavailableError: (error: unknown) => boolean
-): void {
-  // If a response has already been sent (e.g., by rate limiter), do not override it
-  if ((reply as any).sent || reply.raw.headersSent) {
-    return;
-  }
-
-  if (isDatabaseUnavailableError(error)) {
-    sendServiceUnavailable(reply, 'Database unavailable');
-    return;
-  }
-
-  // Handle rate limit errors
-  if (isRateLimitError(error, reply)) {
-    handleRateLimitError(reply, error);
-    return;
-  }
-
-  // If error carries a valid HTTP status code, preserve it
-  const asAny = error as any;
-  const rawStatusCode = (asAny?.statusCode ?? asAny?.status) as
-    | number
-    | string
-    | undefined;
-  const statusCode =
-    typeof rawStatusCode === 'string'
-      ? parseInt(rawStatusCode, 10)
-      : rawStatusCode;
-
-  if (
-    typeof statusCode === 'number' &&
-    statusCode >= 400 &&
-    statusCode <= 599
-  ) {
-    const message =
-      statusCode >= 500
-        ? 'Internal server error'
-        : typeof asAny?.message === 'string' && asAny.message.length > 0
-          ? asAny.message
-          : 'Request failed';
-    reply.status(statusCode).send({ success: false, error: message });
-    return;
-  }
-
-  // Fallback to 500
-  reply.status(500).send({ success: false, error: 'Internal server error' });
+  errorResponse(reply, HTTP_STATUS.SERVICE_UNAVAILABLE, error);
 }
