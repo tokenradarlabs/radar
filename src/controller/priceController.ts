@@ -26,8 +26,8 @@ export default async function priceController(fastify: FastifyInstance) {
 
         return sendSuccess(reply, responseData);
       } catch (error) {
-        reply.send(error);
-
+        logger.error('Error in priceController', { error });
+        throw error;
       }
     }
   );

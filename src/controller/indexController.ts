@@ -2,7 +2,6 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { promises } from 'fs';
 import { resolve } from 'path';
 
-
 const { readFile } = promises;
 
 export default async function indexController(fastify: FastifyInstance) {
@@ -18,8 +17,7 @@ export default async function indexController(fastify: FastifyInstance) {
           .send(indexHtmlContent);
       } catch (error) {
         fastify.log.error(error);
-        reply.send(error);
-
+        throw error;
       }
     }
   );

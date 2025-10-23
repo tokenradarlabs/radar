@@ -125,7 +125,9 @@ describe('User Profile Endpoint', () => {
     const invalidTokenBody = JSON.parse(invalidTokenResponse.body);
     expect(invalidTokenBody.success).toBe(false);
     const { JWT_SECRET } = validateEnvironmentVariables();
-    const expiredToken = jwt.sign({ id: testUser.id }, JWT_SECRET, { expiresIn: '-1h' });
+    const expiredToken = jwt.sign({ id: testUser.id }, JWT_SECRET, {
+      expiresIn: '-1h',
+    });
 
     const expiredTokenResponse = await app.inject({
       method: 'GET',

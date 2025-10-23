@@ -1,6 +1,7 @@
 import { test, expect, beforeAll, afterAll } from 'vitest';
 import { buildApp } from '../app';
 import { FastifyInstance } from 'fastify';
+import { z } from 'zod';
 
 let app: FastifyInstance;
 
@@ -66,8 +67,3 @@ test('should return 503 for a database unavailable error', async () => {
     error: 'Database unavailable',
   });
 });
-
-import { test, expect, beforeAll, afterAll } from 'vitest';
-import { buildApp } from '../app';
-import { FastifyInstance } from 'fastify';
-import { z } from 'zod';

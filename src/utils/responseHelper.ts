@@ -108,4 +108,3 @@ export function sendServiceUnavailable(
 ): void {
   errorResponse(reply, HTTP_STATUS.SERVICE_UNAVAILABLE, error);
 }
-
