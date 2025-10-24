@@ -88,6 +88,24 @@ export async function buildApp(): Promise<FastifyInstance> {
     return reply.send({ status: 'ok' });
   });
 
+  // Test routes for error handler (only in test environment)
+  if (process.env.NODE_ENV === 'test') {
+    server.get('/test-500', async () => {
+      throw new Error('Unexpected error');
+    });
+
+    server.get('/test-400', async () => {
+      const schema = z.object({ name: z.string().min(1) });
+      schema.parse({}); // This will throw a ZodError
+    });
+
+    server.get('/test-db-unavailable', async () => {
+      const error = new Error('Database connection failed');
+      (error as any).code = 'P1001'; // Prisma error code for can't reach database server
+      throw error;
+    });
+  }
+
   // Express-style error handler
   server.setErrorHandler((error: FastifyError, request, reply) => {
     logger.error('Global error handler caught an error', {

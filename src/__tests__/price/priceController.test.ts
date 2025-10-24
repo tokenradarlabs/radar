@@ -362,6 +362,6 @@ describe('Token Price Endpoint', () => {
 
     const body = JSON.parse(response.body);
     expect(body.success).toBe(false);
-    expect(body.error).toBe('Failed to fetch token price');
+    expect(body.error).toBe('An unexpected error occurred');
   });
 });

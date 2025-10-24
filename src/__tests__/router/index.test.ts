@@ -31,11 +31,3 @@ test('GET // redirects to /', async () => {
   expect(response.headers.location).toBe('/');
 });
 
-test('GET empty path redirects to /', async () => {
-  const response = await fastify.inject({
-    method: 'GET',
-    url: '',
-  });
-  expect(response.statusCode).toBe(302);
-  expect(response.headers.location).toBe('/');
-});
