@@ -9,21 +9,10 @@ import {
 } from 'vitest';
 import Fastify, { FastifyInstance } from 'fastify';
 import priceController from '../../controller/priceController';
-import * as uniswapPriceUtils from '../../utils/uniswapPrice';
 import { PriceService } from '../../lib/api/price';
-
-// Mock the uniswap price utility
-vi.mock('../../utils/uniswapPrice', () => ({
-  getDevPrice: vi.fn(),
-  getBtcPrice: vi.fn(),
-  getEthPrice: vi.fn(),
-}));
 
 describe('Token Price Endpoint', () => {
   let app: FastifyInstance;
-  const mockGetDevPrice = vi.mocked(uniswapPriceUtils.getDevPrice);
-  const mockGetBtcPrice = vi.mocked(uniswapPriceUtils.getBtcPrice);
-  const mockGetEthPrice = vi.mocked(uniswapPriceUtils.getEthPrice);
   const mockPriceServiceGetTokenPrice = vi.spyOn(PriceService, 'getTokenPrice');
 
   beforeAll(async () => {
@@ -47,7 +36,7 @@ describe('Token Price Endpoint', () => {
 
   it('should successfully return BTC price data', async () => {
     const mockPrice = 45000.5;
-    mockGetBtcPrice.mockResolvedValue(mockPrice);
+    mockPriceServiceGetTokenPrice.mockResolvedValue({ price: mockPrice, tokenId: 'btc' });
 
     const response = await app.inject({
       method: 'GET',
@@ -62,12 +51,13 @@ describe('Token Price Endpoint', () => {
     expect(body.data.price).toBe(mockPrice);
     expect(body.data.tokenId).toBe('btc');
 
-    expect(mockGetBtcPrice).toHaveBeenCalledTimes(1);
+    expect(mockPriceServiceGetTokenPrice).toHaveBeenCalledTimes(1);
+    expect(mockPriceServiceGetTokenPrice).toHaveBeenCalledWith('btc');
   });
 
   it('should successfully return ETH price data', async () => {
     const mockPrice = 3200.75;
-    mockGetEthPrice.mockResolvedValue(mockPrice);
+    mockPriceServiceGetTokenPrice.mockResolvedValue({ price: mockPrice, tokenId: 'eth' });
 
     const response = await app.inject({
       method: 'GET',
@@ -82,12 +72,16 @@ describe('Token Price Endpoint', () => {
     expect(body.data.price).toBe(mockPrice);
     expect(body.data.tokenId).toBe('eth');
 
-    expect(mockGetEthPrice).toHaveBeenCalledTimes(1);
+    expect(mockPriceServiceGetTokenPrice).toHaveBeenCalledTimes(1);
+    expect(mockPriceServiceGetTokenPrice).toHaveBeenCalledWith('eth');
   });
 
   it('should successfully return DEV token price data', async () => {
     const mockPrice = 0.00015234;
-    mockGetDevPrice.mockResolvedValue(mockPrice);
+    mockPriceServiceGetTokenPrice.mockResolvedValue({
+      price: mockPrice,
+      tokenId: 'scout-protocol-token',
+    });
 
     const response = await app.inject({
       method: 'GET',
@@ -102,7 +96,10 @@ describe('Token Price Endpoint', () => {
     expect(body.data.price).toBe(mockPrice);
     expect(body.data.tokenId).toBe('scout-protocol-token');
 
-    expect(mockGetDevPrice).toHaveBeenCalledTimes(1);
+    expect(mockPriceServiceGetTokenPrice).toHaveBeenCalledTimes(1);
+    expect(mockPriceServiceGetTokenPrice).toHaveBeenCalledWith(
+      'scout-protocol-token'
+    );
   });
 
   it('should handle invalid token IDs with validation error', async () => {
@@ -145,9 +142,7 @@ describe('Token Price Endpoint', () => {
     }
 
     // Ensure no price fetching functions were called
-    expect(mockGetBtcPrice).not.toHaveBeenCalled();
-    expect(mockGetEthPrice).not.toHaveBeenCalled();
-    expect(mockGetDevPrice).not.toHaveBeenCalled();
+    expect(mockPriceServiceGetTokenPrice).not.toHaveBeenCalled();
   });
 
   it('should handle zero price values as error', async () => {
@@ -160,11 +155,11 @@ describe('Token Price Endpoint', () => {
       url: '/api/v1/price/btc',
     });
 
-    expect(response.statusCode).toBe(500);
+    expect(response.statusCode).toBe(400);
 
     const body = JSON.parse(response.body);
     expect(body.success).toBe(false);
-    expect(body.error).toBe('Failed to fetch token price');
+    expect(body.error).toBe('Failed to fetch token price from Uniswap');
   });
 
   it('should handle API errors gracefully', async () => {
@@ -177,11 +172,11 @@ describe('Token Price Endpoint', () => {
       url: '/api/v1/price/btc',
     });
 
-    expect(response.statusCode).toBe(500);
+    expect(response.statusCode).toBe(400);
 
     const body = JSON.parse(response.body);
     expect(body.success).toBe(false);
-    expect(body.error).toBe('Failed to fetch token price');
+    expect(body.error).toBe('Network request failed');
   });
 
   it('should handle different price value ranges correctly', async () => {
@@ -226,7 +221,7 @@ describe('Token Price Endpoint', () => {
     });
 
     expect(response.statusCode).toBe(404);
-    expect(mockGetBtcPrice).not.toHaveBeenCalled();
+    expect(mockPriceServiceGetTokenPrice).not.toHaveBeenCalled();
   });
 
   it('should not accept PUT requests', async () => {
@@ -236,7 +231,7 @@ describe('Token Price Endpoint', () => {
     });
 
     expect(response.statusCode).toBe(404);
-    expect(mockGetEthPrice).not.toHaveBeenCalled();
+    expect(mockPriceServiceGetTokenPrice).not.toHaveBeenCalled();
   });
 
   it('should not accept DELETE requests', async () => {
@@ -246,7 +241,7 @@ describe('Token Price Endpoint', () => {
     });
 
     expect(response.statusCode).toBe(404);
-    expect(mockGetDevPrice).not.toHaveBeenCalled();
+    expect(mockPriceServiceGetTokenPrice).not.toHaveBeenCalled();
   });
 
   it('should return consistent data structure for all supported tokens', async () => {
