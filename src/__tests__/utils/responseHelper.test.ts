@@ -55,7 +55,7 @@ describe('Response Helpers', () => {
 
   it('sendError should send an error response with a custom status', () => {
     const errorMessage = 'Unauthorized access';
-    sendError(mockReply, errorMessage, HTTP_STATUS.UNAUTHORIZED);
+    errorResponse(mockReply, HTTP_STATUS.UNAUTHORIZED, errorMessage);
 
     expect(mockReply.status).toHaveBeenCalledWith(HTTP_STATUS.UNAUTHORIZED);
     expect(mockReply.send).toHaveBeenCalledWith({

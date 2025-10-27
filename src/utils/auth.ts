@@ -105,7 +105,7 @@ export function generateToken(
   expiresIn: string | number = '1h'
 ): string {
   const { JWT_SECRET } = validateEnvironmentVariables();
-  return jwt.sign(payload, JWT_SECRET, { expiresIn });
+  return jwt.sign(payload, JWT_SECRET as jwt.Secret, { expiresIn });
 }
 
 // Declare module augmentation to add user property to FastifyRequest

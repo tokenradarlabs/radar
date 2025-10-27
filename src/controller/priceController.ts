@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import logger from '../utils/logger';
 import { z } from 'zod';
-import { sendSuccess } from '../utils/responseHelper';
+import { sendSuccess, sendBadRequest, sendInternalError } from '../utils/responseHelper';
 import { formatValidationError } from '../utils/validation';
 import {
   PriceService,
@@ -27,7 +27,13 @@ export default async function priceController(fastify: FastifyInstance) {
         return sendSuccess(reply, responseData);
       } catch (error) {
         logger.error('Error in priceController', { error });
-        throw error;
+        if (error instanceof z.ZodError) {
+          return sendBadRequest(reply, formatValidationError(error));
+        } else if (error instanceof Error) {
+          return sendBadRequest(reply, error.message);
+        } else {
+          return sendInternalError(reply, 'An unexpected error occurred');
+        }
       }
     }
   );

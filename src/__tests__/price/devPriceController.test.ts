@@ -9,16 +9,14 @@ import {
 } from 'vitest';
 import Fastify, { FastifyInstance } from 'fastify';
 import devPriceController from '../../controller/devPriceController';
-import * as uniswapPriceUtils from '../../utils/uniswapPrice';
-
-// Mock the uniswap price utility
-vi.mock('../../utils/uniswapPrice', () => ({
-  getDevPrice: vi.fn(),
-}));
+import { DevPriceService } from '../../lib/api/devPrice/devPrice.service';
 
 describe('DEV Price Endpoint', () => {
   let app: FastifyInstance;
-  const mockGetDevPrice = vi.mocked(uniswapPriceUtils.getDevPrice);
+  const mockDevPriceServiceGetDevTokenPrice = vi.spyOn(
+    DevPriceService,
+    'getDevTokenPrice'
+  );
 
   beforeAll(async () => {
     app = Fastify();
@@ -47,7 +45,11 @@ describe('DEV Price Endpoint', () => {
   it('should successfully return DEV token price data', async () => {
     // Mock successful price fetch
     const mockPrice = 0.00015234;
-    mockGetDevPrice.mockResolvedValue(mockPrice);
+    mockDevPriceServiceGetDevTokenPrice.mockResolvedValue({
+      price: mockPrice,
+      token: 'scout-protocol-token',
+      symbol: 'DEV',
+    });
 
     const response = await app.inject({
       method: 'GET',
@@ -64,7 +66,7 @@ describe('DEV Price Endpoint', () => {
     expect(body.data.symbol).toBe('DEV');
 
     // Verify the mock was called
-    expect(mockGetDevPrice).toHaveBeenCalledTimes(1);
+    expect(mockDevPriceServiceGetDevTokenPrice).toHaveBeenCalledTimes(1);
   });
 
   it('should handle different price values correctly', async () => {
@@ -92,7 +94,11 @@ describe('DEV Price Endpoint', () => {
     ];
 
     for (const testCase of testCases) {
-      mockGetDevPrice.mockResolvedValue(testCase.mockPrice);
+      mockDevPriceServiceGetDevTokenPrice.mockResolvedValue({
+        price: testCase.mockPrice,
+        token: 'scout-protocol-token',
+        symbol: 'DEV',
+      });
 
       const response = await app.inject({
         method: 'GET',
@@ -111,7 +117,9 @@ describe('DEV Price Endpoint', () => {
 
   it('should handle zero price value as error', async () => {
     // Mock zero price (should trigger error)
-    mockGetDevPrice.mockResolvedValue(0);
+    mockDevPriceServiceGetDevTokenPrice.mockRejectedValue(
+      new Error('DEV token price data not found')
+    );
 
     const response = await app.inject({
       method: 'GET',
@@ -124,12 +132,14 @@ describe('DEV Price Endpoint', () => {
     expect(body.success).toBe(false);
     expect(body.error).toBe('DEV token price data not found');
 
-    expect(mockGetDevPrice).toHaveBeenCalledTimes(1);
+    expect(mockDevPriceServiceGetDevTokenPrice).toHaveBeenCalledTimes(1);
   });
 
   it('should handle null price value as error', async () => {
     // Mock null price (should trigger error)
-    mockGetDevPrice.mockResolvedValue(null as any);
+    mockDevPriceServiceGetDevTokenPrice.mockRejectedValue(
+      new Error('DEV token price data not found')
+    );
 
     const response = await app.inject({
       method: 'GET',
@@ -142,12 +152,14 @@ describe('DEV Price Endpoint', () => {
     expect(body.success).toBe(false);
     expect(body.error).toBe('DEV token price data not found');
 
-    expect(mockGetDevPrice).toHaveBeenCalledTimes(1);
+    expect(mockDevPriceServiceGetDevTokenPrice).toHaveBeenCalledTimes(1);
   });
 
   it('should handle undefined price value as error', async () => {
     // Mock undefined price (should trigger error)
-    mockGetDevPrice.mockResolvedValue(undefined as any);
+    mockDevPriceServiceGetDevTokenPrice.mockRejectedValue(
+      new Error('DEV token price data not found')
+    );
 
     const response = await app.inject({
       method: 'GET',
@@ -160,7 +172,7 @@ describe('DEV Price Endpoint', () => {
     expect(body.success).toBe(false);
     expect(body.error).toBe('DEV token price data not found');
 
-    expect(mockGetDevPrice).toHaveBeenCalledTimes(1);
+    expect(mockDevPriceServiceGetDevTokenPrice).toHaveBeenCalledTimes(1);
   });
 
   it('should handle network/API errors gracefully', async () => {
@@ -188,7 +200,7 @@ describe('DEV Price Endpoint', () => {
     ];
 
     for (const testCase of errorTestCases) {
-      mockGetDevPrice.mockRejectedValue(testCase.error);
+      mockDevPriceServiceGetDevTokenPrice.mockRejectedValue(testCase.error);
 
       const response = await app.inject({
         method: 'GET',
@@ -205,24 +217,30 @@ describe('DEV Price Endpoint', () => {
 
   it('should handle non-Error exceptions gracefully', async () => {
     // Mock non-Error exception (e.g., string thrown)
-    mockGetDevPrice.mockRejectedValue('String error message');
+    mockDevPriceServiceGetDevTokenPrice.mockRejectedValue(
+      'String error message'
+    );
 
     const response = await app.inject({
       method: 'GET',
       url: '/api/v1/price/dev',
     });
 
-    expect(response.statusCode).toBe(400);
+    expect(response.statusCode).toBe(500);
 
     const body = JSON.parse(response.body);
     expect(body.success).toBe(false);
     expect(body.error).toBe('Failed to fetch DEV token price');
 
-    expect(mockGetDevPrice).toHaveBeenCalledTimes(1);
+    expect(mockDevPriceServiceGetDevTokenPrice).toHaveBeenCalledTimes(1);
   });
 
   it('should not accept POST requests', async () => {
-    mockGetDevPrice.mockResolvedValue(0.001);
+    mockDevPriceServiceGetDevTokenPrice.mockResolvedValue({
+      price: 0.001,
+      token: 'scout-protocol-token',
+      symbol: 'DEV',
+    });
 
     const response = await app.inject({
       method: 'POST',
@@ -230,11 +248,15 @@ describe('DEV Price Endpoint', () => {
     });
 
     expect(response.statusCode).toBe(404);
-    expect(mockGetDevPrice).not.toHaveBeenCalled();
+    expect(mockDevPriceServiceGetDevTokenPrice).not.toHaveBeenCalled();
   });
 
   it('should not accept PUT requests', async () => {
-    mockGetDevPrice.mockResolvedValue(0.001);
+    mockDevPriceServiceGetDevTokenPrice.mockResolvedValue({
+      price: 0.001,
+      token: 'scout-protocol-token',
+      symbol: 'DEV',
+    });
 
     const response = await app.inject({
       method: 'PUT',
@@ -242,11 +264,15 @@ describe('DEV Price Endpoint', () => {
     });
 
     expect(response.statusCode).toBe(404);
-    expect(mockGetDevPrice).not.toHaveBeenCalled();
+    expect(mockDevPriceServiceGetDevTokenPrice).not.toHaveBeenCalled();
   });
 
   it('should not accept DELETE requests', async () => {
-    mockGetDevPrice.mockResolvedValue(0.001);
+    mockDevPriceServiceGetDevTokenPrice.mockResolvedValue({
+      price: 0.001,
+      token: 'scout-protocol-token',
+      symbol: 'DEV',
+    });
 
     const response = await app.inject({
       method: 'DELETE',
@@ -254,14 +280,18 @@ describe('DEV Price Endpoint', () => {
     });
 
     expect(response.statusCode).toBe(404);
-    expect(mockGetDevPrice).not.toHaveBeenCalled();
+    expect(mockDevPriceServiceGetDevTokenPrice).not.toHaveBeenCalled();
   });
 
   it('should return consistent data structure across multiple requests', async () => {
     const prices = [0.0001, 0.0005, 0.001, 0.01, 0.1];
 
     for (const price of prices) {
-      mockGetDevPrice.mockResolvedValue(price);
+      mockDevPriceServiceGetDevTokenPrice.mockResolvedValue({
+        price,
+        token: 'scout-protocol-token',
+        symbol: 'DEV',
+      });
 
       const response = await app.inject({
         method: 'GET',
@@ -296,7 +326,11 @@ describe('DEV Price Endpoint', () => {
   it('should handle very small price values correctly', async () => {
     // Test very small decimal values that might cause precision issues
     const verySmallPrice = 0.000000001; // 1e-9
-    mockGetDevPrice.mockResolvedValue(verySmallPrice);
+    mockDevPriceServiceGetDevTokenPrice.mockResolvedValue({
+      price: verySmallPrice,
+      token: 'scout-protocol-token',
+      symbol: 'DEV',
+    });
 
     const response = await app.inject({
       method: 'GET',
@@ -316,7 +350,11 @@ describe('DEV Price Endpoint', () => {
 
   it('should handle concurrent requests correctly', async () => {
     const mockPrice = 0.00023456;
-    mockGetDevPrice.mockResolvedValue(mockPrice);
+    mockDevPriceServiceGetDevTokenPrice.mockResolvedValue({
+      price: mockPrice,
+      token: 'scout-protocol-token',
+      symbol: 'DEV',
+    });
 
     // Make multiple concurrent requests
     const requests = Array(5)
@@ -342,6 +380,6 @@ describe('DEV Price Endpoint', () => {
     });
 
     // The mock should have been called for each request
-    expect(mockGetDevPrice).toHaveBeenCalledTimes(5);
+    expect(mockDevPriceServiceGetDevTokenPrice).toHaveBeenCalledTimes(5);
   });
 });

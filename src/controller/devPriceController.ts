@@ -1,6 +1,6 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import logger from '../utils/logger';
-import { sendSuccess, sendBadRequest } from '../utils/responseHelper';
+import { sendSuccess, sendBadRequest, sendInternalError } from '../utils/responseHelper';
 import { DevPriceService } from '../lib/api/devPrice/devPrice.service';
 
 export default async function devPriceController(fastify: FastifyInstance) {
@@ -14,12 +14,11 @@ export default async function devPriceController(fastify: FastifyInstance) {
         return sendSuccess(reply, responseData);
       } catch (error) {
         logger.error('DEV price controller error:', { error });
-        return sendBadRequest(
-          reply,
-          error instanceof Error
-            ? error.message
-            : 'Failed to fetch DEV token price'
-        );
+        if (error instanceof Error) {
+          return sendBadRequest(reply, error.message);
+        } else {
+          return sendInternalError(reply, 'Failed to fetch DEV token price');
+        }
       }
     }
   );
