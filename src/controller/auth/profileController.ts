@@ -2,7 +2,7 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { authenticateJwt } from '../../utils/auth';
 import { Response } from '../../types/responses';
 import { handleControllerError } from '../../utils/responseHelper';
-import { UserData } from '../../types/user';
+import { IAuthUser } from '../../types/user';
 import { ProfileService, ProfileResponse } from '../../lib/auth';
 
 export default async function profileController(fastify: FastifyInstance) {
@@ -16,7 +16,7 @@ export default async function profileController(fastify: FastifyInstance) {
         const userId = request.user?.id;
 
         if (!userId) {
-          const response: Response<UserData> = {
+          const response: Response<IAuthUser> = {
             success: false,
             error: 'Authentication required',
           };
@@ -34,7 +34,7 @@ export default async function profileController(fastify: FastifyInstance) {
         return reply.code(200).send(response);
       } catch (error) {
         if (error instanceof Error && error.message === 'User not found') {
-          const response: Response<UserData> = {
+          const response: Response<IAuthUser> = {
             success: false,
             error: 'User not found',
           };

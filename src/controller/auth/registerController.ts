@@ -2,7 +2,7 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { Response } from '../../types/responses';
 import { handleControllerError } from '../../utils/responseHelper';
-import { UserData } from '../../types/user';
+import { IAuthUser } from '../../types/user';
 import {
   registerRequestSchema,
   RegisterRequest,
@@ -20,14 +20,14 @@ export default async function registerController(fastify: FastifyInstance) {
         const validatedData = registerRequestSchema.parse(request.body);
         const user = await RegisterService.registerUser(validatedData);
 
-        const response: Response<UserData> = {
+        const response: Response<IAuthUser> = {
           success: true,
           data: user,
         };
         return reply.code(201).send(response);
       } catch (error) {
         if (error instanceof z.ZodError) {
-          const response: Response<UserData> = {
+          const response: Response<IAuthUser> = {
             success: false,
             error: error.errors[0].message,
           };
@@ -38,7 +38,7 @@ export default async function registerController(fastify: FastifyInstance) {
           error instanceof Error &&
           error.message === 'Email already exists'
         ) {
-          const response: Response<UserData> = {
+          const response: Response<IAuthUser> = {
             success: false,
             error: error.message,
           };
