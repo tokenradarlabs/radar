@@ -2,7 +2,7 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { Response } from '../../types/responses';
 import { handleControllerError } from '../../utils/responseHelper';
-import { UserData } from '../../types/user';
+import { IAuthUser } from '../../types/user';
 import { loginRequestSchema, LoginRequest, LoginService } from '../../lib/auth';
 
 export default async function loginController(fastify: FastifyInstance) {
@@ -16,14 +16,14 @@ export default async function loginController(fastify: FastifyInstance) {
         const validatedData = loginRequestSchema.parse(request.body);
         const result = await LoginService.loginUser(validatedData);
 
-        const response: Response<UserData & { token: string }> = {
+        const response: Response<IAuthUser & { token: string }> = {
           success: true,
           data: result,
         };
         return reply.code(200).send(response);
       } catch (error) {
         if (error instanceof z.ZodError) {
-          const response: Response<UserData> = {
+          const response: Response<IAuthUser> = {
             success: false,
             error: error.errors[0].message,
           };
@@ -35,7 +35,7 @@ export default async function loginController(fastify: FastifyInstance) {
             error.message.includes('User Does Not Exist') ||
             error.message === 'Invalid credentials'
           ) {
-            const response: Response<UserData> = {
+            const response: Response<IAuthUser> = {
               success: false,
               error: error.message,
             };

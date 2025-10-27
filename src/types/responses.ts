@@ -1,3 +1,5 @@
+import { IUserProfile } from './user';
+
 /**
  * Type for API results with success/error status
  */
@@ -24,3 +26,5 @@ export type Response<T> =
       success: true;
       data: T;
     };
+
+export interface IUserResponse extends Response<IUserProfile> {}

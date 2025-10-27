@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { createMockUser } from '../../lib/api/user/user.service';
-import { UserData } from '../../lib/api/user/user.schema';
+import { IUserProfile } from '../../types/user';
 
 describe('createMockUser', () => {
-  it('should return a UserData object with the correct shape and types', () => {
-    const mockUser: UserData = createMockUser();
+  it('should return a IUserProfile object with the correct shape and types', () => {
+    const mockUser: IUserProfile = createMockUser();
 
     expect(mockUser).toBeDefined();
     expect(typeof mockUser.balance).toBe('string');
