@@ -4,6 +4,7 @@ import rateLimit from '@fastify/rate-limit';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import router from './router';
+import { z } from 'zod';
 import {
   checkDatabaseConnection,
   isDatabaseUnavailableError,
