@@ -243,12 +243,11 @@ describe('API Key Update Endpoint', () => {
       },
     });
 
-    // Invalid UUID format in URL parameter typically results in 404 when database lookup fails
-    expect(response.statusCode).toBe(404);
+    expect(response.statusCode).toBe(400);
 
     const body = JSON.parse(response.body);
     expect(body.success).toBe(false);
-    expect(body.error).toBe('API key not found or access denied');
+    expect(body.error).toBe('Invalid API key ID format in params');
   });
 
   it('should handle API key not found or access denied errors', async () => {

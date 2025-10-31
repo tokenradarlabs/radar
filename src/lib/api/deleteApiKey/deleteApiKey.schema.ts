@@ -19,4 +19,20 @@ export const deleteApiKeyRequestSchema = z.object({
     .uuid('Invalid API key ID format'),
 });
 
+export const deleteApiKeyParamsSchema = z.object({
+  id: z
+    .string({
+      required_error: 'API key ID is required in params',
+      invalid_type_error: 'API key ID in params must be a string',
+    })
+    .uuid('Invalid API key ID format in params'),
+});
+
+export type DeleteApiKeyParams = z.infer<typeof deleteApiKeyParamsSchema>;
+
+export const deleteApiKeyCombinedSchema = z.intersection(
+  deleteApiKeyRequestSchema,
+  z.object({ apiKeyId: deleteApiKeyParamsSchema.shape.id })
+);
+
 export type DeleteApiKeyRequest = z.infer<typeof deleteApiKeyRequestSchema>;
