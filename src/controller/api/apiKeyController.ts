@@ -3,12 +3,14 @@ import { z } from 'zod';
 import { Response } from '../../types/responses';
 import { handleControllerError } from '../../utils/responseHelper';
 import {
-  deleteApiKeyRequestSchema,
+  deleteApiKeyCombinedSchema,
   type DeleteApiKeyRequest,
+  type DeleteApiKeyParams,
 } from '../../lib/api/deleteApiKey/deleteApiKey.schema';
 import {
-  updateApiKeyRequestSchema,
+  updateApiKeyCombinedSchema,
   type UpdateApiKeyRequest,
+  type UpdateApiKeyParams,
 } from '../../lib/api/updateApiKey/updateApiKey.schema';
 import {
   apiKeyGenerateSchema,
@@ -67,21 +69,19 @@ export default async function apiKeyController(fastify: FastifyInstance) {
   );
 
   // DELETE endpoint for API key deletion
-  fastify.delete<{ Body: DeleteApiKeyRequest; Params: { id: string } }>(
+  fastify.delete<{ Body: DeleteApiKeyRequest; Params: DeleteApiKeyParams }>(
     '/delete/:id',
     async function (
       request: FastifyRequest<{
         Body: DeleteApiKeyRequest;
-        Params: { id: string };
+        Params: DeleteApiKeyParams;
       }>,
       reply: FastifyReply
     ) {
       try {
-        const { id: apiKeyId } = request.params as { id: string };
-
-        const validatedData = deleteApiKeyRequestSchema.parse({
-          ...(request.body as any),
-          apiKeyId,
+        const validatedData = deleteApiKeyCombinedSchema.parse({
+          ...request.body,
+          apiKeyId: request.params.id,
         });
 
         const result = await DeleteApiKeyService.deleteApiKey(validatedData);
@@ -125,23 +125,24 @@ export default async function apiKeyController(fastify: FastifyInstance) {
   );
 
   // PUT endpoint for API key update/rename
-  fastify.put<{ Body: UpdateApiKeyRequest; Params: { id: string } }>(
+  fastify.put<{ Body: UpdateApiKeyRequest; Params: UpdateApiKeyParams }>(
     '/update/:id',
     async function (
       request: FastifyRequest<{
         Body: UpdateApiKeyRequest;
-        Params: { id: string };
+        Params: UpdateApiKeyParams;
       }>,
       reply: FastifyReply
     ) {
       try {
-        const { id: apiKeyId } = request.params as { id: string };
-
-        const validatedData = updateApiKeyRequestSchema.parse(request.body);
+        const validatedData = updateApiKeyCombinedSchema.parse({
+          ...request.body,
+          apiKeyId: request.params.id,
+        });
 
         const result = await UpdateApiKeyService.updateApiKey(
           validatedData,
-          apiKeyId
+          validatedData.apiKeyId
         );
 
         const response: Response<UpdateApiKeyResponse> = {
