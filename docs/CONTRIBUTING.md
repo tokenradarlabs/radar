@@ -27,7 +27,21 @@ We welcome contributions to improve this project. Please read the following guid
    # or
    yarn dev
    ```
-4. Make your changes in a new branch:
+
+4. **Running Tests Locally**
+   To run tests locally, create a `.env.test` file in the root of the repository with the following content:
+   ```
+   DATABASE_URL=postgresql://testuser:testpassword@localhost:5433/test_radar_db
+   JWT_SECRET=test-jwt-secret
+   ```
+   Then, you can run the tests using:
+   ```bash
+   npm test
+   # or
+   yarn test
+   ```
+
+5. Make your changes in a new branch:
    ```bash
    git checkout -b feature/your-feature-name
    ```
