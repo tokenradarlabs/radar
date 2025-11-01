@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { Response } from '../../types/responses';
-import { handleControllerError } from '../../utils/responseHelper';
+import { sendInternalError } from '../../utils/responseHelper';
 import { IAuthUser } from '../../types/user';
 import {
   registerRequestSchema,
@@ -45,7 +45,7 @@ export default async function registerController(fastify: FastifyInstance) {
           return reply.code(409).send(response);
         }
 
-        handleControllerError(reply, error, 'Internal server error');
+        sendInternalError(reply, 'Internal server error');
         return;
       }
     }

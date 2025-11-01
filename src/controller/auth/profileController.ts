@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { authenticateJwt } from '../../utils/auth';
 import { Response } from '../../types/responses';
-import { handleControllerError } from '../../utils/responseHelper';
+import { sendInternalError } from '../../utils/responseHelper';
 import { IAuthUser } from '../../types/user';
 import { ProfileService, ProfileResponse } from '../../lib/auth';
 
@@ -41,7 +41,7 @@ export default async function profileController(fastify: FastifyInstance) {
           return reply.code(404).send(response);
         }
 
-        handleControllerError(reply, error, 'Internal server error');
+        sendInternalError(reply, 'Internal server error');
         return;
       }
     }

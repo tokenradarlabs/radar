@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { Response } from '../../types/responses';
-import { handleControllerError } from '../../utils/responseHelper';
+import { sendInternalError } from '../../utils/responseHelper';
 import {
   deleteApiKeyCombinedSchema,
   type DeleteApiKeyRequest,
