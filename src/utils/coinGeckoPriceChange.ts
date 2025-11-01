@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import { validateEnvironmentVariables } from './envValidation';
+import { fetchWithRetry } from './fetchWithRetry';
 
 // Interface for the Coingecko API response
 interface CoinGeckoPriceChangeDetail {
@@ -30,8 +31,6 @@ export async function fetchTokenPriceChange(
     method: 'GET',
     headers,
   };
-
-import { fetchWithRetry } from './fetchWithRetry';
 
   try {
     console.log(`[CoinGecko] Fetching price 24h change for token: ${tokenId}`);

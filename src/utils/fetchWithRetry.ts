@@ -20,15 +20,15 @@ export async function fetchWithRetry(
   const { retries = 3, timeout = 5000, ...fetchOptions } = options || {};
 
   for (let i = 0; i <= retries; i++) {
+    let timeoutId: NodeJS.Timeout | undefined;
     try {
       const controller = new AbortController();
-      const id = setTimeout(() => controller.abort(), timeout);
+      timeoutId = setTimeout(() => controller.abort(), timeout);
 
       const response = await fetch(url, {
         ...fetchOptions,
         signal: controller.signal,
       });
-      clearTimeout(id);
 
       if (!response.ok) {
         // If response is not ok, but not a network error, we might still want to retry
@@ -55,6 +55,8 @@ export async function fetchWithRetry(
         );
         throw error;
       }
+    } finally {
+      if (timeoutId !== undefined) clearTimeout(timeoutId);
     }
   }
   // This part should ideally not be reached, but for type safety

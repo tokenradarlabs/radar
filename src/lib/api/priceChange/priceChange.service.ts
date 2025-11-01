@@ -21,4 +21,5 @@ export class PriceChangeService {
       console.error(`Error fetching price change for ${tokenId}:`, error);
       throw new Error('Failed to fetch token price change');
     }
+  }
 }
