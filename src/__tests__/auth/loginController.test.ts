@@ -68,7 +68,7 @@ describe('User Login Endpoint (Unit)', () => {
     expect(body.data).toEqual(mockLoggedInUser);
     expect(loginRequestSchema.parse).toHaveBeenCalledWith(testUser);
     expect(LoginService.loginUser).toHaveBeenCalledWith(testUser);
-    expect(handleControllerError).not.toHaveBeenCalled();
+    expect(sendInternalError).not.toHaveBeenCalled();
   });
 
   it('should return 400 for validation errors', async () => {
@@ -125,7 +125,7 @@ describe('User Login Endpoint (Unit)', () => {
     expect(body.error).toBe('User Does Not Exist');
     expect(loginRequestSchema.parse).toHaveBeenCalledWith(nonExistentUser);
     expect(LoginService.loginUser).toHaveBeenCalledWith(nonExistentUser);
-    expect(handleControllerError).not.toHaveBeenCalled();
+    expect(sendInternalError).not.toHaveBeenCalled();
   });
 
   it('should return 401 for invalid credentials', async () => {
@@ -152,7 +152,7 @@ describe('User Login Endpoint (Unit)', () => {
     expect(handleControllerError).not.toHaveBeenCalled();
   });
 
-  it('should call handleControllerError for generic internal server errors', async () => {
+  it('should call sendInternalError for generic internal server errors', async () => {
     const genericErrorUser = {
       email: 'generic@example.com',
       password: 'TestPassword123!',
@@ -172,6 +172,6 @@ describe('User Login Endpoint (Unit)', () => {
     expect(response.statusCode).toBe(500);
     expect(loginRequestSchema.parse).toHaveBeenCalledWith(genericErrorUser);
     expect(LoginService.loginUser).toHaveBeenCalledWith(genericErrorUser);
-    expect(handleControllerError).toHaveBeenCalledWith(expect.anything(), genericError, 'Internal server error');
+    expect(sendInternalError).toHaveBeenCalledWith(expect.anything(), 'Internal server error');
   });
 });

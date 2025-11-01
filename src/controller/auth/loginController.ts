@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { Response } from '../../types/responses';
-import { handleControllerError } from '../../utils/responseHelper';
+import { sendInternalError } from '../../utils/responseHelper';
 import { IAuthUser } from '../../types/user';
 import { loginRequestSchema, LoginRequest, LoginService } from '../../lib/auth';
 
@@ -43,7 +43,7 @@ export default async function loginController(fastify: FastifyInstance) {
           }
         }
 
-        handleControllerError(reply, error, 'Internal server error');
+        sendInternalError(reply, 'Internal server error');
         return;
       }
     }

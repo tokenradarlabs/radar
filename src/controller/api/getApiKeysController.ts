@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { Response } from '../../types/responses';
-import { handleControllerError } from '../../utils/responseHelper';
+import { sendInternalError } from '../../utils/responseHelper';
 import {
   getApiKeysRequestSchema,
   type GetApiKeysRequest,
@@ -56,7 +56,7 @@ export default async function getApiKeysController(fastify: FastifyInstance) {
           return reply.code(401).send(response);
         }
 
-        handleControllerError(reply, error, 'Internal server error');
+        sendInternalError(reply, 'Internal server error');
         return;
       }
     }
@@ -110,7 +110,7 @@ export default async function getApiKeysController(fastify: FastifyInstance) {
           }
         }
 
-        handleControllerError(reply, error, 'Internal server error');
+        sendInternalError(reply, 'Internal server error');
         return;
       }
     }
