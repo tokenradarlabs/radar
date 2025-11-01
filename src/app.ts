@@ -62,7 +62,13 @@ export async function buildApp(): Promise<FastifyInstance> {
   // Request-scoped context middleware
   server.addHook('onRequest', (request, reply, done) => {
     const store = new Map();
-    const requestId = request.headers['x-request-id'] || uuidv4();
+    const requestIdHeader = request.headers['x-request-id'];
+    const requestId =
+      typeof requestIdHeader === 'string'
+        ? requestIdHeader
+        : Array.isArray(requestIdHeader) && requestIdHeader.length > 0
+          ? requestIdHeader[0]
+          : uuidv4();
     store.set('requestId', requestId);
     request.id = requestId; // Attach to request object for potential later use
 
