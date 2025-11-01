@@ -17,14 +17,16 @@ export type Result<T> =
 /**
  * Type for API responses with data/error
  */
-export type Response<T> =
-  | {
-      success: false;
-      error: string;
-    }
-  | {
-      success: true;
-      data: T;
-    };
+export interface SuccessResponse<T> {
+  success: true;
+  data: T;
+}
+
+export interface ErrorResponse {
+  success: false;
+  error: string;
+}
+
+export type Response<T> = SuccessResponse<T> | ErrorResponse;
 
 export interface IUserResponse extends Response<IUserProfile> {}

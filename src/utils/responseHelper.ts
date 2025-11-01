@@ -1,6 +1,6 @@
 import { FastifyReply } from 'fastify';
 import { isDatabaseUnavailableError } from './db';
-import { Response } from '../types/responses';
+import { Response, SuccessResponse, ErrorResponse } from '../types/responses';
 
 /**
  * Standard HTTP status codes for API responses
@@ -27,13 +27,13 @@ export function sendSuccess<T>(
   reply: FastifyReply,
   data: T,
   statusCode: number = HTTP_STATUS.OK
-): void {
-  const response: Response<T> = {
+): FastifyReply {
+  const response: SuccessResponse<T> = {
     success: true,
     data,
   };
 
-  reply.status(statusCode).send(response);
+  return reply.status(statusCode).send(response);
 }
 
 /**
@@ -46,27 +46,27 @@ export function errorResponse(
   reply: FastifyReply,
   statusCode: number,
   message: string
-): void {
-  const response: Response<never> = {
+): FastifyReply {
+  const response: ErrorResponse = {
     success: false,
     error: message,
   };
 
-  reply.status(statusCode).send(response);
+  return reply.status(statusCode).send(response);
 }
 
 /**
  * Sends a 400 Bad Request error response
  */
-export function sendBadRequest(reply: FastifyReply, error: string): void {
-  errorResponse(reply, HTTP_STATUS.BAD_REQUEST, error);
+export function sendBadRequest(reply: FastifyReply, error: string): FastifyReply {
+  return errorResponse(reply, HTTP_STATUS.BAD_REQUEST, error);
 }
 
 /**
  * Sends a 404 Not Found error response
  */
-export function sendNotFound(reply: FastifyReply, error: string): void {
-  errorResponse(reply, HTTP_STATUS.NOT_FOUND, error);
+export function sendNotFound(reply: FastifyReply, error: string): FastifyReply {
+  return errorResponse(reply, HTTP_STATUS.NOT_FOUND, error);
 }
 
 /**
@@ -75,8 +75,8 @@ export function sendNotFound(reply: FastifyReply, error: string): void {
 export function sendInternalError(
   reply: FastifyReply,
   error: string = 'Internal server error'
-): void {
-  errorResponse(reply, HTTP_STATUS.INTERNAL_SERVER_ERROR, error);
+): FastifyReply {
+  return errorResponse(reply, HTTP_STATUS.INTERNAL_SERVER_ERROR, error);
 }
 
 /**
@@ -85,8 +85,8 @@ export function sendInternalError(
 export function sendUnauthorized(
   reply: FastifyReply,
   error: string = 'Authentication required'
-): void {
-  errorResponse(reply, HTTP_STATUS.UNAUTHORIZED, error);
+): FastifyReply {
+  return errorResponse(reply, HTTP_STATUS.UNAUTHORIZED, error);
 }
 
 /**
@@ -95,8 +95,8 @@ export function sendUnauthorized(
 export function sendTooManyRequests(
   reply: FastifyReply,
   error: string = 'Rate limit exceeded'
-): void {
-  errorResponse(reply, HTTP_STATUS.TOO_MANY_REQUESTS, error);
+): FastifyReply {
+  return errorResponse(reply, HTTP_STATUS.TOO_MANY_REQUESTS, error);
 }
 
 /**
@@ -105,6 +105,6 @@ export function sendTooManyRequests(
 export function sendServiceUnavailable(
   reply: FastifyReply,
   error: string = 'Service temporarily unavailable'
-): void {
-  errorResponse(reply, HTTP_STATUS.SERVICE_UNAVAILABLE, error);
+): FastifyReply {
+  return errorResponse(reply, HTTP_STATUS.SERVICE_UNAVAILABLE, error);
 }
