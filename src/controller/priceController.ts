@@ -17,6 +17,7 @@ export default async function priceController(fastify: FastifyInstance) {
       request: FastifyRequest<{ Params: TokenPriceParams }>,
       reply: FastifyReply
     ) {
+      logger.info('Fetching token price', { tokenId: request.params.tokenId });
       try {
         // Validate token ID parameter
         const validatedParams = priceTokenIdSchema.parse(request.params);
@@ -26,7 +27,11 @@ export default async function priceController(fastify: FastifyInstance) {
 
         return sendSuccess(reply, responseData);
       } catch (error) {
-        logger.error('Error in priceController', { error });
+        logger.error('Error in priceController', {
+          message: error.message,
+          stack: error.stack,
+          tokenId: request.params.tokenId,
+        });
         if (error instanceof z.ZodError) {
           return sendBadRequest(reply, formatValidationError(error));
         } else if (error instanceof Error) {

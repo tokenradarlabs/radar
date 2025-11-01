@@ -10,7 +10,8 @@ import {
   isDatabaseUnavailableError,
 } from './utils/db';
 import { sendServiceUnavailable, errorResponse } from './utils/responseHelper';
-import logger from './utils/logger';
+import logger, { asyncLocalStorage } from './utils/logger';
+import { v4 as uuidv4 } from 'uuid';
 
 export async function buildApp(): Promise<FastifyInstance> {
   const server = fastify({
@@ -56,6 +57,28 @@ export async function buildApp(): Promise<FastifyInstance> {
         error: `Rate limit exceeded, retry in ${context.after}`,
       };
     },
+  });
+
+  // Request-scoped context middleware
+  server.addHook('onRequest', (request, reply, done) => {
+    const store = new Map();
+    const requestId = request.headers['x-request-id'] || uuidv4();
+    store.set('requestId', requestId);
+    request.id = requestId; // Attach to request object for potential later use
+
+    const apiKey = request.headers['x-api-key'];
+    if (apiKey) {
+      store.set('apiKey', apiKey);
+    }
+
+    // Assuming userId might be available on request.user after authentication
+    // if (request.user && request.user.id) {
+    //   store.set('userId', request.user.id);
+    // }
+
+    asyncLocalStorage.run(store, () => {
+      done();
+    });
   });
 
   // Request/Response Logging Middleware
