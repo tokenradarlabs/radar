@@ -5,16 +5,20 @@ export class PriceChangeService {
   static async getTokenPriceChange(
     tokenId: string
   ): Promise<TokenPriceChangeData> {
-    const priceChangeData = await fetchTokenPriceChange(tokenId);
+    try {
+      const priceChangeData = await fetchTokenPriceChange(tokenId);
 
-    if (priceChangeData === null) {
-      throw new Error('Token price change data not found');
+      if (priceChangeData === null) {
+        throw new Error('Token price change data not found');
+      }
+
+      return {
+        priceChange: priceChangeData,
+        tokenId,
+        period: '24h',
+      };
+    } catch (error) {
+      console.error(`Error fetching price change for ${tokenId}:`, error);
+      throw new Error('Failed to fetch token price change');
     }
-
-    return {
-      priceChange: priceChangeData,
-      tokenId,
-      period: '24h',
-    };
-  }
 }

@@ -31,19 +31,11 @@ export async function fetchTokenPrice(
     headers,
   };
 
+import { fetchWithRetry } from './fetchWithRetry';
+
   try {
     console.log(`[CoinGecko] Fetching price for token: ${tokenId}`);
-    const response = await fetch(url, options);
-
-    if (!response.ok) {
-      const errorBody = await response.text();
-      console.error('[CoinGecko] Failed to fetch token price', {
-        status: response.status,
-        statusText: response.statusText,
-        errorBody: errorBody,
-      });
-      return null;
-    }
+    const response = await fetchWithRetry(url, options);
 
     const json = (await response.json()) as CoinGeckoPriceResponse;
     const tokenData = json[tokenId];
