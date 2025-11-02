@@ -9,6 +9,9 @@ interface RequiredEnvVars {
 interface OptionalEnvVars {
   FASTIFY_PORT?: string;
   NODE_ENV?: string;
+  RATE_LIMIT_MAX_REQUESTS?: string;
+  RATE_LIMIT_TIME_WINDOW?: string;
+  RATE_LIMIT_EXCLUDE_ROUTES?: string;
 }
 
 /**
@@ -77,5 +80,8 @@ export function validateEnvironmentVariables(): RequiredEnvVars &
       fastifyPort ||
       (nodeEnv === 'development' || nodeEnv === 'test' ? '4000' : undefined),
     NODE_ENV: nodeEnv,
+    RATE_LIMIT_MAX_REQUESTS: process.env.RATE_LIMIT_MAX_REQUESTS?.trim(),
+    RATE_LIMIT_TIME_WINDOW: process.env.RATE_LIMIT_TIME_WINDOW?.trim(),
+    RATE_LIMIT_EXCLUDE_ROUTES: process.env.RATE_LIMIT_EXCLUDE_ROUTES?.trim(),
   };
 }
