@@ -1,7 +1,7 @@
 import { test, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import { buildApp } from '../../app';
 import { FastifyInstance } from 'fastify';
-import { validateEnvironmentVariables } from '../../utils/envValidation';
+
 
 let fastify: FastifyInstance;
 
