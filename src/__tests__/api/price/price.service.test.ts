@@ -17,7 +17,9 @@ describe('PriceService', () => {
   });
 
   it('should return BTC price from CoinGecko', async () => {
-    (coinGeckoPrice.fetchTokenPrice as vi.Mock).mockResolvedValue({ usd: 60000 });
+    (coinGeckoPrice.fetchTokenPrice as vi.Mock).mockResolvedValue({
+      usd: 60000,
+    });
 
     const result = await PriceService.getTokenPrice('btc');
     expect(result).toEqual({ price: 60000, tokenId: 'btc' });
@@ -25,7 +27,9 @@ describe('PriceService', () => {
   });
 
   it('should return ETH price from CoinGecko', async () => {
-    (coinGeckoPrice.fetchTokenPrice as vi.Mock).mockResolvedValue({ usd: 4000 });
+    (coinGeckoPrice.fetchTokenPrice as vi.Mock).mockResolvedValue({
+      usd: 4000,
+    });
 
     const result = await PriceService.getTokenPrice('eth');
     expect(result).toEqual({ price: 4000, tokenId: 'eth' });
@@ -55,7 +59,9 @@ describe('PriceService', () => {
   });
 
   it('should throw error if CoinGecko price fetch throws for ETH', async () => {
-    (coinGeckoPrice.fetchTokenPrice as vi.Mock).mockRejectedValue(new Error('API error'));
+    (coinGeckoPrice.fetchTokenPrice as vi.Mock).mockRejectedValue(
+      new Error('API error')
+    );
 
     await expect(PriceService.getTokenPrice('eth')).rejects.toThrow(
       'Failed to fetch token price'
@@ -65,8 +71,8 @@ describe('PriceService', () => {
   it('should throw error if Uniswap DEV price fetch fails', async () => {
     (uniswapPrice.getDevPrice as vi.Mock).mockResolvedValue(0);
 
-    await expect(PriceService.getTokenPrice('scout-protocol-token')).rejects.toThrow(
-      'Failed to fetch token price'
-    );
+    await expect(
+      PriceService.getTokenPrice('scout-protocol-token')
+    ).rejects.toThrow('Failed to fetch token price');
   });
 });

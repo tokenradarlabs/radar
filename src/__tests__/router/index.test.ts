@@ -30,4 +30,3 @@ test('GET // redirects to /', async () => {
   expect(response.statusCode).toBe(302);
   expect(response.headers.location).toBe('/');
 });
-

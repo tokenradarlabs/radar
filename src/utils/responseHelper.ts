@@ -58,7 +58,10 @@ export function errorResponse(
 /**
  * Sends a 400 Bad Request error response
  */
-export function sendBadRequest(reply: FastifyReply, error: string): FastifyReply {
+export function sendBadRequest(
+  reply: FastifyReply,
+  error: string
+): FastifyReply {
   return errorResponse(reply, HTTP_STATUS.BAD_REQUEST, error);
 }
 

@@ -1,5 +1,9 @@
 import { z } from 'zod';
-import { REQUIRED_ERROR, INVALID_TYPE_ERROR, INVALID_EMAIL_ERROR } from '../../utils/validation';
+import {
+  REQUIRED_ERROR,
+  INVALID_TYPE_ERROR,
+  INVALID_EMAIL_ERROR,
+} from '../../utils/validation';
 
 export const getApiKeysRequestSchema = z.object({
   email: z

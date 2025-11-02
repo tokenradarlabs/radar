@@ -111,7 +111,9 @@ describe('User Login Endpoint (Unit)', () => {
     };
 
     (loginRequestSchema.parse as vi.Mock).mockReturnValue(nonExistentUser);
-    (LoginService.loginUser as vi.Mock).mockRejectedValue(new Error('User Does Not Exist'));
+    (LoginService.loginUser as vi.Mock).mockRejectedValue(
+      new Error('User Does Not Exist')
+    );
 
     const response = await app.inject({
       method: 'POST',
@@ -135,7 +137,9 @@ describe('User Login Endpoint (Unit)', () => {
     };
 
     (loginRequestSchema.parse as vi.Mock).mockReturnValue(wrongPasswordUser);
-    (LoginService.loginUser as vi.Mock).mockRejectedValue(new Error('Invalid credentials'));
+    (LoginService.loginUser as vi.Mock).mockRejectedValue(
+      new Error('Invalid credentials')
+    );
 
     const response = await app.inject({
       method: 'POST',
@@ -172,6 +176,9 @@ describe('User Login Endpoint (Unit)', () => {
     expect(response.statusCode).toBe(500);
     expect(loginRequestSchema.parse).toHaveBeenCalledWith(genericErrorUser);
     expect(LoginService.loginUser).toHaveBeenCalledWith(genericErrorUser);
-    expect(sendInternalError).toHaveBeenCalledWith(expect.anything(), 'Internal server error');
+    expect(sendInternalError).toHaveBeenCalledWith(
+      expect.anything(),
+      'Internal server error'
+    );
   });
 });

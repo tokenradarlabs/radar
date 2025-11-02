@@ -2,7 +2,6 @@ import { test, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import { buildApp } from '../../app';
 import { FastifyInstance } from 'fastify';
 
-
 let fastify: FastifyInstance;
 
 beforeAll(async () => {

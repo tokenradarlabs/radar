@@ -1,16 +1,13 @@
 import { z } from 'zod';
-import { REQUIRED_ERROR, INVALID_TYPE_ERROR } from '../../utils/validation';
 
-export const volumeTokenIdSchema = z.object({
-  tokenId: z.string({
-    required_error: REQUIRED_ERROR,
-    invalid_type_error: INVALID_TYPE_ERROR,
-  }),
-});
+import {
+  volumeTokenIdSchema,
+  VolumeTokenIdParams,
+} from '../../utils/validation';
 
-export interface TokenVolumeParams {
-  tokenId: string;
-}
+export { volumeTokenIdSchema };
+
+export interface TokenVolumeParams extends VolumeTokenIdParams {}
 
 export interface TokenVolumeData {
   volume: number;

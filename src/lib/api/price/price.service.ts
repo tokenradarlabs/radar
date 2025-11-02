@@ -1,7 +1,5 @@
 import { fetchTokenPrice } from '../../../utils/coinGeckoPrice';
-import {
-  getDevPrice,
-} from '../../../utils/uniswapPrice';
+import { getDevPrice } from '../../../utils/uniswapPrice';
 import { TokenPriceData } from './price.schema';
 
 export class PriceService {
@@ -13,19 +11,17 @@ export class PriceService {
     try {
       switch (normalizedTokenId) {
         case 'btc':
-        case 'bitcoin':
-          {
-            const btcPriceData = await fetchTokenPrice('bitcoin');
-            price = btcPriceData ? btcPriceData.usd : null;
-            break;
-          }
+        case 'bitcoin': {
+          const btcPriceData = await fetchTokenPrice('bitcoin');
+          price = btcPriceData ? btcPriceData.usd : null;
+          break;
+        }
         case 'eth':
-        case 'ethereum':
-          {
-            const ethPriceData = await fetchTokenPrice('ethereum');
-            price = ethPriceData ? ethPriceData.usd : null;
-            break;
-          }
+        case 'ethereum': {
+          const ethPriceData = await fetchTokenPrice('ethereum');
+          price = ethPriceData ? ethPriceData.usd : null;
+          break;
+        }
         case 'scout-protocol-token':
           // Assuming 'scout-protocol-token' is a custom token not on CoinGecko, or its CoinGecko ID is different.
           // If it should be fetched from CoinGecko, replace getDevPrice with fetchTokenPrice('scout-protocol-token').

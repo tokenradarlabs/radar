@@ -9,10 +9,14 @@ export const INVALID_CHARACTERS_ERROR = 'Field contains invalid characters';
 export const INVALID_SELECTION_ERROR = 'Invalid selection';
 export const INVALID_EMAIL_ERROR = 'Invalid email format';
 export const INVALID_UUID_ERROR = 'Invalid ID format';
-export const MIN_PASSWORD_LENGTH_ERROR = 'Password must be at least 8 characters long';
-export const PASSWORD_UPPERCASE_ERROR = 'Password must contain at least one uppercase letter';
-export const PASSWORD_NUMBER_ERROR = 'Password must contain at least one number';
-export const PASSWORD_SPECIAL_CHAR_ERROR = 'Password must contain at least one special character';
+export const MIN_PASSWORD_LENGTH_ERROR =
+  'Password must be at least 8 characters long';
+export const PASSWORD_UPPERCASE_ERROR =
+  'Password must contain at least one uppercase letter';
+export const PASSWORD_NUMBER_ERROR =
+  'Password must contain at least one number';
+export const PASSWORD_SPECIAL_CHAR_ERROR =
+  'Password must contain at least one special character';
 
 // Common validation schemas
 export const tokenIdSchema = z.object({
@@ -23,10 +27,7 @@ export const tokenIdSchema = z.object({
     })
     .min(1, MIN_LENGTH_ERROR)
     .max(100, MAX_LENGTH_ERROR)
-    .regex(
-      /^[a-zA-Z0-9-_]+$/,
-      INVALID_CHARACTERS_ERROR
-    )
+    .regex(/^[a-zA-Z0-9-_]+$/, INVALID_CHARACTERS_ERROR)
     .transform((val) => val.toLowerCase().trim()),
 });
 
@@ -44,26 +45,13 @@ export const priceTokenIdSchema = z.object({
     }),
 });
 
-// Generic token validation for volume and price change endpoints
-export const volumeTokenIdSchema = z.object({
-  tokenId: z
-    .string({
-      required_error: REQUIRED_ERROR,
-      invalid_type_error: INVALID_TYPE_ERROR,
-    })
-    .min(1, MIN_LENGTH_ERROR)
-    .max(100, MAX_LENGTH_ERROR)
-    .regex(
-      /^[a-zA-Z0-9-_]+$/,
-      INVALID_CHARACTERS_ERROR
-    )
-    .transform((val) => val.toLowerCase().trim()),
-});
-
 // Type exports for TypeScript
 export type TokenIdParams = z.infer<typeof tokenIdSchema>;
 export type PriceTokenIdParams = z.infer<typeof priceTokenIdSchema>;
-export type VolumeTokenIdParams = z.infer<typeof volumeTokenIdSchema>;
+export const volumeTokenIdSchema = tokenIdSchema;
+export type VolumeTokenIdParams = TokenIdParams;
+export const priceChangeTokenIdSchema = tokenIdSchema;
+export type PriceChangeTokenIdParams = TokenIdParams;
 
 // Validation error handler
 export function formatValidationError(error: z.ZodError): string {

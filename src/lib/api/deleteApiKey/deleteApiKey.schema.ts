@@ -1,5 +1,10 @@
 import { z } from 'zod';
-import { REQUIRED_ERROR, INVALID_TYPE_ERROR, INVALID_EMAIL_ERROR, INVALID_UUID_ERROR } from '../../utils/validation';
+import {
+  REQUIRED_ERROR,
+  INVALID_TYPE_ERROR,
+  INVALID_EMAIL_ERROR,
+  INVALID_UUID_ERROR,
+} from '../../utils/validation';
 
 export const deleteApiKeyRequestSchema = z.object({
   email: z
