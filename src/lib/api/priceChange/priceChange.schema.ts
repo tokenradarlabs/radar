@@ -1,9 +1,10 @@
 import { z } from 'zod';
+import { REQUIRED_ERROR, INVALID_TYPE_ERROR } from '../../utils/validation';
 
 export const priceChangeTokenIdSchema = z.object({
   tokenId: z.string({
-    required_error: 'Token ID is required',
-    invalid_type_error: 'Token ID must be a string',
+    required_error: REQUIRED_ERROR,
+    invalid_type_error: INVALID_TYPE_ERROR,
   }),
 });
 
