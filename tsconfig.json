@@ -1,6 +1,8 @@
 {
-  "extends": "fastify-tsconfig",
+  // "extends": "fastify-tsconfig",
   "compilerOptions": {
+    "target": "es2022",
+    "moduleResolution": "node",
     "sourceMap": true,
     "outDir": "./dist",
     "noImplicitAny": true,
@@ -13,7 +15,7 @@
     "esModuleInterop": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "types": ["vitest/globals"]
+    "types": ["node", "vitest/globals"]
   },
   "exclude": [
     "node_modules"

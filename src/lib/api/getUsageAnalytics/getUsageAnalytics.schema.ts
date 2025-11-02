@@ -1,22 +1,28 @@
 import { z } from 'zod';
+import {
+  REQUIRED_ERROR,
+  INVALID_TYPE_ERROR,
+  INVALID_EMAIL_ERROR,
+  INVALID_UUID_ERROR,
+} from '../../utils/validation';
 
 export const getUsageAnalyticsRequestSchema = z.object({
   email: z
     .string({
-      required_error: 'Email is required',
-      invalid_type_error: 'Email must be a string',
+      required_error: REQUIRED_ERROR,
+      invalid_type_error: INVALID_TYPE_ERROR,
     })
-    .email('Invalid email format'),
+    .email(INVALID_EMAIL_ERROR),
   password: z.string({
-    required_error: 'Password is required',
-    invalid_type_error: 'Password must be a string',
+    required_error: REQUIRED_ERROR,
+    invalid_type_error: INVALID_TYPE_ERROR,
   }),
   apiKeyId: z
     .string({
-      required_error: 'API key ID is required',
-      invalid_type_error: 'API key ID must be a string',
+      required_error: REQUIRED_ERROR,
+      invalid_type_error: INVALID_TYPE_ERROR,
     })
-    .uuid('Invalid API key ID format')
+    .uuid(INVALID_UUID_ERROR)
     .optional(),
 });
 

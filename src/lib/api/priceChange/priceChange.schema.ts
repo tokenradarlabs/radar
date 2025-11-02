@@ -1,15 +1,13 @@
 import { z } from 'zod';
 
-export const priceChangeTokenIdSchema = z.object({
-  tokenId: z.string({
-    required_error: 'Token ID is required',
-    invalid_type_error: 'Token ID must be a string',
-  }),
-});
+import {
+  priceChangeTokenIdSchema,
+  PriceChangeTokenIdParams,
+} from '../../utils/validation';
 
-export interface TokenPriceChangeParams {
-  tokenId: string;
-}
+export { priceChangeTokenIdSchema };
+
+export interface TokenPriceChangeParams extends PriceChangeTokenIdParams {}
 
 export interface TokenPriceChangeData {
   priceChange: number;

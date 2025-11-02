@@ -1,4 +1,3 @@
-
 import { RequestInit } from 'node-fetch';
 
 interface FetchOptions extends RequestInit {

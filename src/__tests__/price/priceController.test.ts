@@ -36,7 +36,10 @@ describe('Token Price Endpoint', () => {
 
   it('should successfully return BTC price data', async () => {
     const mockPrice = 45000.5;
-    mockPriceServiceGetTokenPrice.mockResolvedValue({ price: mockPrice, tokenId: 'btc' });
+    mockPriceServiceGetTokenPrice.mockResolvedValue({
+      price: mockPrice,
+      tokenId: 'btc',
+    });
 
     const response = await app.inject({
       method: 'GET',
@@ -57,7 +60,10 @@ describe('Token Price Endpoint', () => {
 
   it('should successfully return ETH price data', async () => {
     const mockPrice = 3200.75;
-    mockPriceServiceGetTokenPrice.mockResolvedValue({ price: mockPrice, tokenId: 'eth' });
+    mockPriceServiceGetTokenPrice.mockResolvedValue({
+      price: mockPrice,
+      tokenId: 'eth',
+    });
 
     const response = await app.inject({
       method: 'GET',

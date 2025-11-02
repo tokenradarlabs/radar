@@ -7,7 +7,10 @@ export default async function userController(fastify: FastifyInstance) {
   // GET /auth/
   fastify.get(
     '/',
-    async function (_request: FastifyRequest, reply: FastifyReply<IUserResponse>) {
+    async function (
+      _request: FastifyRequest,
+      reply: FastifyReply<IUserResponse>
+    ) {
       const userData = await UserService.getUserData();
       sendSuccess(reply, userData);
     }

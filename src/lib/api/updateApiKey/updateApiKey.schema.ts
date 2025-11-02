@@ -1,32 +1,40 @@
 import { z } from 'zod';
+import {
+  REQUIRED_ERROR,
+  INVALID_TYPE_ERROR,
+  INVALID_EMAIL_ERROR,
+  MIN_LENGTH_ERROR,
+  MAX_LENGTH_ERROR,
+  INVALID_UUID_ERROR,
+} from '../../utils/validation';
 
 export const updateApiKeyRequestSchema = z.object({
   email: z
     .string({
-      required_error: 'Email is required',
-      invalid_type_error: 'Email must be a string',
+      required_error: REQUIRED_ERROR,
+      invalid_type_error: INVALID_TYPE_ERROR,
     })
-    .email('Invalid email format'),
+    .email(INVALID_EMAIL_ERROR),
   password: z.string({
-    required_error: 'Password is required',
-    invalid_type_error: 'Password must be a string',
+    required_error: REQUIRED_ERROR,
+    invalid_type_error: INVALID_TYPE_ERROR,
   }),
   name: z
     .string({
-      required_error: 'API key name is required',
-      invalid_type_error: 'API key name must be a string',
+      required_error: REQUIRED_ERROR,
+      invalid_type_error: INVALID_TYPE_ERROR,
     })
-    .min(1, 'API key name cannot be empty')
-    .max(100, 'API key name cannot exceed 100 characters'),
+    .min(1, MIN_LENGTH_ERROR)
+    .max(100, MAX_LENGTH_ERROR),
 });
 
 export const updateApiKeyParamsSchema = z.object({
   id: z
     .string({
-      required_error: 'API key ID is required in params',
-      invalid_type_error: 'API key ID in params must be a string',
+      required_error: REQUIRED_ERROR,
+      invalid_type_error: INVALID_TYPE_ERROR,
     })
-    .uuid('Invalid API key ID format in params'),
+    .uuid(INVALID_UUID_ERROR),
 });
 
 export type UpdateApiKeyParams = z.infer<typeof updateApiKeyParamsSchema>;

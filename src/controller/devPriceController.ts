@@ -1,6 +1,10 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import logger from '../utils/logger';
-import { sendSuccess, sendBadRequest, sendInternalError } from '../utils/responseHelper';
+import {
+  sendSuccess,
+  sendBadRequest,
+  sendInternalError,
+} from '../utils/responseHelper';
 import { DevPriceService } from '../lib/api/devPrice/devPrice.service';
 
 export default async function devPriceController(fastify: FastifyInstance) {

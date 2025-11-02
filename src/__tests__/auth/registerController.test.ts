@@ -54,7 +54,9 @@ describe('User Registration Endpoint (Unit)', () => {
     };
 
     (registerRequestSchema.parse as vi.Mock).mockReturnValue(testUser);
-    (RegisterService.registerUser as vi.Mock).mockResolvedValue(mockRegisteredUser);
+    (RegisterService.registerUser as vi.Mock).mockResolvedValue(
+      mockRegisteredUser
+    );
 
     const response = await app.inject({
       method: 'POST',
@@ -111,7 +113,9 @@ describe('User Registration Endpoint (Unit)', () => {
     };
 
     (registerRequestSchema.parse as vi.Mock).mockReturnValue(duplicateUser);
-    (RegisterService.registerUser as vi.Mock).mockRejectedValue(new Error('Email already exists'));
+    (RegisterService.registerUser as vi.Mock).mockRejectedValue(
+      new Error('Email already exists')
+    );
 
     const response = await app.inject({
       method: 'POST',
@@ -148,6 +152,10 @@ describe('User Registration Endpoint (Unit)', () => {
     expect(response.statusCode).toBe(500);
     expect(registerRequestSchema.parse).toHaveBeenCalledWith(genericErrorUser);
     expect(RegisterService.registerUser).toHaveBeenCalledWith(genericErrorUser);
-    expect(handleControllerError).toHaveBeenCalledWith(expect.anything(), genericError, 'Internal server error');
+    expect(handleControllerError).toHaveBeenCalledWith(
+      expect.anything(),
+      genericError,
+      'Internal server error'
+    );
   });
 });

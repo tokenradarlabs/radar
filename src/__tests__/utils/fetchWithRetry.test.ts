@@ -3,8 +3,16 @@ import { fetchWithRetry } from '../../utils/fetchWithRetry';
 
 describe('fetchWithRetry', () => {
   const mockUrl = 'http://test.com';
-  const mockResponse = { ok: true, json: () => Promise.resolve({ message: 'Success' }) };
-  const mockErrorResponse = { ok: false, text: () => Promise.resolve('Not Found'), status: 404, statusText: 'Not Found' };
+  const mockResponse = {
+    ok: true,
+    json: () => Promise.resolve({ message: 'Success' }),
+  };
+  const mockErrorResponse = {
+    ok: false,
+    text: () => Promise.resolve('Not Found'),
+    status: 404,
+    statusText: 'Not Found',
+  };
 
   beforeEach(() => {
     vi.useFakeTimers();
@@ -54,13 +62,17 @@ describe('fetchWithRetry', () => {
     const promise = fetchWithRetry(mockUrl, { retries: 0 });
     vi.runAllTimers();
 
-    await expect(promise).rejects.toThrow('HTTP error! status: 404, body: Not Found');
+    await expect(promise).rejects.toThrow(
+      'HTTP error! status: 404, body: Not Found'
+    );
     expect(global.fetch).toHaveBeenCalledTimes(1);
   });
 
   it('should timeout if the response takes too long', async () => {
     vi.spyOn(global, 'fetch').mockImplementation(() => {
-      return new Promise((resolve) => setTimeout(() => resolve(mockResponse as Response), 1000));
+      return new Promise((resolve) =>
+        setTimeout(() => resolve(mockResponse as Response), 1000)
+      );
     });
 
     const promise = fetchWithRetry(mockUrl, { timeout: 500, retries: 0 });
@@ -72,7 +84,9 @@ describe('fetchWithRetry', () => {
 
   it('should succeed if response is within timeout', async () => {
     vi.spyOn(global, 'fetch').mockImplementation(() => {
-      return new Promise((resolve) => setTimeout(() => resolve(mockResponse as Response), 100));
+      return new Promise((resolve) =>
+        setTimeout(() => resolve(mockResponse as Response), 100)
+      );
     });
 
     const promise = fetchWithRetry(mockUrl, { timeout: 500, retries: 0 });

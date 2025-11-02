@@ -46,7 +46,11 @@ describe('Response Helpers', () => {
 
   it('sendError should send an error response with correct shape and status', () => {
     const errorMessage = 'Something went wrong';
-    const result = errorResponse(mockReply, HTTP_STATUS.BAD_REQUEST, errorMessage);
+    const result = errorResponse(
+      mockReply,
+      HTTP_STATUS.BAD_REQUEST,
+      errorMessage
+    );
 
     expect(mockReply.status).toHaveBeenCalledWith(HTTP_STATUS.BAD_REQUEST);
     expect(mockReply.send).toHaveBeenCalledWith({
@@ -58,7 +62,11 @@ describe('Response Helpers', () => {
 
   it('sendError should send an error response with a custom status', () => {
     const errorMessage = 'Unauthorized access';
-    const result = errorResponse(mockReply, HTTP_STATUS.UNAUTHORIZED, errorMessage);
+    const result = errorResponse(
+      mockReply,
+      HTTP_STATUS.UNAUTHORIZED,
+      errorMessage
+    );
 
     expect(mockReply.status).toHaveBeenCalledWith(HTTP_STATUS.UNAUTHORIZED);
     expect(mockReply.send).toHaveBeenCalledWith({
