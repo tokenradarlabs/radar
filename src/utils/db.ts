@@ -1,6 +1,3 @@
-import { prisma } from './prisma';
-
-// Best-effort detection of database unavailability conditions
 export function isDatabaseUnavailableError(error: unknown): boolean {
   const asAny = error as any;
   const code = asAny?.code as string | undefined;
@@ -29,14 +26,4 @@ export function isDatabaseUnavailableError(error: unknown): boolean {
   }
 
   return false;
-}
-
-export async function checkDatabaseConnection(): Promise<boolean> {
-  try {
-    // Lightweight connectivity probe
-    await prisma.$queryRaw`SELECT 1`;
-    return true;
-  } catch (error) {
-    return false;
-  }
 }
