@@ -6,28 +6,22 @@ import {
   deleteApiKeyCombinedSchema,
   type DeleteApiKeyRequest,
   type DeleteApiKeyParams,
-} from '../../lib/api/deleteApiKey/deleteApiKey.schema';
+  DeleteApiKeyService,
+  type DeleteApiKeyResponse,
+} from '../../lib/api/deleteApiKey';
 import {
   updateApiKeyCombinedSchema,
   type UpdateApiKeyRequest,
   type UpdateApiKeyParams,
-} from '../../lib/api/updateApiKey/updateApiKey.schema';
+  UpdateApiKeyService,
+  type UpdateApiKeyResponse,
+} from '../../lib/api/updateApiKey';
 import {
   apiKeyGenerateSchema,
   type ApiKeyRequest,
-} from '../../lib/api/generateApi/generateApiKey.schema';
-import {
   GenerateApiKeyService,
   type ApiKeyResponse,
-} from '../../lib/api/generateApi/generateApiKey.service';
-import {
-  DeleteApiKeyService,
-  type DeleteApiKeyResponse,
-} from '../../lib/api/deleteApiKey/deleteApiKey.service';
-import {
-  UpdateApiKeyService,
-  type UpdateApiKeyResponse,
-} from '../../lib/api/updateApiKey/updateApiKey.service';
+} from '../../lib/api/generateApi';
 export default async function apiKeyController(fastify: FastifyInstance) {
   fastify.post<{ Body: ApiKeyRequest }>(
     '/generate',

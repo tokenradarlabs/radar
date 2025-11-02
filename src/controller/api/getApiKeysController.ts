@@ -5,15 +5,13 @@ import { sendInternalError } from '../../utils/responseHelper';
 import {
   getApiKeysRequestSchema,
   type GetApiKeysRequest,
-} from '../../lib/api/getApiKeys/getApiKeys.schema';
+  GetApiKeysService,
+  type ApiKeyListResponse,
+} from '../../lib/api/getApiKeys';
 import {
   getUsageAnalyticsRequestSchema,
   type GetUsageAnalyticsRequest,
 } from '../../lib/api/getUsageAnalytics/getUsageAnalytics.schema';
-import {
-  GetApiKeysService,
-  type ApiKeyListResponse,
-} from '../../lib/api/getApiKeys/getApiKeys.service';
 import {
   GetUsageAnalyticsService,
   type UsageAnalyticsResponse,
