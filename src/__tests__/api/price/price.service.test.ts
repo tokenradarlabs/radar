@@ -36,6 +36,42 @@ describe('PriceService', () => {
     expect(coinGeckoPrice.fetchTokenPrice).toHaveBeenCalledWith('ethereum');
   });
 
+  it('should return BTC price from CoinGecko using full name', async () => {
+    (coinGeckoPrice.fetchTokenPrice as vi.Mock).mockResolvedValue({
+      usd: 65000,
+    });
+
+    const result = await PriceService.getTokenPrice('bitcoin');
+    expect(result).toEqual({ price: 65000, tokenId: 'bitcoin' });
+    expect(coinGeckoPrice.fetchTokenPrice).toHaveBeenCalledWith('bitcoin');
+  });
+
+  it('should throw error if CoinGecko price fetch fails for Bitcoin full name', async () => {
+    (coinGeckoPrice.fetchTokenPrice as vi.Mock).mockResolvedValue(null);
+
+    await expect(PriceService.getTokenPrice('bitcoin')).rejects.toThrow(
+      'Failed to fetch token price'
+    );
+  });
+
+  it('should return ETH price from CoinGecko using full name', async () => {
+    (coinGeckoPrice.fetchTokenPrice as vi.Mock).mockResolvedValue({
+      usd: 4500,
+    });
+
+    const result = await PriceService.getTokenPrice('ethereum');
+    expect(result).toEqual({ price: 4500, tokenId: 'ethereum' });
+    expect(coinGeckoPrice.fetchTokenPrice).toHaveBeenCalledWith('ethereum');
+  });
+
+  it('should throw error if CoinGecko price fetch fails for Ethereum full name', async () => {
+    (coinGeckoPrice.fetchTokenPrice as vi.Mock).mockResolvedValue(null);
+
+    await expect(PriceService.getTokenPrice('ethereum')).rejects.toThrow(
+      'Failed to fetch token price'
+    );
+  });
+
   it('should return DEV price from Uniswap', async () => {
     (uniswapPrice.getDevPrice as vi.Mock).mockResolvedValue(1.5);
 
