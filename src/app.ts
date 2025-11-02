@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import fastify, { FastifyError, FastifyInstance } from 'fastify';
-import rateLimit from '@fastify/rate-limit';
+import rateLimiterPlugin from './utils/rateLimiter';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import router from './router';
@@ -47,17 +47,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   });
 
   // Register rate limiter plugin
-  server.register(rateLimit, {
-    global: false, // Disable global rate limiting
-    max: 5, // Maximum 5 requests
-    timeWindow: '1 minute', // Per minute
-    errorResponseBuilder: function (_req, context) {
-      return {
-        success: false,
-        error: `Rate limit exceeded, retry in ${context.after}`,
-      };
-    },
-  });
+  server.register(rateLimiterPlugin);
 
   // Request-scoped context middleware
   server.addHook('onRequest', (request, reply, done) => {
