@@ -5,13 +5,11 @@ import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import router from './router';
 import { z } from 'zod';
-import {
-  checkDatabaseConnection,
-  isDatabaseUnavailableError,
-} from './utils/db';
+import { isDatabaseUnavailableError } from './utils/db';
 import { sendServiceUnavailable, errorResponse } from './utils/responseHelper';
 import logger, { asyncLocalStorage } from './utils/logger';
 import { v4 as uuidv4 } from 'uuid';
+import { connectPrisma, disconnectPrisma } from './utils/prisma';
 
 export async function buildApp(): Promise<FastifyInstance> {
   const server = fastify({
@@ -20,6 +18,9 @@ export async function buildApp(): Promise<FastifyInstance> {
     // Set request size limits for security
     bodyLimit: 1048576, // 1MB limit for request body
   });
+
+  // Connect to the database at startup
+  await connectPrisma();
 
   // Register security headers plugin (Helmet)
   server.register(helmet, {
@@ -101,11 +102,12 @@ export async function buildApp(): Promise<FastifyInstance> {
 
   // Health endpoint
   server.get('/health', async (_request, reply) => {
-    const dbOk = await checkDatabaseConnection();
-    if (!dbOk) {
+    try {
+      await connectPrisma(); // Attempt to connect to the database
+      return reply.send({ status: 'ok' });
+    } catch (error) {
       return sendServiceUnavailable(reply, 'Database unavailable');
     }
-    return reply.send({ status: 'ok' });
   });
 
   // Test routes for error handler (only in test environment)
@@ -146,6 +148,17 @@ export async function buildApp(): Promise<FastifyInstance> {
 
     // Programming or other unknown error: don't leak error details
     return errorResponse(reply, 500, 'An unexpected error occurred');
+  });
+
+  // Ensure Prisma client is disconnected on application shutdown
+  process.on('SIGINT', async () => {
+    await disconnectPrisma();
+    process.exit(0);
+  });
+
+  process.on('SIGTERM', async () => {
+    await disconnectPrisma();
+    process.exit(0);
   });
 
   return server;
