@@ -12,14 +12,14 @@ afterAll(async () => {
   await fastify.close();
 });
 
-test('GET / returns index.html', async () => {
+test('GET / returns JSON response', async () => {
   const response = await fastify.inject({
     method: 'GET',
     url: '/',
   });
   expect(response.statusCode).toBe(200);
-  expect(response.headers['content-type']).toContain('text/html');
-  expect(response.payload).toContain('<!DOCTYPE html>');
+  expect(response.headers['content-type']).toContain('application/json');
+  expect(response.json()).toEqual({ status: 'ok', message: 'Welcome to the API' });
 });
 
 test('GET // redirects to /', async () => {
