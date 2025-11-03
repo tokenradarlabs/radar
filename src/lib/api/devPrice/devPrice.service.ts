@@ -1,22 +1,24 @@
-import { fetchTokenPrice } from '../../../utils/coinGeckoPrice';
+import { coinGeckoPriceProvider } from '../../../utils/coinGeckoPrice';
 import { DevPriceData } from './devPrice.schema';
 
 export class DevPriceService {
   static async getDevTokenPrice(): Promise<DevPriceData> {
-    let priceData: { usd: number } | null;
+    let price: number;
     try {
-      priceData = await fetchTokenPrice('scout-protocol-token');
+      price = await coinGeckoPriceProvider.getCurrentPrice(
+        'scout-protocol-token'
+      );
     } catch (error) {
       console.error('Error fetching DEV token price from CoinGecko:', error);
-      priceData = null;
+      throw new Error('Failed to fetch DEV token price');
     }
 
-    if (!priceData || priceData.usd === 0) {
+    if (price === 0) {
       throw new Error('DEV token price data not found');
     }
 
     return {
-      price: priceData.usd,
+      price: price,
       token: 'scout-protocol-token',
       symbol: 'DEV',
     };

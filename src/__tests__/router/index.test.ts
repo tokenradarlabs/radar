@@ -19,7 +19,10 @@ test('GET / returns JSON response', async () => {
   });
   expect(response.statusCode).toBe(200);
   expect(response.headers['content-type']).toContain('application/json');
-  expect(response.json()).toEqual({ status: 'ok', message: 'Welcome to the API' });
+  expect(response.json()).toEqual({
+    status: 'ok',
+    message: 'Welcome to the API',
+  });
 });
 
 test('GET // redirects to /', async () => {
