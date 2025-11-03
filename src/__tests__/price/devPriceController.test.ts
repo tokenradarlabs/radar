@@ -22,12 +22,6 @@ vi.mock('../../../utils/coinGeckoPrice', () => ({
 describe('DEV Price Endpoint', () => {
   let app: FastifyInstance;
 
-  beforeAll(async () => {
-    app = Fastify();
-    await app.register(devPriceController, { prefix: '/api/v1/price/dev' });
-    await app.ready();
-  });
-
   beforeEach(async () => {
     // Clear all mocks before each test
     vi.clearAllMocks();
@@ -35,18 +29,19 @@ describe('DEV Price Endpoint', () => {
     // Suppress console.error during tests to avoid stderr output
     vi.spyOn(console, 'error').mockImplementation(() => {});
 
-    // Create a fresh Fastify instance for each test
     app = Fastify();
-
-    // Register the dev price controller
     await app.register(devPriceController, { prefix: '/api/v1/price/dev' });
+    await app.ready();
 
     // Set a default mock price for DEV token
     mockPriceProvider.setPrice('scout-protocol-token', 0.00015234);
   });
 
-  afterAll(async () => {
+  afterEach(async () => {
+    // Close the Fastify instance created in beforeEach to avoid leaking handles
     await app.close();
+    // Restore any spies/mocks replaced in tests
+    vi.restoreAllMocks();
   });
 
   it('should successfully return DEV token price data', async () => {
