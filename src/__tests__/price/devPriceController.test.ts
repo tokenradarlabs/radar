@@ -15,7 +15,7 @@ import { PriceProvider } from '../../utils/priceProvider';
 
 // Mock the coinGeckoPriceProvider module
 const mockPriceProvider = new MockPriceProvider();
-vi.mock('../../../utils/coinGeckoPrice', () => ({
+vi.mock('../../utils/coinGeckoPrice', () => ({
   coinGeckoPriceProvider: mockPriceProvider,
 }));
 
