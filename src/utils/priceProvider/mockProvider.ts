@@ -13,10 +13,13 @@ export class MockPriceProvider implements PriceProvider {
 
   async getCurrentPrice(tokenId: string): Promise<number> {
     if (this.prices[tokenId] !== undefined) {
-      console.log(`[MockPriceProvider] Providing mock price for ${tokenId}: $${this.prices[tokenId]}`);
+      console.log(
+        `[MockPriceProvider] Providing mock price for ${tokenId}: $${this.prices[tokenId]}`
+      );
       return this.prices[tokenId];
     }
-    console.warn(`[MockPriceProvider] No mock price set for ${tokenId}. Returning 0.`);
-    return 0;
+    throw new Error(
+      `[MockPriceProvider] No mock price set for tokenId: ${tokenId}. Use setPrice() to configure.`
+    );
   }
 }

@@ -184,7 +184,9 @@ describe('DEV Price Endpoint', () => {
     ];
 
     for (const testCase of errorTestCases) {
-      vi.spyOn(mockPriceProvider, 'getCurrentPrice').mockRejectedValueOnce(testCase.error);
+      vi.spyOn(mockPriceProvider, 'getCurrentPrice').mockRejectedValueOnce(
+        testCase.error
+      );
 
       const response = await app.inject({
         method: 'GET',

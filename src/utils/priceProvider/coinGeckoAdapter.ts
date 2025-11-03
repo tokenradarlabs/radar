@@ -1,4 +1,3 @@
-import 'dotenv/config';
 import { validateEnvironmentVariables } from '../envValidation';
 import { fetchWithRetry } from '../fetchWithRetry';
 import { PriceProvider } from './index';
@@ -12,13 +11,20 @@ interface CoinGeckoPriceResponse {
 }
 
 export class CoinGeckoAdapter implements PriceProvider {
-  async getCurrentPrice(tokenId: string): Promise<number> {
+  private readonly apiKey: string;
+
+  constructor() {
     const { COINGECKO_API_KEY } = validateEnvironmentVariables();
-    const url = `https://api.coingecko.com/api/v3/simple/price?vs_currencies=usd&ids=${tokenId}&precision=5`;
+    this.apiKey = COINGECKO_API_KEY;
+  }
+
+  async getCurrentPrice(tokenId: string): Promise<number> {
+    const encodedTokenId = encodeURIComponent(tokenId);
+    const url = `https://api.coingecko.com/api/v3/simple/price?vs_currencies=usd&ids=${encodedTokenId}&precision=5`;
 
     const headers: Record<string, string> = {
       accept: 'application/json',
-      'x-cg-demo-api-key': COINGECKO_API_KEY,
+      'x-cg-demo-api-key': this.apiKey,
     };
 
     const options: RequestInit = {

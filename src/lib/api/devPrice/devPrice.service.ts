@@ -5,7 +5,9 @@ export class DevPriceService {
   static async getDevTokenPrice(): Promise<DevPriceData> {
     let price: number;
     try {
-      price = await coinGeckoPriceProvider.getCurrentPrice('scout-protocol-token');
+      price = await coinGeckoPriceProvider.getCurrentPrice(
+        'scout-protocol-token'
+      );
     } catch (error) {
       console.error('Error fetching DEV token price from CoinGecko:', error);
       throw new Error('Failed to fetch DEV token price');

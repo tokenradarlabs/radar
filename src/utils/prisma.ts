@@ -28,14 +28,14 @@ export async function connectPrisma(): Promise<void> {
         'Failed to connect to the database. ' +
           'Please ensure the database server is running and accessible, ' +
           'and your connection string in the .env file is correct. ' +
-          `Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          `Error: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
       process.exit(1); // Exit the process if database connection fails
     } else {
       logger.error(
         `An unexpected error occurred during database connection: ${
           error instanceof Error ? error.message : 'Unknown error'
-        }`,
+        }`
       );
       throw error; // Re-throw other unexpected errors
     }
