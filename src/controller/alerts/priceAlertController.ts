@@ -1,6 +1,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { priceAlertSchema } from '../../lib/api/priceAlert/priceAlert.schema';
 import { PriceAlertService } from '../../lib/api/priceAlert/priceAlert.service';
+import { ZodError } from 'zod';
 import {
   sendSuccess,
   sendBadRequest,
@@ -35,12 +36,15 @@ export default async function priceAlertController(fastify: FastifyInstance) {
           return sendUnauthorized(reply, 'Invalid or expired JWT');
         }
         // Validate body
-        const params = priceAlertSchema.parse(request.body);
+        const params = priceAlertSchema.parse({ ...request.body, userId: user.id });
         const result = await PriceAlertService.createAlert(params, user.id);
         logger.info('Price alert created', { userId: user.id, ...params });
         return sendSuccess(reply, result);
       } catch (error) {
         logger.error('Error creating price alert', { error });
+        if (error instanceof ZodError) {
+          return sendBadRequest(reply, 'Validation Error: ' + error.errors.map(e => e.message).join(', '));
+        }
         if (error instanceof Error) {
           return sendBadRequest(reply, error.message);
         }
