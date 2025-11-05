@@ -94,8 +94,8 @@ export async function authenticateApiKey(
     request.apiUser = foundApiKey.user;
     return;
   } catch (error) {
-    sendInternalError(reply, 'Internal server error');
-    return;
+    // Re-throw the error to be caught by Fastify's global error handler
+    throw error;
   }
 }
 
