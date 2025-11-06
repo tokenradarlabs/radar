@@ -143,11 +143,11 @@ export async function buildApp(): Promise<FastifyInstance> {
 
     // Operational, trusted error: send message to client
     if (error.statusCode && error.statusCode >= 400 && error.statusCode < 500) {
-      return errorResponse(reply, error.statusCode, error.message);
+      return errorResponse(reply, error.statusCode, error.message, 'CLIENT_ERROR');
     }
 
     // Programming or other unknown error: don't leak error details
-    return errorResponse(reply, 500, 'An unexpected error occurred');
+    return errorResponse(reply, 500, 'An unexpected error occurred', 'SERVER_ERROR');
   });
 
   // Ensure Prisma client is disconnected on application shutdown
