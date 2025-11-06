@@ -52,6 +52,7 @@ export default async function apiKeyController(fastify: FastifyInstance) {
           const response: Response<ApiKeyResponse> = {
             success: false,
             error: error.message,
+            code: ERROR_CODES.UNAUTHORIZED,
           };
           return reply.code(401).send(response);
         }
@@ -90,6 +91,7 @@ export default async function apiKeyController(fastify: FastifyInstance) {
           const response: Response<DeleteApiKeyResponse> = {
             success: false,
             error: error.errors[0].message,
+            code: ERROR_CODES.BAD_REQUEST,
           };
           return reply.code(400).send(response);
         }
@@ -99,6 +101,7 @@ export default async function apiKeyController(fastify: FastifyInstance) {
             const response: Response<DeleteApiKeyResponse> = {
               success: false,
               error: error.message,
+              code: ERROR_CODES.UNAUTHORIZED,
             };
             return reply.code(401).send(response);
           }

@@ -8,6 +8,7 @@ const rateLimiterPlugin: FastifyPluginAsync = async (fastify) => {
     RATE_LIMIT_MAX_REQUESTS,
     RATE_LIMIT_TIME_WINDOW,
     RATE_LIMIT_EXCLUDE_ROUTES,
+    RATE_LIMIT_BURST_ALLOWANCE,
   } = validateEnvironmentVariables();
 
   const excludeRoutes = RATE_LIMIT_EXCLUDE_ROUTES
@@ -18,6 +19,10 @@ const rateLimiterPlugin: FastifyPluginAsync = async (fastify) => {
     global: false, // Apply per-route or per-plugin
     max: parseInt(RATE_LIMIT_MAX_REQUESTS || '100', 10), // Default to 100 requests
     timeWindow: RATE_LIMIT_TIME_WINDOW || '1 minute', // Default to 1 minute
+    burst: (request) => {
+      const apiKey = request.headers['x-api-key'] as string;
+      return apiKey ? parseInt(RATE_LIMIT_BURST_ALLOWANCE || '0', 10) : 0;
+    },
     errorResponseBuilder: function (_req, context) {
       return {
         success: false,
