@@ -38,12 +38,15 @@ export async function fetchWithRetry(
         signalToUse = AbortSignal.any([controller.signal, fetchOptions.signal]);
       } else {
         // Fallback for older Node.js versions: attach listener
-        externalSignalListener = () => {
-          controller.abort();
-        };
-        fetchOptions.signal.addEventListener('abort', externalSignalListener);
-        signalToUse = controller.signal; // Still use the internal signal, but it will be aborted by external
-      }
+        if (fetchOptions.signal.aborted) {
+          controller.abort(fetchOptions.signal.reason);
+        } else {
+          externalSignalListener = () => {
+            controller.abort(fetchOptions.signal.reason);
+          };
+          fetchOptions.signal.addEventListener('abort', externalSignalListener);
+        }
+        signalToUse = controller.signal; // Still use the internal signal, but it will be aborted by external      }
     }
 
     try {

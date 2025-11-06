@@ -112,9 +112,6 @@ describe('fetchWithRetry', () => {
     expect(mockFetch).toHaveBeenCalledTimes(3);
 
     await expect(promise).resolves.toEqual(mockResponse);
-
-    consoleWarnSpy.mockRestore();
-    vi.spyOn(Math, 'random').mockRestore();
   });
 
   it('should abort ongoing fetch if AbortController signal is triggered externally', async () => {
