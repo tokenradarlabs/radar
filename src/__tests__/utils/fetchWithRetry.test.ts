@@ -83,6 +83,8 @@ describe('fetchWithRetry', () => {
   });
 
   it('should apply exponential backoff with jitter between retries', async () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.5);
+
     const mockFetch = vi
       .spyOn(global, 'fetch')
       .mockRejectedValueOnce(new Error('Network error 1'))
@@ -99,26 +101,28 @@ describe('fetchWithRetry', () => {
     expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining('retrying (1/2)'));
 
     // Advance for first retry (minDelay * 2^0 + jitter)
-    vi.advanceTimersByTime(100); // minDelay
+    vi.advanceTimersByTime(150); // minDelay * 1 + 0.5 * minDelay
     vi.runOnlyPendingTimers();
     expect(mockFetch).toHaveBeenCalledTimes(2);
     expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining('retrying (2/2)'));
 
     // Advance for second retry (minDelay * 2^1 + jitter)
-    vi.advanceTimersByTime(200); // minDelay * 2
+    vi.advanceTimersByTime(250); // minDelay * 2 + 0.5 * minDelay
     vi.runOnlyPendingTimers();
     expect(mockFetch).toHaveBeenCalledTimes(3);
 
     await expect(promise).resolves.toEqual(mockResponse);
 
     consoleWarnSpy.mockRestore();
+    vi.spyOn(Math, 'random').mockRestore();
   });
 
   it('should abort ongoing fetch if AbortController signal is triggered externally', async () => {
     const controller = new AbortController();
-    vi.spyOn(global, 'fetch').mockImplementation(() => {
+    vi.spyOn(global, 'fetch').mockImplementation((_url, init) => {
       return new Promise((resolve, reject) => {
-        controller.signal.addEventListener('abort', () => {
+        const signal = init?.signal || controller.signal; // Use the signal passed to fetch, or fallback to external
+        signal.addEventListener('abort', () => {
           reject(new Error('Aborted'));
         });
         setTimeout(() => resolve(mockResponse as Response), 1000);

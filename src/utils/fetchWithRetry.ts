@@ -23,12 +23,33 @@ export async function fetchWithRetry(
 
   for (let i = 0; i <= retries; i++) {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeout);
+    let timeoutAborted = false;
+    const timeoutId = setTimeout(() => {
+      timeoutAborted = true;
+      controller.abort();
+    }, timeout);
+
+    let signalToUse = controller.signal;
+    let externalSignalListener: (() => void) | undefined;
+
+    if (fetchOptions.signal) {
+      // Check if AbortSignal.any is available (Node.js 20+)
+      if (typeof AbortSignal.any === 'function') {
+        signalToUse = AbortSignal.any([controller.signal, fetchOptions.signal]);
+      } else {
+        // Fallback for older Node.js versions: attach listener
+        externalSignalListener = () => {
+          controller.abort();
+        };
+        fetchOptions.signal.addEventListener('abort', externalSignalListener);
+        signalToUse = controller.signal; // Still use the internal signal, but it will be aborted by external
+      }
+    }
 
     try {
       const response = await fetch(url, {
         ...fetchOptions,
-        signal: controller.signal,
+        signal: signalToUse,
       });
 
       if (!response.ok) {
@@ -40,7 +61,10 @@ export async function fetchWithRetry(
 
       return response;
     } catch (error: any) {
-      clearTimeout(timeoutId); // Clear timeout if fetch completes or errors before timeout
+      if (error.name === 'AbortError' && !timeoutAborted) {
+        // This is an external abort, rethrow immediately
+        throw error;
+      }
 
       if (error.name === 'AbortError' && i < retries) {
         console.warn(
@@ -67,6 +91,11 @@ export async function fetchWithRetry(
         minDelay * Math.pow(2, i) + Math.random() * minDelay
       );
       await new Promise((resolve) => setTimeout(resolve, delay));
+    } finally {
+      clearTimeout(timeoutId);
+      if (fetchOptions.signal && externalSignalListener) {
+        fetchOptions.signal.removeEventListener('abort', externalSignalListener);
+      }
     }
   }
   // This part should ideally not be reached, but for type safety
