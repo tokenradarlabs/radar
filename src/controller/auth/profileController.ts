@@ -19,6 +19,7 @@ export default async function profileController(fastify: FastifyInstance) {
           const response: Response<IAuthUser> = {
             success: false,
             error: 'Authentication required',
+            code: ERROR_CODES.UNAUTHORIZED,
           };
           return reply.code(401).send(response);
         }
@@ -37,6 +38,7 @@ export default async function profileController(fastify: FastifyInstance) {
           const response: Response<IAuthUser> = {
             success: false,
             error: 'User not found',
+            code: ERROR_CODES.NOT_FOUND,
           };
           return reply.code(404).send(response);
         }
