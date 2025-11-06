@@ -18,20 +18,44 @@ export async function fetchWithRetry(
 ): Promise<Response> {
   const { retries = 3, timeout = 5000, ...fetchOptions } = options || {};
 
-  for (let i = 0; i <= retries; i++) {
-    let timeoutId: NodeJS.Timeout | undefined;
-    try {
-      const controller = new AbortController();
-      timeoutId = setTimeout(() => controller.abort(), timeout);
+  const minDelay = 100; // Minimum delay for backoff in ms
+  const maxDelay = 5000; // Maximum delay for backoff in ms
 
+  for (let i = 0; i <= retries; i++) {
+    const controller = new AbortController();
+    let timeoutAborted = false;
+    const timeoutId = setTimeout(() => {
+      timeoutAborted = true;
+      controller.abort();
+    }, timeout);
+
+    let signalToUse = controller.signal;
+    let externalSignalListener: (() => void) | undefined;
+
+    if (fetchOptions.signal) {
+      // Check if AbortSignal.any is available (Node.js 20+)
+      if (typeof AbortSignal.any === 'function') {
+        signalToUse = AbortSignal.any([controller.signal, fetchOptions.signal]);
+      } else {
+        // Fallback for older Node.js versions: attach listener
+        if (fetchOptions.signal.aborted) {
+          controller.abort(fetchOptions.signal.reason);
+        } else {
+          externalSignalListener = () => {
+            controller.abort(fetchOptions.signal.reason);
+          };
+          fetchOptions.signal.addEventListener('abort', externalSignalListener);
+        }
+        signalToUse = controller.signal; // Still use the internal signal, but it will be aborted by external      }
+    }
+
+    try {
       const response = await fetch(url, {
         ...fetchOptions,
-        signal: controller.signal,
+        signal: signalToUse,
       });
 
       if (!response.ok) {
-        // If response is not ok, but not a network error, we might still want to retry
-        // depending on the status code. For now, we'll just throw.
         const errorBody = await response.text();
         throw new Error(
           `HTTP error! status: ${response.status}, body: ${errorBody}`
@@ -40,22 +64,41 @@ export async function fetchWithRetry(
 
       return response;
     } catch (error: any) {
-      if (i < retries) {
+      if (error.name === 'AbortError' && !timeoutAborted) {
+        // This is an external abort, rethrow immediately
+        throw error;
+      }
+
+      if (error.name === 'AbortError' && i < retries) {
+        console.warn(
+          `Fetch for ${url} timed out, retrying (${
+            i + 1
+          }/${retries}). Error: ${error.message}`
+        );
+      } else if (i < retries) {
         console.warn(
           `Fetch failed for ${url}, retrying (${
             i + 1
           }/${retries}). Error: ${error.message}`
         );
-        // Simple exponential backoff
-        await new Promise((resolve) => setTimeout(resolve, 2 ** i * 1000));
       } else {
         console.error(
           `Fetch failed for ${url} after ${retries} retries. Error: ${error.message}`
         );
         throw error;
       }
+
+      // Exponential backoff with jitter
+      const delay = Math.min(
+        maxDelay,
+        minDelay * Math.pow(2, i) + Math.random() * minDelay
+      );
+      await new Promise((resolve) => setTimeout(resolve, delay));
     } finally {
-      if (timeoutId !== undefined) clearTimeout(timeoutId);
+      clearTimeout(timeoutId);
+      if (fetchOptions.signal && externalSignalListener) {
+        fetchOptions.signal.removeEventListener('abort', externalSignalListener);
+      }
     }
   }
   // This part should ideally not be reached, but for type safety
