@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { Response } from '../../types/responses';
-import { sendInternalError } from '../../utils/responseHelper';
+import { sendInternalError, ERROR_CODES } from '../../utils/responseHelper';
 import {
   deleteApiKeyCombinedSchema,
   type DeleteApiKeyRequest,
@@ -44,6 +44,7 @@ export default async function apiKeyController(fastify: FastifyInstance) {
           const response: Response<ApiKeyResponse> = {
             success: false,
             error: error.errors[0].message,
+            code: ERROR_CODES.BAD_REQUEST,
           };
           return reply.code(400).send(response);
         }
@@ -52,11 +53,12 @@ export default async function apiKeyController(fastify: FastifyInstance) {
           const response: Response<ApiKeyResponse> = {
             success: false,
             error: error.message,
+            code: ERROR_CODES.UNAUTHORIZED,
           };
           return reply.code(401).send(response);
         }
 
-        handleControllerError(reply, error, 'Internal server error');
+        sendInternalError(reply, 'Internal server error');
         return;
       }
     }
@@ -90,6 +92,7 @@ export default async function apiKeyController(fastify: FastifyInstance) {
           const response: Response<DeleteApiKeyResponse> = {
             success: false,
             error: error.errors[0].message,
+            code: ERROR_CODES.BAD_REQUEST,
           };
           return reply.code(400).send(response);
         }
@@ -99,6 +102,7 @@ export default async function apiKeyController(fastify: FastifyInstance) {
             const response: Response<DeleteApiKeyResponse> = {
               success: false,
               error: error.message,
+              code: ERROR_CODES.UNAUTHORIZED,
             };
             return reply.code(401).send(response);
           }
@@ -107,12 +111,13 @@ export default async function apiKeyController(fastify: FastifyInstance) {
             const response: Response<DeleteApiKeyResponse> = {
               success: false,
               error: error.message,
+              code: ERROR_CODES.NOT_FOUND,
             };
             return reply.code(404).send(response);
           }
         }
 
-        handleControllerError(reply, error, 'Internal server error');
+        sendInternalError(reply, 'Internal server error');
         return;
       }
     }
@@ -149,6 +154,7 @@ export default async function apiKeyController(fastify: FastifyInstance) {
           const response: Response<UpdateApiKeyResponse> = {
             success: false,
             error: error.errors[0].message,
+            code: ERROR_CODES.BAD_REQUEST,
           };
           return reply.code(400).send(response);
         }
@@ -158,6 +164,7 @@ export default async function apiKeyController(fastify: FastifyInstance) {
             const response: Response<UpdateApiKeyResponse> = {
               success: false,
               error: error.message,
+              code: ERROR_CODES.UNAUTHORIZED,
             };
             return reply.code(401).send(response);
           }
@@ -166,12 +173,13 @@ export default async function apiKeyController(fastify: FastifyInstance) {
             const response: Response<UpdateApiKeyResponse> = {
               success: false,
               error: error.message,
+              code: ERROR_CODES.NOT_FOUND,
             };
             return reply.code(404).send(response);
           }
         }
 
-        handleControllerError(reply, error, 'Internal server error');
+        sendInternalError(reply, 'Internal server error');
         return;
       }
     }

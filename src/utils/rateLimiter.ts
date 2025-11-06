@@ -3,6 +3,16 @@ import fp from 'fastify-plugin';
 import rateLimit from '@fastify/rate-limit';
 import { validateEnvironmentVariables } from './envValidation';
 
+const { RATE_LIMIT_BURST_ALLOWANCE } = validateEnvironmentVariables();
+
+const burstAllowance = (() => {
+  const parsedAllowance = parseInt(RATE_LIMIT_BURST_ALLOWANCE || '0', 10);
+  if (isNaN(parsedAllowance) || !Number.isFinite(parsedAllowance) || parsedAllowance < 0) {
+    throw new Error('Invalid RATE_LIMIT_BURST_ALLOWANCE environment variable. Must be a non-negative integer.');
+  }
+  return parsedAllowance;
+})();
+
 const rateLimiterPlugin: FastifyPluginAsync = async (fastify) => {
   const {
     RATE_LIMIT_MAX_REQUESTS,
@@ -18,6 +28,10 @@ const rateLimiterPlugin: FastifyPluginAsync = async (fastify) => {
     global: false, // Apply per-route or per-plugin
     max: parseInt(RATE_LIMIT_MAX_REQUESTS || '100', 10), // Default to 100 requests
     timeWindow: RATE_LIMIT_TIME_WINDOW || '1 minute', // Default to 1 minute
+    burst: (request) => {
+      const apiKey = request.headers['x-api-key'] as string;
+      return apiKey ? burstAllowance : 0;
+    },
     errorResponseBuilder: function (_req, context) {
       return {
         success: false,

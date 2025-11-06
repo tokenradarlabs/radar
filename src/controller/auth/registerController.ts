@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { Response } from '../../types/responses';
-import { sendInternalError } from '../../utils/responseHelper';
+import { sendInternalError, ERROR_CODES } from '../../utils/responseHelper';
 import { IAuthUser } from '../../types/user';
 import {
   registerRequestSchema,
@@ -30,6 +30,7 @@ export default async function registerController(fastify: FastifyInstance) {
           const response: Response<IAuthUser> = {
             success: false,
             error: error.errors[0].message,
+            code: ERROR_CODES.BAD_REQUEST,
           };
           return reply.code(400).send(response);
         }
@@ -41,6 +42,7 @@ export default async function registerController(fastify: FastifyInstance) {
           const response: Response<IAuthUser> = {
             success: false,
             error: error.message,
+            code: 'ERR_CONFLICT',
           };
           return reply.code(409).send(response);
         }

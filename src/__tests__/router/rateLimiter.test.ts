@@ -9,6 +9,7 @@ beforeAll(async () => {
   process.env.RATE_LIMIT_MAX_REQUESTS = '2';
   process.env.RATE_LIMIT_TIME_WINDOW = '1 second';
   process.env.RATE_LIMIT_EXCLUDE_ROUTES = '/health';
+  process.env.RATE_LIMIT_BURST_ALLOWANCE = '1';
 
   fastify = await buildApp();
 });
@@ -19,6 +20,7 @@ afterAll(async () => {
   delete process.env.RATE_LIMIT_MAX_REQUESTS;
   delete process.env.RATE_LIMIT_TIME_WINDOW;
   delete process.env.RATE_LIMIT_EXCLUDE_ROUTES;
+  delete process.env.RATE_LIMIT_BURST_ALLOWANCE;
 });
 
 // Helper to wait for a given time
@@ -125,4 +127,44 @@ test('Public routes should be rate-limited by API key', async () => {
     headers: { 'x-api-key': apiKey },
   });
   expect(response5.statusCode).toBe(200);
+});
+
+test('API key routes should respect burst allowance', async () => {
+  const apiKey = 'burst-api-key-123';
+  const maxRequests = parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '2', 10);
+  const burstAllowance = parseInt(process.env.RATE_LIMIT_BURST_ALLOWANCE || '1', 10);
+  const totalAllowed = maxRequests + burstAllowance;
+
+  // Make requests up to totalAllowed (max + burst)
+  for (let i = 0; i < totalAllowed; i++) {
+    const response = await fastify.inject({
+      method: 'GET',
+      url: '/',
+      headers: { 'x-api-key': apiKey },
+    });
+    expect(response.statusCode).toBe(200);
+  }
+
+  // The next request should be rate-limited
+  const responseRateLimited = await fastify.inject({
+    method: 'GET',
+    url: '/',
+    headers: { 'x-api-key': apiKey },
+  });
+  expect(responseRateLimited.statusCode).toBe(429);
+  expect(responseRateLimited.json()).toEqual({
+    success: false,
+    error: 'Rate limit exceeded, retry in 1.',
+  });
+
+  // Wait for the time window to reset
+  await wait(1100);
+
+  // After reset, request should pass again
+  const responseAfterReset = await fastify.inject({
+    method: 'GET',
+    url: '/',
+    headers: { 'x-api-key': apiKey },
+  });
+  expect(responseAfterReset.statusCode).toBe(200);
 });

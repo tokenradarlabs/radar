@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { authenticateJwt } from '../../utils/auth';
 import { Response } from '../../types/responses';
-import { sendInternalError } from '../../utils/responseHelper';
+import { sendInternalError, ERROR_CODES } from '../../utils/responseHelper';
 import { IAuthUser } from '../../types/user';
 import { ProfileService, ProfileResponse } from '../../lib/auth';
 
@@ -19,6 +19,7 @@ export default async function profileController(fastify: FastifyInstance) {
           const response: Response<IAuthUser> = {
             success: false,
             error: 'Authentication required',
+            code: ERROR_CODES.UNAUTHORIZED,
           };
           return reply.code(401).send(response);
         }
@@ -37,6 +38,7 @@ export default async function profileController(fastify: FastifyInstance) {
           const response: Response<IAuthUser> = {
             success: false,
             error: 'User not found',
+            code: ERROR_CODES.NOT_FOUND,
           };
           return reply.code(404).send(response);
         }
