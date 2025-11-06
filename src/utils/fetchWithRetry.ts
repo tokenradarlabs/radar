@@ -18,20 +18,20 @@ export async function fetchWithRetry(
 ): Promise<Response> {
   const { retries = 3, timeout = 5000, ...fetchOptions } = options || {};
 
-  for (let i = 0; i <= retries; i++) {
-    let timeoutId: NodeJS.Timeout | undefined;
-    try {
-      const controller = new AbortController();
-      timeoutId = setTimeout(() => controller.abort(), timeout);
+  const minDelay = 100; // Minimum delay for backoff in ms
+  const maxDelay = 5000; // Maximum delay for backoff in ms
 
+  for (let i = 0; i <= retries; i++) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+    try {
       const response = await fetch(url, {
         ...fetchOptions,
         signal: controller.signal,
       });
 
       if (!response.ok) {
-        // If response is not ok, but not a network error, we might still want to retry
-        // depending on the status code. For now, we'll just throw.
         const errorBody = await response.text();
         throw new Error(
           `HTTP error! status: ${response.status}, body: ${errorBody}`
@@ -40,22 +40,33 @@ export async function fetchWithRetry(
 
       return response;
     } catch (error: any) {
-      if (i < retries) {
+      clearTimeout(timeoutId); // Clear timeout if fetch completes or errors before timeout
+
+      if (error.name === 'AbortError' && i < retries) {
+        console.warn(
+          `Fetch for ${url} timed out, retrying (${
+            i + 1
+          }/${retries}). Error: ${error.message}`
+        );
+      } else if (i < retries) {
         console.warn(
           `Fetch failed for ${url}, retrying (${
             i + 1
           }/${retries}). Error: ${error.message}`
         );
-        // Simple exponential backoff
-        await new Promise((resolve) => setTimeout(resolve, 2 ** i * 1000));
       } else {
         console.error(
           `Fetch failed for ${url} after ${retries} retries. Error: ${error.message}`
         );
         throw error;
       }
-    } finally {
-      if (timeoutId !== undefined) clearTimeout(timeoutId);
+
+      // Exponential backoff with jitter
+      const delay = Math.min(
+        maxDelay,
+        minDelay * Math.pow(2, i) + Math.random() * minDelay
+      );
+      await new Promise((resolve) => setTimeout(resolve, delay));
     }
   }
   // This part should ideally not be reached, but for type safety
