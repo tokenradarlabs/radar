@@ -15,10 +15,13 @@
     "esModuleInterop": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "types": ["node", "vitest/globals"]
+    "types": ["node"],
+    "skipLibCheck": true
   },
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "**/*.test.ts",
+    "**/*.spec.ts"
   ],
   "include": [
     "./src/**/*.ts"

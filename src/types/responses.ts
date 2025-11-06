@@ -25,6 +25,7 @@ export interface SuccessResponse<T> {
 export interface ErrorResponse {
   success: false;
   error: string;
+  code: string;
 }
 
 export type Response<T> = SuccessResponse<T> | ErrorResponse;

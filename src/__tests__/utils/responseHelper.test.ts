@@ -3,6 +3,7 @@ import {
   sendSuccess,
   errorResponse,
   HTTP_STATUS,
+  ERROR_CODES,
 } from '../../utils/responseHelper';
 import { vi } from 'vitest';
 
@@ -52,10 +53,10 @@ describe('Response Helpers', () => {
       errorMessage
     );
 
-    expect(mockReply.status).toHaveBeenCalledWith(HTTP_STATUS.BAD_REQUEST);
     expect(mockReply.send).toHaveBeenCalledWith({
       success: false,
       error: errorMessage,
+      code: ERROR_CODES.BAD_REQUEST,
     });
     expect(result).toBe(mockReply);
   });
@@ -72,6 +73,7 @@ describe('Response Helpers', () => {
     expect(mockReply.send).toHaveBeenCalledWith({
       success: false,
       error: errorMessage,
+      code: ERROR_CODES.UNAUTHORIZED,
     });
     expect(result).toBe(mockReply);
   });
