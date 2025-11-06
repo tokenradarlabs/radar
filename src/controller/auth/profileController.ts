@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { authenticateJwt } from '../../utils/auth';
 import { Response } from '../../types/responses';
-import { sendInternalError } from '../../utils/responseHelper';
+import { sendInternalError, ERROR_CODES } from '../../utils/responseHelper';
 import { IAuthUser } from '../../types/user';
 import { ProfileService, ProfileResponse } from '../../lib/auth';
 
