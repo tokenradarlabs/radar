@@ -8,7 +8,7 @@ export interface ApiKeyResponse {
 }
 
 function generateApiKey(): string {
-  return `rdr_${crypto.randomBytes(32).toString('hex')}`;
+  return `rdr_${crypto.randomBytes(64).toString('hex')}`;
 }
 
 function generateKeyName(): string {

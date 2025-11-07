@@ -80,7 +80,7 @@ describe('API Key Generate Endpoint', () => {
     expect(body.data).toBeDefined();
     expect(body.data.apiKey).toBeDefined();
     expect(typeof body.data.apiKey).toBe('string');
-    expect(body.data.apiKey).toMatch(/^rdr_[a-f0-9]{64}$/);
+    expect(body.data.apiKey).toMatch(/^rdr_[a-f0-9]{128}$/);
 
     // Verify the API key was actually created in the database
     const createdApiKey = await prisma.apiKey.findUnique({
@@ -198,8 +198,8 @@ describe('API Key Generate Endpoint', () => {
 
     // Ensure API keys are different
     expect(firstApiKey).not.toBe(secondApiKey);
-    expect(firstApiKey).toMatch(/^rdr_[a-f0-9]{64}$/);
-    expect(secondApiKey).toMatch(/^rdr_[a-f0-9]{64}$/);
+    expect(firstApiKey).toMatch(/^rdr_[a-f0-9]{128}$/);
+    expect(secondApiKey).toMatch(/^rdr_[a-f0-9]{128}$/);
 
     // Verify both API keys exist in database
     const firstDbKey = await prisma.apiKey.findUnique({
