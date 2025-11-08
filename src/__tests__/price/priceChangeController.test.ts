@@ -7,9 +7,21 @@ vi.mock('../../utils/coinGeckoPriceChange', () => ({
   fetchTokenPriceChange: vi.fn(),
 }));
 
-// Import the mocked function
+// Mock the telemetry utility
+vi.mock('../../utils/telemetry', () => ({
+  telemetry: {
+    recordDuration: vi.fn(),
+    recordCount: vi.fn(),
+  },
+}));
+
+// Import the mocked functions
 import { fetchTokenPriceChange } from '../../utils/coinGeckoPriceChange';
+import { telemetry } from '../../utils/telemetry';
+
 const mockFetchTokenPriceChange = vi.mocked(fetchTokenPriceChange);
+const mockRecordDuration = vi.mocked(telemetry.recordDuration);
+const mockRecordCount = vi.mocked(telemetry.recordCount);
 
 describe('Token Price Change Endpoint', () => {
   let app: any;
@@ -17,6 +29,9 @@ describe('Token Price Change Endpoint', () => {
   beforeEach(async () => {
     // Clear all mocks before each test
     vi.clearAllMocks();
+
+    // Enable telemetry for tests
+    process.env.ENABLE_TELEMETRY = 'true';
 
     // Suppress console.error during tests to avoid stderr output
     vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -30,7 +45,7 @@ describe('Token Price Change Endpoint', () => {
     });
   });
 
-  it('should successfully return positive price change data', async () => {
+  it('should successfully return positive price change data and record telemetry', async () => {
     const tokenId = 'bitcoin';
     const mockPriceChange = 2.5; // 2.5% change
 
@@ -53,6 +68,16 @@ describe('Token Price Change Endpoint', () => {
 
     expect(mockFetchTokenPriceChange).toHaveBeenCalledTimes(1);
     expect(mockFetchTokenPriceChange).toHaveBeenCalledWith(tokenId);
+
+    // Assert telemetry calls
+    expect(mockRecordCount).toHaveBeenCalledTimes(1);
+    expect(mockRecordCount).toHaveBeenCalledWith('price_change_request', 1, { tokenId });
+    expect(mockRecordDuration).toHaveBeenCalledTimes(1);
+    expect(mockRecordDuration).toHaveBeenCalledWith(
+      'price_change_controller_duration',
+      expect.any(Number),
+      { method: 'GET', url: `/api/v1/priceChange/${tokenId}` }
+    );
   });
 
   it('should successfully return negative price change data', async () => {

@@ -3,6 +3,7 @@ import logger from '../utils/logger';
 import { z } from 'zod';
 import { sendSuccess, sendBadRequest } from '../utils/responseHelper';
 import { formatValidationError } from '../utils/validation';
+import { telemetry } from '../utils/telemetry';
 import {
   PriceChangeService,
   priceChangeTokenIdSchema,
@@ -17,6 +18,7 @@ export default async function priceChangeController(fastify: FastifyInstance) {
       request: FastifyRequest<{ Params: TokenPriceChangeParams }>,
       reply: FastifyReply
     ) {
+      const startTime = process.hrtime.bigint();
       try {
         // Validate token ID parameter
         const validatedParams = priceChangeTokenIdSchema.parse(request.params);
@@ -25,6 +27,7 @@ export default async function priceChangeController(fastify: FastifyInstance) {
         const responseData =
           await PriceChangeService.getTokenPriceChange(tokenId);
 
+        telemetry.recordCount('price_change_request', 1, { tokenId });
         return sendSuccess(reply, responseData);
       } catch (error) {
         if (error instanceof z.ZodError) {
@@ -38,6 +41,10 @@ export default async function priceChangeController(fastify: FastifyInstance) {
             ? error.message
             : 'Failed to fetch token price change'
         );
+      } finally {
+        const endTime = process.hrtime.bigint();
+        const durationMs = Number(endTime - startTime) / 1_000_000;
+        telemetry.recordDuration('price_change_controller_duration', durationMs, { method: request.method, url: request.url });
       }
     }
   );
