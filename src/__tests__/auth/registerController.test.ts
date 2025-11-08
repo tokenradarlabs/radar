@@ -4,6 +4,7 @@ import { registerController } from '../../controller/auth';
 import { RegisterService, registerRequestSchema } from '../../lib/auth';
 import { handleControllerError } from '../../utils/responseHelper';
 import { ZodError } from 'zod';
+import { formatValidationError } from '../../utils/validation';
 
 // Mock dependencies
 vi.mock('../../lib/auth', async (importOriginal) => {
@@ -23,6 +24,10 @@ vi.mock('../../utils/responseHelper', () => ({
   handleControllerError: vi.fn(),
 }));
 
+vi.mock('../../utils/validation', () => ({
+  formatValidationError: vi.fn(),
+}));
+
 describe('User Registration Endpoint (Unit)', () => {
   let app: FastifyInstance;
 
@@ -40,6 +45,7 @@ describe('User Registration Endpoint (Unit)', () => {
   // Reset mocks before each test to ensure isolation
   beforeEach(() => {
     vi.clearAllMocks();
+    (formatValidationError as vi.Mock).mockReturnValue('Validation error'); // Default mock
   });
 
   it('should successfully register a new user with valid data', async () => {
@@ -90,6 +96,7 @@ describe('User Registration Endpoint (Unit)', () => {
     (registerRequestSchema.parse as vi.Mock).mockImplementation(() => {
       throw zodError;
     });
+    (formatValidationError as vi.Mock).mockReturnValue('Invalid email format');
 
     const response = await app.inject({
       method: 'POST',
@@ -102,6 +109,49 @@ describe('User Registration Endpoint (Unit)', () => {
     expect(body.success).toBe(false);
     expect(body.error).toBe('Invalid email format');
     expect(registerRequestSchema.parse).toHaveBeenCalledWith(invalidUserData);
+    expect(RegisterService.registerUser).not.toHaveBeenCalled();
+    expect(handleControllerError).not.toHaveBeenCalled();
+  });
+
+  it('should return 400 for invalid payloads with multiple validation errors', async () => {
+    const invalidUserData = {
+      email: 'not-an-email',
+      password: 'weak',
+    };
+    const zodError = new ZodError([
+      {
+        code: 'invalid_string',
+        message: 'Invalid email format',
+        path: ['email'],
+        validation: 'email',
+      },
+      {
+        code: 'too_small',
+        minimum: 8,
+        type: 'string',
+        inclusive: true,
+        message: 'Password must be at least 8 characters long',
+        path: ['password'],
+      },
+    ]);
+
+    (registerRequestSchema.parse as vi.Mock).mockImplementation(() => {
+      throw zodError;
+    });
+    (formatValidationError as vi.Mock).mockReturnValue('Invalid email format');
+
+    const response = await app.inject({
+      method: 'POST',
+      url: '/auth/register',
+      payload: invalidUserData,
+    });
+
+    expect(response.statusCode).toBe(400);
+    const body = JSON.parse(response.body);
+    expect(body.success).toBe(false);
+    expect(body.error).toBe('Invalid email format');
+    expect(registerRequestSchema.parse).toHaveBeenCalledWith(invalidUserData);
+    expect(formatValidationError).toHaveBeenCalledWith(zodError);
     expect(RegisterService.registerUser).not.toHaveBeenCalled();
     expect(handleControllerError).not.toHaveBeenCalled();
   });
