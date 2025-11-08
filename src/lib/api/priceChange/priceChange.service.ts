@@ -22,7 +22,10 @@ export class PriceChangeService {
       };
     } catch (error) {
       console.error(`Error fetching price change for ${tokenId}:`, error);
-      throw new Error('Failed to fetch token price change');
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error(`Failed to fetch token price change: ${error}`);
     } finally {
       const endTime = process.hrtime.bigint();
       const durationMs = Number(endTime - startTime) / 1_000_000;
