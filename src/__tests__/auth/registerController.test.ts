@@ -45,6 +45,7 @@ describe('User Registration Endpoint (Unit)', () => {
   // Reset mocks before each test to ensure isolation
   beforeEach(() => {
     vi.clearAllMocks();
+    (formatValidationError as vi.Mock).mockReturnValue('Validation error'); // Default mock
   });
 
   it('should successfully register a new user with valid data', async () => {
@@ -95,6 +96,7 @@ describe('User Registration Endpoint (Unit)', () => {
     (registerRequestSchema.parse as vi.Mock).mockImplementation(() => {
       throw zodError;
     });
+    (formatValidationError as vi.Mock).mockReturnValue('Invalid email format');
 
     const response = await app.inject({
       method: 'POST',
