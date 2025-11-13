@@ -44,6 +44,8 @@ model Alert {
   user       User         @relation(fields: [userId], references: [id])
   tokenId    String
   token      Token        @relation(fields: [tokenId], references: [id])
+  webhookUrl String?
+
 }
 
 model PriceAlert {
