@@ -130,6 +130,7 @@ declare module 'fastify' {
       isActive: boolean;
       userId: string;
       expiresAt?: Date; // Add expiresAt to the type definition
+      rateLimit: number; // Add rateLimit to the type definition
       user: {
         id: string;
         email: string;
