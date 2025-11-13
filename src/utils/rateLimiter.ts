@@ -16,7 +16,7 @@ const burstAllowance = (() => {
 interface RateLimitOptions {
   maxRequests: number;
   timeWindow?: string;
-  excludeRoutes?: string[];
+  excludeRoutes?: string | string[];
 }
 
 const createRateLimiterPlugin = (options: RateLimitOptions): FastifyPluginAsync => {
@@ -26,13 +26,30 @@ const createRateLimiterPlugin = (options: RateLimitOptions): FastifyPluginAsync 
       RATE_LIMIT_EXCLUDE_ROUTES,
     } = validateEnvironmentVariables();
 
-    const excludeRoutes = options.excludeRoutes || RATE_LIMIT_EXCLUDE_ROUTES
-      ? (RATE_LIMIT_EXCLUDE_ROUTES || '').split(',').map((route) => route.trim())
-      : ['/health']; // Default exclude health route
+    let excludeRoutes: string[];
+    if (options.excludeRoutes) {
+      if (Array.isArray(options.excludeRoutes)) {
+        excludeRoutes = options.excludeRoutes;
+      } else if (typeof options.excludeRoutes === 'string') {
+        excludeRoutes = options.excludeRoutes.split(',').map((route) => route.trim());
+      } else {
+        excludeRoutes = ['/health']; // Fallback if options.excludeRoutes is neither string nor array
+      }
+    } else if (RATE_LIMIT_EXCLUDE_ROUTES) {
+      excludeRoutes = RATE_LIMIT_EXCLUDE_ROUTES.split(',').map((route) => route.trim());
+    } else {
+      excludeRoutes = ['/health']; // Default exclude health route
+    }
 
     fastify.register(rateLimit, {
       global: false, // Apply per-route or per-plugin
-      max: options.maxRequests,
+      max: (request: FastifyRequest) => {
+        const apiKeyRateLimit = request.apiKey?.rateLimit;
+        if (typeof apiKeyRateLimit === 'number' && !isNaN(apiKeyRateLimit)) {
+          return apiKeyRateLimit;
+        }
+        return options.maxRequests;
+      },
       timeWindow: options.timeWindow || RATE_LIMIT_TIME_WINDOW || '1 minute', // Default to 1 minute
       burst: (request: FastifyRequest) => {
         const apiKey = request.headers['x-api-key'] as string;
