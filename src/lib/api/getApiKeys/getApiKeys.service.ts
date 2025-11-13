@@ -13,6 +13,10 @@ export interface ApiKeyListResponse {
     usageCount: number;
     isActive: boolean;
   }[];
+  totalCount: number;
+  page: number;
+  limit: number;
+  totalPages: number;
 }
 
 export class GetApiKeysService {
@@ -40,24 +44,42 @@ export class GetApiKeysService {
     }
 
     // Fetch API keys for the user
-    const apiKeys = await prisma.apiKey.findMany({
-      where: {
-        userId: user.id,
-      },
-      select: {
-        id: true,
-        key: true,
-        name: true,
-        createdAt: true,
-        updatedAt: true,
-        lastUsedAt: true,
-        usageCount: true,
-        isActive: true,
-      },
-    });
+    const { page = 1, limit = 10 } = data;
+    const skip = (page - 1) * limit;
+    const take = limit;
+
+    const [apiKeys, totalCount] = await prisma.$transaction([
+      prisma.apiKey.findMany({
+        where: {
+          userId: user.id,
+        },
+        select: {
+          id: true,
+          key: true,
+          name: true,
+          createdAt: true,
+          updatedAt: true,
+          lastUsedAt: true,
+          usageCount: true,
+          isActive: true,
+        },
+        skip,
+        take,
+      }),
+      prisma.apiKey.count({
+        where: {
+          userId: user.id,
+        },
+      }),
+    ]);
+
+    const totalPages = Math.ceil(totalCount / limit);
 
     return {
       apiKeys,
+      totalCount,
+      page,
+      limit,
+      totalPages,
     };
-  }
 }
