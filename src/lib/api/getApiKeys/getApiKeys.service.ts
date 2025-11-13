@@ -63,6 +63,7 @@ export class GetApiKeysService {
           usageCount: true,
           isActive: true,
         },
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
         skip,
         take,
       }),

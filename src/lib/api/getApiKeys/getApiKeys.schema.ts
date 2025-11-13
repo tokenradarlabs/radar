@@ -19,14 +19,8 @@ export const getApiKeysBodySchema = z.object({
 });
 
 export const getApiKeysQuerySchema = z.object({
-  page: z.preprocess(
-    (val) => parseInt(z.string().parse(val), 10),
-    z.number().int().positive().optional().default(1)
-  ),
-  limit: z.preprocess(
-    (val) => parseInt(z.string().parse(val), 10),
-    z.number().int().positive().optional().default(10)
-  ),
+  page: z.coerce.number().int().positive().default(1),
+  limit: z.coerce.number().int().positive().max(100).default(10),
 });
 
 export type GetApiKeysRequest = z.infer<typeof getApiKeysBodySchema> & z.infer<typeof getApiKeysQuerySchema>;
