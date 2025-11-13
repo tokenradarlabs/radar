@@ -5,7 +5,7 @@ import {
   INVALID_EMAIL_ERROR,
 } from '../../utils/validation';
 
-export const getApiKeysRequestSchema = z.object({
+export const getApiKeysBodySchema = z.object({
   email: z
     .string({
       required_error: REQUIRED_ERROR,
@@ -18,4 +18,9 @@ export const getApiKeysRequestSchema = z.object({
   }),
 });
 
-export type GetApiKeysRequest = z.infer<typeof getApiKeysRequestSchema>;
+export const getApiKeysQuerySchema = z.object({
+  page: z.coerce.number().int().positive().default(1),
+  limit: z.coerce.number().int().positive().max(100).default(10),
+});
+
+export type GetApiKeysRequest = z.infer<typeof getApiKeysBodySchema> & z.infer<typeof getApiKeysQuerySchema>;
