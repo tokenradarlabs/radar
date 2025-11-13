@@ -2,6 +2,7 @@ import type { ApiKeyRequest } from './generateApiKey.schema';
 import crypto from 'crypto';
 import prisma from '../../../utils/prisma';
 import bcrypt from 'bcrypt';
+import { ConflictError, UnauthorizedError } from '../../../utils/errors';
 
 export interface ApiKeyResponse {
   apiKey: string;
@@ -42,13 +43,13 @@ export class GenerateApiKeyService {
     });
 
     if (!user) {
-      throw new Error('Invalid credentials');
+      throw new UnauthorizedError('Invalid credentials');
     }
 
     const isValidPassword = await bcrypt.compare(data.password, user.password);
 
     if (!isValidPassword) {
-      throw new Error('Invalid credentials');
+      throw new UnauthorizedError('Invalid credentials');
     }
 
     let apiKeyName: string;
@@ -61,7 +62,7 @@ export class GenerateApiKeyService {
       });
 
       if (existingKey) {
-        throw new Error('API key with this name already exists for this user.');
+        throw new ConflictError('API key with this name already exists for this user.');
       }
       apiKeyName = data.name;
     } else {

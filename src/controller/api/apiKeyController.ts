@@ -2,6 +2,7 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { Response } from '../../types/responses';
 import { sendInternalError, ERROR_CODES } from '../../utils/responseHelper';
+import { ConflictError, UnauthorizedError, NotFoundError } from '../../utils/errors';
 import {
   deleteApiKeyCombinedSchema,
   type DeleteApiKeyRequest,
@@ -49,7 +50,7 @@ export default async function apiKeyController(fastify: FastifyInstance) {
           return reply.code(400).send(response);
         }
 
-        if (error instanceof Error && error.message === 'Invalid credentials') {
+        if (error instanceof UnauthorizedError) {
           const response: Response<ApiKeyResponse> = {
             success: false,
             error: error.message,
@@ -58,7 +59,7 @@ export default async function apiKeyController(fastify: FastifyInstance) {
           return reply.code(401).send(response);
         }
 
-        if (error instanceof Error && error.message === 'API key with this name already exists for this user.') {
+        if (error instanceof ConflictError) {
           const response: Response<ApiKeyResponse> = {
             success: false,
             error: error.message,
@@ -106,24 +107,22 @@ export default async function apiKeyController(fastify: FastifyInstance) {
           return reply.code(400).send(response);
         }
 
-        if (error instanceof Error) {
-          if (error.message === 'Invalid credentials') {
-            const response: Response<DeleteApiKeyResponse> = {
-              success: false,
-              error: error.message,
-              code: ERROR_CODES.UNAUTHORIZED,
-            };
-            return reply.code(401).send(response);
-          }
+        if (error instanceof UnauthorizedError) {
+          const response: Response<DeleteApiKeyResponse> = {
+            success: false,
+            error: error.message,
+            code: ERROR_CODES.UNAUTHORIZED,
+          };
+          return reply.code(401).send(response);
+        }
 
-          if (error.message === 'API key not found or access denied') {
-            const response: Response<DeleteApiKeyResponse> = {
-              success: false,
-              error: error.message,
-              code: ERROR_CODES.NOT_FOUND,
-            };
-            return reply.code(404).send(response);
-          }
+        if (error instanceof NotFoundError) {
+          const response: Response<DeleteApiKeyResponse> = {
+            success: false,
+            error: error.message,
+            code: ERROR_CODES.NOT_FOUND,
+          };
+          return reply.code(404).send(response);
         }
 
         sendInternalError(reply, 'Internal server error');
@@ -168,33 +167,31 @@ export default async function apiKeyController(fastify: FastifyInstance) {
           return reply.code(400).send(response);
         }
 
-        if (error instanceof Error) {
-          if (error.message === 'Invalid credentials') {
-            const response: Response<UpdateApiKeyResponse> = {
-              success: false,
-              error: error.message,
-              code: ERROR_CODES.UNAUTHORIZED,
-            };
-            return reply.code(401).send(response);
-          }
+        if (error instanceof UnauthorizedError) {
+          const response: Response<UpdateApiKeyResponse> = {
+            success: false,
+            error: error.message,
+            code: ERROR_CODES.UNAUTHORIZED,
+          };
+          return reply.code(401).send(response);
+        }
 
-          if (error.message === 'API key not found or access denied') {
-            const response: Response<UpdateApiKeyResponse> = {
-              success: false,
-              error: error.message,
-              code: ERROR_CODES.NOT_FOUND,
-            };
-            return reply.code(404).send(response);
-          }
+        if (error instanceof NotFoundError) {
+          const response: Response<UpdateApiKeyResponse> = {
+            success: false,
+            error: error.message,
+            code: ERROR_CODES.NOT_FOUND,
+          };
+          return reply.code(404).send(response);
+        }
 
-          if (error.message === 'API key with this name already exists for this user.') {
-            const response: Response<UpdateApiKeyResponse> = {
-              success: false,
-              error: error.message,
-              code: ERROR_CODES.CONFLICT,
-            };
-            return reply.code(409).send(response);
-          }
+        if (error instanceof ConflictError) {
+          const response: Response<UpdateApiKeyResponse> = {
+            success: false,
+            error: error.message,
+            code: ERROR_CODES.CONFLICT,
+          };
+          return reply.code(409).send(response);
         }
 
         sendInternalError(reply, 'Internal server error');
