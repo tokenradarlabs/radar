@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import fastify, { FastifyError, FastifyInstance } from 'fastify';
 import rateLimiterPlugin from './utils/rateLimiter';
+import requestTimingPlugin from './plugins/requestTiming';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import router from './router';
@@ -49,6 +50,9 @@ export async function buildApp(): Promise<FastifyInstance> {
 
   // Register rate limiter plugin
   server.register(rateLimiterPlugin);
+
+  // Register request timing plugin
+  server.register(requestTimingPlugin);
 
   // Request-scoped context middleware
   server.addHook('onRequest', (request, reply, done) => {
