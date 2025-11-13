@@ -91,6 +91,97 @@ describe('API Key Generate Endpoint', () => {
     expect(createdApiKey?.isActive).toBe(true);
     expect(createdApiKey?.usageCount).toBe(0);
     expect(createdApiKey?.name).toMatch(/^API Key - \d{4}-\d{2}-\d{2}T/);
+    expect(createdApiKey?.expiresAt).toBeNull(); // No expiration duration provided
+  });
+
+  it('should successfully generate API key with an expiration duration', async () => {
+    const requestData = {
+      email: testUser.email,
+      password: 'TestPassword123!',
+      expirationDuration: 7, // 7 days
+    };
+
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/keys/generate',
+      payload: requestData,
+    });
+
+    expect(response.statusCode).toBe(201);
+
+    const body = JSON.parse(response.body);
+    expect(body.success).toBe(true);
+    expect(body.data).toBeDefined();
+    expect(body.data.apiKey).toBeDefined();
+
+    const createdApiKey = await prisma.apiKey.findUnique({
+      where: { key: body.data.apiKey },
+    });
+    expect(createdApiKey).toBeTruthy();
+    expect(createdApiKey?.expiresAt).toBeInstanceOf(Date);
+    // Check if expiresAt is approximately 7 days from now
+    const sevenDaysFromNow = new Date();
+    sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
+    // Allow for a small margin of error (e.g., a few seconds)
+    expect(createdApiKey?.expiresAt?.getTime()).toBeLessThanOrEqual(sevenDaysFromNow.getTime() + 5000);
+    expect(createdApiKey?.expiresAt?.getTime()).toBeGreaterThanOrEqual(sevenDaysFromNow.getTime() - 5000);
+  });
+
+  it('should handle invalid expiration duration', async () => {
+    const requestData = {
+      email: testUser.email,
+      password: 'TestPassword123!',
+      expirationDuration: -1, // Invalid duration
+    };
+
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/keys/generate',
+      payload: requestData,
+    });
+
+    expect(response.statusCode).toBe(400);
+    const body = JSON.parse(response.body);
+    expect(body.success).toBe(false);
+    expect(body.error).toContain('Number must be greater than 0');
+  });
+
+  it('should handle non-integer expiration duration', async () => {
+    const requestData = {
+      email: testUser.email,
+      password: 'TestPassword123!',
+      expirationDuration: 7.5, // Non-integer duration
+    };
+
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/keys/generate',
+      payload: requestData,
+    });
+
+    expect(response.statusCode).toBe(400);
+    const body = JSON.parse(response.body);
+    expect(body.success).toBe(false);
+    expect(body.error).toContain('Expected integer, received float');
+  });
+
+  it('should handle non-numeric expiration duration', async () => {
+    const requestData = {
+      email: testUser.email,
+      password: 'TestPassword123!',
+      expirationDuration: 'seven' as any, // Non-numeric duration
+    };
+
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/keys/generate',
+      payload: requestData,
+    });
+
+    expect(response.statusCode).toBe(400);
+    const body = JSON.parse(response.body);
+    expect(body.success).toBe(false);
+    expect(body.error).toContain('Expected number, received string');
   });
 
   it('should handle validation errors and authentication failures', async () => {

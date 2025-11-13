@@ -1,7 +1,4 @@
-import bcrypt from 'bcrypt';
-import crypto from 'crypto';
-import { prisma } from '../../../utils/prisma';
-import { ApiKeyRequest } from './generateApiKey.schema';
+import type { ApiKeyRequest } from './generateApiKey.schema';
 
 export interface ApiKeyResponse {
   apiKey: string;
@@ -34,11 +31,18 @@ export class GenerateApiKeyService {
     }
 
     const apiKey = generateApiKey();
+    let expiresAt: Date | undefined;
+    if (data.expirationDuration) {
+      expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + data.expirationDuration);
+    }
+
     const newApiKey = await prisma.apiKey.create({
       data: {
         key: apiKey,
         name: generateKeyName(),
         userId: user.id,
+        expiresAt: expiresAt,
       },
     });
 

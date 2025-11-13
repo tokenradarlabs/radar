@@ -76,6 +76,14 @@ export async function authenticateApiKey(
       });
     }
 
+    // Check for API key expiration
+    if (foundApiKey.expiresAt && foundApiKey.expiresAt < new Date()) {
+      return reply.code(401).send({
+        success: false,
+        error: 'Expired API key',
+      });
+    }
+
     // Update the last used timestamp and increment usage count
     await prisma.apiKey.update({
       where: {
@@ -121,6 +129,7 @@ declare module 'fastify' {
       usageCount: number;
       isActive: boolean;
       userId: string;
+      expiresAt?: Date; // Add expiresAt to the type definition
       user: {
         id: string;
         email: string;

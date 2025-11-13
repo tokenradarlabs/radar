@@ -16,5 +16,6 @@ export const apiKeyGenerateSchema = z.object({
     required_error: REQUIRED_ERROR,
     invalid_type_error: INVALID_TYPE_ERROR,
   }),
+  expirationDuration: z.number().int().positive().optional(), // Optional duration in days
 });
 export type ApiKeyRequest = z.infer<typeof apiKeyGenerateSchema>;
