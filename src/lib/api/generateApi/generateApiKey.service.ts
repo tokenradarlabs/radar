@@ -1,6 +1,6 @@
 import type { ApiKeyRequest } from './generateApiKey.schema';
 import crypto from 'crypto';
-import prisma from '../../../utils/prisma';
+import { prisma } from '../../../utils/prisma';
 import bcrypt from 'bcrypt';
 import { ConflictError, UnauthorizedError } from '../../../utils/errors';
 
