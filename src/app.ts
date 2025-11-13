@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import fastify, { FastifyError, FastifyInstance } from 'fastify';
+import fastify, { FastifyError, FastifyInstance, FastifyPluginAsync, FastifyPluginCallback, FastifyRegisterOptions, RawServerDefault, FastifyTypeProvider, FastifyBaseLogger } from 'fastify';
 import rateLimiterPlugin from './utils/rateLimiter';
 import requestTimingPlugin from './plugins/requestTiming';
 import cors from '@fastify/cors';
