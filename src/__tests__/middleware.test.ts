@@ -1,6 +1,7 @@
-import { test, expect, beforeAll, afterAll } from 'vitest';
+import { test, expect, beforeAll, afterAll, vi } from 'vitest';
 import { buildApp } from '../app';
 import { FastifyInstance } from 'fastify';
+import logger from '../utils/logger';
 
 let server: FastifyInstance;
 
@@ -29,6 +30,37 @@ test('requestLogger middleware should attach a requestId to the request object',
   // For now, we'll check if the response is successful, implying the middleware ran.
   // The primary verification of requestId in logs will be through manual inspection or integration tests.
   // For the purpose of this unit test, we'll check if the response is successful.
+});
+
+test('requestTiming plugin should log request duration', async () => {
+  let testServer: FastifyInstance | undefined;
+  const loggerSpy = vi.spyOn(logger, 'info');
+
+  try {
+    process.env.ENABLE_REQUEST_TIMING_LOGS = 'true';
+    testServer = await buildApp();
+    await testServer.ready();
+
+    const response = await testServer.inject({
+      method: 'GET',
+      url: '/health',
+    });
+
+    expect(response.statusCode).toBe(200);
+
+    const timingLogCall = loggerSpy.mock.calls.find(call =>
+      typeof call[0] === 'string' && call[0].includes('Request Timing:')
+    );
+
+    expect(timingLogCall).toBeDefined();
+    expect(timingLogCall![0]).toMatch(/Request Timing: .* - GET \/health - 200 - \d+\.\d{2}ms/);
+  } finally {
+    loggerSpy.mockRestore();
+    if (testServer) {
+      await testServer.close();
+    }
+    delete process.env.ENABLE_REQUEST_TIMING_LOGS;
+  }
 });
 
 // To properly test the requestId being attached, we would need to mock the logger
