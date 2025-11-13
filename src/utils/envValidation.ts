@@ -13,6 +13,7 @@ interface OptionalEnvVars {
   RATE_LIMIT_TIME_WINDOW?: string;
   RATE_LIMIT_EXCLUDE_ROUTES?: string;
   RATE_LIMIT_BURST_ALLOWANCE?: string;
+  PRICE_CACHE_TTL?: string;
 }
 
 /**
@@ -85,5 +86,6 @@ export function validateEnvironmentVariables(): RequiredEnvVars &
     RATE_LIMIT_TIME_WINDOW: process.env.RATE_LIMIT_TIME_WINDOW?.trim(),
     RATE_LIMIT_EXCLUDE_ROUTES: process.env.RATE_LIMIT_EXCLUDE_ROUTES?.trim(),
     RATE_LIMIT_BURST_ALLOWANCE: process.env.RATE_LIMIT_BURST_ALLOWANCE?.trim(),
+    PRICE_CACHE_TTL: process.env.PRICE_CACHE_TTL?.trim() || '60000',
   };
 }
