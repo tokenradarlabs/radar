@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { prisma } from '../../../utils/prisma';
 import bcrypt from 'bcrypt';
 import { ConflictError, UnauthorizedError } from '../../../utils/errors';
+import { PrismaClientKnownRequestError } from '@prisma/client';
 
 export interface ApiKeyResponse {
   apiKey: string;
@@ -81,17 +82,24 @@ export class GenerateApiKeyService {
       expiresAt.setDate(expiresAt.getDate() + data.expirationDuration);
     }
 
-    const newApiKey = await prisma.apiKey.create({
-      data: {
-        key: apiKey,
-        name: apiKeyName,
-        userId: user.id,
-        expiresAt: expiresAt,
-      },
-    });
+    try {
+      const newApiKey = await prisma.apiKey.create({
+        data: {
+          key: apiKey,
+          name: apiKeyName,
+          userId: user.id,
+          expiresAt: expiresAt,
+        },
+      });
 
-    return {
-      apiKey: newApiKey.key,
-    };
+      return {
+        apiKey: newApiKey.key,
+      };
+    } catch (error) {
+      if (error instanceof PrismaClientKnownRequestError && error.code === 'P2002') {
+        throw new ConflictError('API key with this name already exists for this user.');
+      }
+      throw error;
+    }
   }
 }
