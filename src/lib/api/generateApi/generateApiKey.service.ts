@@ -17,8 +17,9 @@ async function generateUniqueKeyName(userId: string): Promise<string> {
   let newName: string;
   let isUnique = false;
 
+  const MAX_ATTEMPTS = 100;
   do {
-    newName = `API Key - ${new Date().toISOString().slice(0, 10)} ${counter > 0 ? `(${counter})` : ''}`;
+    newName = `API Key - ${new Date().toISOString().slice(0, 10)}${counter > 0 ? ` (${counter})` : ''}`;
     const existingKey = await prisma.apiKey.findFirst({
       where: {
         userId: userId,
@@ -27,8 +28,12 @@ async function generateUniqueKeyName(userId: string): Promise<string> {
     });
     if (!existingKey) {
       isUnique = true;
+    } else {
+      counter++;
     }
-    counter++;
+    if (counter >= MAX_ATTEMPTS) {
+      throw new Error('Failed to generate a unique API key name after multiple attempts.');
+    }
   } while (!isUnique);
 
   return newName;
