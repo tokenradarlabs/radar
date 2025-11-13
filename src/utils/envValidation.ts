@@ -14,7 +14,7 @@ interface OptionalEnvVars {
   RATE_LIMIT_EXCLUDE_ROUTES?: string;
   RATE_LIMIT_BURST_ALLOWANCE?: string;
   PRICE_CACHE_TTL?: string;
-  ENABLE_REQUEST_TIMING_LOGS: boolean;
+  ENABLE_REQUEST_TIMING_LOGS?: boolean;
 }
 
 /**

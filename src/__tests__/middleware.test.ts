@@ -33,27 +33,34 @@ test('requestLogger middleware should attach a requestId to the request object',
 });
 
 test('requestTiming plugin should log request duration', async () => {
-  // Temporarily enable request timing logs for this test
-  process.env.ENABLE_REQUEST_TIMING_LOGS = 'true';
-  // Rebuild the app to pick up the new environment variable
-  await server.close();
-  server = await buildApp();
-  await server.ready();
-
+  let testServer: FastifyInstance | undefined;
   const loggerSpy = vi.spyOn(logger, 'info');
 
-  const response = await server.inject({
-    method: 'GET',
-    url: '/health',
-  });
+  try {
+    process.env.ENABLE_REQUEST_TIMING_LOGS = 'true';
+    testServer = await buildApp();
+    await testServer.ready();
 
-  expect(response.statusCode).toBe(200);
-  expect(loggerSpy).toHaveBeenCalledWith(expect.stringContaining('Request Timing:'), expect.any(Object));
-  expect(loggerSpy.mock.calls[0][0]).toMatch(/Request Timing: .* - GET \/health - 200 - \d+\.\d{2}ms/);
+    const response = await testServer.inject({
+      method: 'GET',
+      url: '/health',
+    });
 
-  loggerSpy.mockRestore();
-  // Restore original environment variable state
-  delete process.env.ENABLE_REQUEST_TIMING_LOGS;
+    expect(response.statusCode).toBe(200);
+
+    const timingLogCall = loggerSpy.mock.calls.find(call =>
+      typeof call[0] === 'string' && call[0].includes('Request Timing:')
+    );
+
+    expect(timingLogCall).toBeDefined();
+    expect(timingLogCall![0]).toMatch(/Request Timing: .* - GET \/health - 200 - \d+\.\d{2}ms/);
+  } finally {
+    loggerSpy.mockRestore();
+    if (testServer) {
+      await testServer.close();
+    }
+    delete process.env.ENABLE_REQUEST_TIMING_LOGS;
+  }
 });
 
 // To properly test the requestId being attached, we would need to mock the logger

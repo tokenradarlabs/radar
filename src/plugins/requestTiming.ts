@@ -1,11 +1,11 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import fp from 'fastify-plugin';
-import { log } from '../utils/logger';
+import logger from '../utils/logger';
 import { ENV } from '../utils/envValidation';
 
 declare module 'fastify' {
   interface FastifyRequest {
-    requestStartTime: number;
+    requestStartTime: bigint;
   }
 }
 
@@ -17,7 +17,7 @@ async function requestTimingPlugin(fastify: FastifyInstance) {
   fastify.addHook('onResponse', async (request: FastifyRequest, reply: FastifyReply) => {
     if (ENV.ENABLE_REQUEST_TIMING_LOGS) {
       const duration = Number(process.hrtime.bigint() - request.requestStartTime) / 1_000_000; // duration in milliseconds
-      log.info(
+      logger.info(
         `Request Timing: ${request.id} - ${request.method} ${request.url} - ${reply.statusCode} - ${duration.toFixed(2)}ms`
       );
     }
