@@ -382,6 +382,113 @@ describe('API Key Update Endpoint', () => {
     expect(secondFinal?.name).toBe('Second Updated Name');
   });
 
+  it('should return 409 if updating an API key with a name that already exists for another key of the same user', async () => {
+    // Create a second API key with a distinct name
+    await prisma.apiKey.create({
+      data: {
+        key:
+          'rdr_' +
+          Buffer.from(
+            'test-duplicate-name-2-34567890abcdef1234567890abcdef12345678'
+          )
+            .toString('hex')
+            .substring(0, 64),
+        name: 'Existing Key Name',
+        userId: testUser.id,
+      },
+    });
+
+    // Attempt to update testApiKey with the name 'Existing Key Name'
+    const response = await app.inject({
+      method: 'PUT',
+      url: `/api/keys/update/${testApiKey.id}`,
+      payload: {
+        email: 'update-key@update.com',
+        password: 'TestPassword123!',
+        name: 'Existing Key Name',
+      },
+    });
+
+    expect(response.statusCode).toBe(409);
+
+    const body = JSON.parse(response.body);
+    expect(body.success).toBe(false);
+    expect(body.error).toBe('API key with this name already exists for this user.');
+
+    // Verify the original API key name remains unchanged
+    const unchangedApiKey = await prisma.apiKey.findUnique({
+      where: {
+        id: testApiKey.id,
+      },
+    });
+    expect(unchangedApiKey?.name).toBe('Original Test Key Name');
+  });
+
+  it('should successfully update API key name if the new name is unique for the user', async () => {
+    // Create a second API key with a distinct name
+    await prisma.apiKey.create({
+      data: {
+        key:
+          'rdr_' +
+          Buffer.from(
+            'test-unique-name-2-34567890abcdef1234567890abcdef12345678'
+          )
+            .toString('hex')
+            .substring(0, 64),
+        name: 'Another Unique Key',
+        userId: testUser.id,
+      },
+    });
+
+    const newUniqueName = 'My Truly Unique Key Name';
+
+    const response = await app.inject({
+      method: 'PUT',
+      url: `/api/keys/update/${testApiKey.id}`,
+      payload: {
+        email: 'update-key@update.com',
+        password: 'TestPassword123!',
+        name: newUniqueName,
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+
+    const body = JSON.parse(response.body);
+    expect(body.success).toBe(true);
+    expect(body.data.apiKey.name).toBe(newUniqueName);
+
+    const updatedKey = await prisma.apiKey.findUnique({
+      where: { id: testApiKey.id },
+    });
+    expect(updatedKey?.name).toBe(newUniqueName);
+  });
+
+  it('should successfully update API key name if the new name is the same as the old name', async () => {
+    const originalName = 'Original Test Key Name';
+
+    const response = await app.inject({
+      method: 'PUT',
+      url: `/api/keys/update/${testApiKey.id}`,
+      payload: {
+        email: 'update-key@update.com',
+        password: 'TestPassword123!',
+        name: originalName,
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+
+    const body = JSON.parse(response.body);
+    expect(body.success).toBe(true);
+    expect(body.data.apiKey.name).toBe(originalName);
+
+    const updatedKey = await prisma.apiKey.findUnique({
+      where: { id: testApiKey.id },
+    });
+    expect(updatedKey?.name).toBe(originalName);
+  });
+
   it('should handle edge cases for API key names', async () => {
     const edgeCases = [
       {
@@ -396,23 +503,36 @@ describe('API Key Update Endpoint', () => {
       },
       {
         name: 'name with special characters',
-        newName: 'API-Key_2024@Production!',
+        newName: 'API-Key_2024',
         shouldSucceed: true,
       },
       {
-        name: 'name with unicode characters',
-        newName: 'API Key 🔑 测试',
-        shouldSucceed: true,
-      },
-      {
-        name: 'maximum length name (100 characters)',
-        newName: 'a'.repeat(100),
+        name: 'maximum length name (50 characters)',
+        newName: 'a'.repeat(50),
         shouldSucceed: true,
       },
       {
         name: 'name with only spaces',
         newName: '   ',
         shouldSucceed: true, // Spaces are valid characters
+      },
+      {
+        name: 'name too short (2 characters)',
+        newName: 'ab',
+        shouldSucceed: false,
+        expectedError: 'API key name must be at least 3 characters long',
+      },
+      {
+        name: 'name too long (51 characters)',
+        newName: 'a'.repeat(51),
+        shouldSucceed: false,
+        expectedError: 'API key name must be at most 50 characters long',
+      },
+      {
+        name: 'name with invalid characters',
+        newName: 'API Key!@#',
+        shouldSucceed: false,
+        expectedError: 'API key name can only contain alphanumeric characters, spaces, hyphens, and underscores',
       },
     ];
 
@@ -439,6 +559,11 @@ describe('API Key Update Endpoint', () => {
           where: { id: testApiKey.id },
         });
         expect(updatedKey?.name).toBe(testCase.newName);
+      } else {
+        expect(response.statusCode).toBe(400);
+        const body = JSON.parse(response.body);
+        expect(body.success).toBe(false);
+        expect(body.error).toBe(testCase.expectedError);
       }
     }
   });

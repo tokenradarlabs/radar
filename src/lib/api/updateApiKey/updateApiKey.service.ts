@@ -44,6 +44,22 @@ export class UpdateApiKeyService {
       throw new Error('API key not found or access denied');
     }
 
+    if (data.name && data.name !== existingApiKey.name) {
+      const duplicateNameKey = await prisma.apiKey.findFirst({
+        where: {
+          userId: user.id,
+          name: data.name,
+          NOT: {
+            id: apiKeyId,
+          },
+        },
+      });
+
+      if (duplicateNameKey) {
+        throw new Error('API key with this name already exists for this user.');
+      }
+    }
+
     const updatedApiKey = await prisma.apiKey.update({
       where: {
         id: apiKeyId,

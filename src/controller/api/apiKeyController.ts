@@ -58,6 +58,15 @@ export default async function apiKeyController(fastify: FastifyInstance) {
           return reply.code(401).send(response);
         }
 
+        if (error instanceof Error && error.message === 'API key with this name already exists for this user.') {
+          const response: Response<ApiKeyResponse> = {
+            success: false,
+            error: error.message,
+            code: ERROR_CODES.CONFLICT,
+          };
+          return reply.code(409).send(response);
+        }
+
         sendInternalError(reply, 'Internal server error');
         return;
       }
@@ -176,6 +185,15 @@ export default async function apiKeyController(fastify: FastifyInstance) {
               code: ERROR_CODES.NOT_FOUND,
             };
             return reply.code(404).send(response);
+          }
+
+          if (error.message === 'API key with this name already exists for this user.') {
+            const response: Response<UpdateApiKeyResponse> = {
+              success: false,
+              error: error.message,
+              code: ERROR_CODES.CONFLICT,
+            };
+            return reply.code(409).send(response);
           }
         }
 

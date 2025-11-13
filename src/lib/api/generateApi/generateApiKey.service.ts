@@ -1,4 +1,7 @@
 import type { ApiKeyRequest } from './generateApiKey.schema';
+import crypto from 'crypto';
+import prisma from '../../../utils/prisma';
+import bcrypt from 'bcrypt';
 
 export interface ApiKeyResponse {
   apiKey: string;
@@ -8,8 +11,26 @@ function generateApiKey(): string {
   return `rdr_${crypto.randomBytes(64).toString('hex')}`;
 }
 
-function generateKeyName(): string {
-  return `API Key - ${new Date().toISOString()}`;
+async function generateUniqueKeyName(userId: string): Promise<string> {
+  let counter = 0;
+  let newName: string;
+  let isUnique = false;
+
+  do {
+    newName = `API Key - ${new Date().toISOString().slice(0, 10)} ${counter > 0 ? `(${counter})` : ''}`;
+    const existingKey = await prisma.apiKey.findFirst({
+      where: {
+        userId: userId,
+        name: newName,
+      },
+    });
+    if (!existingKey) {
+      isUnique = true;
+    }
+    counter++;
+  } while (!isUnique);
+
+  return newName;
 }
 
 export class GenerateApiKeyService {
@@ -30,6 +51,23 @@ export class GenerateApiKeyService {
       throw new Error('Invalid credentials');
     }
 
+    let apiKeyName: string;
+    if (data.name) {
+      const existingKey = await prisma.apiKey.findFirst({
+        where: {
+          userId: user.id,
+          name: data.name,
+        },
+      });
+
+      if (existingKey) {
+        throw new Error('API key with this name already exists for this user.');
+      }
+      apiKeyName = data.name;
+    } else {
+      apiKeyName = await generateUniqueKeyName(user.id);
+    }
+
     const apiKey = generateApiKey();
     let expiresAt: Date | undefined;
     if (data.expirationDuration) {
@@ -40,7 +78,7 @@ export class GenerateApiKeyService {
     const newApiKey = await prisma.apiKey.create({
       data: {
         key: apiKey,
-        name: generateKeyName(),
+        name: apiKeyName,
         userId: user.id,
         expiresAt: expiresAt,
       },
