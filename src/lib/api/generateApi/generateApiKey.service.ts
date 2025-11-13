@@ -1,8 +1,4 @@
-export interface ApiKeyRequest {
-  email: string;
-  password: string;
-  expirationDuration?: number; // Optional duration in days
-}
+import type { ApiKeyRequest } from './generateApiKey.schema';
 
 export interface ApiKeyResponse {
   apiKey: string;
