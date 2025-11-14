@@ -26,6 +26,7 @@ export default async function loginController(fastify: FastifyInstance) {
           const response: Response<IAuthUser> = {
             success: false,
             error: error.errors[0].message,
+            code: ERROR_CODES.VALIDATION_FAILED,
           };
           return reply.code(400).send(response);
         }
@@ -38,14 +39,14 @@ export default async function loginController(fastify: FastifyInstance) {
             const response: Response<IAuthUser> = {
               success: false,
               error: error.message,
+              code: ERROR_CODES.AUTHENTICATION_FAILED,
             };
             return reply.code(401).send(response);
           }
         }
 
-        sendInternalError(reply, 'Internal server error');
-        return;
-      }
+        sendInternalError(reply, 'Internal server error', ERROR_CODES.INTERNAL_SERVER_ERROR);
+        return;      }
     }
   );
 }

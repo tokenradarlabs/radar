@@ -45,7 +45,7 @@ export default async function apiKeyController(fastify: FastifyInstance) {
           const response: Response<ApiKeyResponse> = {
             success: false,
             error: error.errors[0].message,
-            code: ERROR_CODES.BAD_REQUEST,
+            code: ERROR_CODES.VALIDATION_FAILED,
           };
           return reply.code(400).send(response);
         }
@@ -63,14 +63,13 @@ export default async function apiKeyController(fastify: FastifyInstance) {
           const response: Response<ApiKeyResponse> = {
             success: false,
             error: error.message,
-            code: ERROR_CODES.CONFLICT,
+            code: ERROR_CODES.RESOURCE_ALREADY_EXISTS,
           };
           return reply.code(409).send(response);
         }
 
-        sendInternalError(reply, 'Internal server error');
-        return;
-      }
+        sendInternalError(reply, 'Internal server error', ERROR_CODES.INTERNAL_SERVER_ERROR);
+        return;      }
     }
   );
 
@@ -102,7 +101,7 @@ export default async function apiKeyController(fastify: FastifyInstance) {
           const response: Response<DeleteApiKeyResponse> = {
             success: false,
             error: error.errors[0].message,
-            code: ERROR_CODES.BAD_REQUEST,
+            code: ERROR_CODES.VALIDATION_FAILED,
           };
           return reply.code(400).send(response);
         }
@@ -120,14 +119,13 @@ export default async function apiKeyController(fastify: FastifyInstance) {
           const response: Response<DeleteApiKeyResponse> = {
             success: false,
             error: error.message,
-            code: ERROR_CODES.NOT_FOUND,
+            code: ERROR_CODES.API_KEY_NOT_FOUND,
           };
           return reply.code(404).send(response);
         }
 
-        sendInternalError(reply, 'Internal server error');
-        return;
-      }
+        sendInternalError(reply, 'Internal server error', ERROR_CODES.INTERNAL_SERVER_ERROR);
+        return;      }
     }
   );
 
@@ -162,7 +160,7 @@ export default async function apiKeyController(fastify: FastifyInstance) {
           const response: Response<UpdateApiKeyResponse> = {
             success: false,
             error: error.errors[0].message,
-            code: ERROR_CODES.BAD_REQUEST,
+            code: ERROR_CODES.VALIDATION_FAILED,
           };
           return reply.code(400).send(response);
         }
@@ -180,7 +178,7 @@ export default async function apiKeyController(fastify: FastifyInstance) {
           const response: Response<UpdateApiKeyResponse> = {
             success: false,
             error: error.message,
-            code: ERROR_CODES.NOT_FOUND,
+            code: ERROR_CODES.API_KEY_NOT_FOUND,
           };
           return reply.code(404).send(response);
         }
@@ -189,14 +187,13 @@ export default async function apiKeyController(fastify: FastifyInstance) {
           const response: Response<UpdateApiKeyResponse> = {
             success: false,
             error: error.message,
-            code: ERROR_CODES.CONFLICT,
+            code: ERROR_CODES.RESOURCE_ALREADY_EXISTS,
           };
           return reply.code(409).send(response);
         }
 
-        sendInternalError(reply, 'Internal server error');
-        return;
-      }
+        sendInternalError(reply, 'Internal server error', ERROR_CODES.INTERNAL_SERVER_ERROR);
+        return;      }
     }
   );
 }

@@ -27,7 +27,7 @@ export default async function volumeController(fastify: FastifyInstance) {
         return sendSuccess(reply, responseData);
       } catch (error) {
         if (error instanceof z.ZodError) {
-          return sendBadRequest(reply, formatValidationError(error));
+          return sendBadRequest(reply, formatValidationError(error), ERROR_CODES.VALIDATION_FAILED);
         }
 
         logger.error('Volume controller error:', { error });
@@ -35,9 +35,9 @@ export default async function volumeController(fastify: FastifyInstance) {
           reply,
           error instanceof Error
             ? error.message
-            : 'Failed to fetch token volume'
-        );
-      }
+            : 'Failed to fetch token volume',
+          ERROR_CODES.INTERNAL_SERVER_ERROR
+        );      }
     }
   );
 }
