@@ -1,5 +1,14 @@
 import 'dotenv/config';
-import fastify, { FastifyError, FastifyInstance, FastifyPluginAsync, FastifyPluginCallback, FastifyRegisterOptions, RawServerDefault, FastifyTypeProvider, FastifyBaseLogger } from 'fastify';
+import fastify, {
+  FastifyError,
+  FastifyInstance,
+  FastifyPluginAsync,
+  FastifyPluginCallback,
+  FastifyRegisterOptions,
+  RawServerDefault,
+  FastifyTypeProvider,
+  FastifyBaseLogger,
+} from 'fastify';
 import rateLimiterPlugin from './utils/rateLimiter';
 import requestTimingPlugin from './plugins/requestTiming';
 import cors from '@fastify/cors';
@@ -147,11 +156,21 @@ export async function buildApp(): Promise<FastifyInstance> {
 
     // Operational, trusted error: send message to client
     if (error.statusCode && error.statusCode >= 400 && error.statusCode < 500) {
-      return errorResponse(reply, error.statusCode, error.message, 'CLIENT_ERROR');
+      return errorResponse(
+        reply,
+        error.statusCode,
+        error.message,
+        'CLIENT_ERROR'
+      );
     }
 
     // Programming or other unknown error: don't leak error details
-    return errorResponse(reply, 500, 'An unexpected error occurred', 'SERVER_ERROR');
+    return errorResponse(
+      reply,
+      500,
+      'An unexpected error occurred',
+      'SERVER_ERROR'
+    );
   });
 
   // Ensure Prisma client is disconnected on application shutdown

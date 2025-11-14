@@ -123,8 +123,12 @@ describe('API Key Generate Endpoint', () => {
     const sevenDaysFromNow = new Date();
     sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
     // Allow for a small margin of error (e.g., a few seconds)
-    expect(createdApiKey?.expiresAt?.getTime()).toBeLessThanOrEqual(sevenDaysFromNow.getTime() + 5000);
-    expect(createdApiKey?.expiresAt?.getTime()).toBeGreaterThanOrEqual(sevenDaysFromNow.getTime() - 5000);
+    expect(createdApiKey?.expiresAt?.getTime()).toBeLessThanOrEqual(
+      sevenDaysFromNow.getTime() + 5000
+    );
+    expect(createdApiKey?.expiresAt?.getTime()).toBeGreaterThanOrEqual(
+      sevenDaysFromNow.getTime() - 5000
+    );
   });
 
   it('should handle invalid expiration duration', async () => {

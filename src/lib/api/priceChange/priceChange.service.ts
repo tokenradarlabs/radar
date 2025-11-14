@@ -29,7 +29,9 @@ export class PriceChangeService {
     } finally {
       const endTime = process.hrtime.bigint();
       const durationMs = Number(endTime - startTime) / 1_000_000;
-      telemetry.recordDuration('price_change_service_duration', durationMs, { tokenId });
+      telemetry.recordDuration('price_change_service_duration', durationMs, {
+        tokenId,
+      });
     }
   }
 }

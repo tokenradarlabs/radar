@@ -1,7 +1,11 @@
 import bcrypt from 'bcrypt';
 import { prisma } from '../../../utils/prisma';
 import { UpdateApiKeyRequest } from './updateApiKey.schema';
-import { ConflictError, UnauthorizedError, NotFoundError } from '../../../utils/errors';
+import {
+  ConflictError,
+  UnauthorizedError,
+  NotFoundError,
+} from '../../../utils/errors';
 
 export interface UpdateApiKeyResponse {
   message: string;
@@ -47,7 +51,7 @@ export class UpdateApiKeyService {
 
     const { name, scopes, rateLimit, expirationDuration } = data;
 
-    const updateData: { 
+    const updateData: {
       name?: string;
       scopes?: string[];
       rateLimit?: number;
@@ -57,10 +61,10 @@ export class UpdateApiKeyService {
     if (name) {
       updateData.name = name;
     }
-    if (scopes) {
+    if (scopes !== undefined) {
       updateData.scopes = scopes;
     }
-    if (rateLimit) {
+    if (rateLimit !== undefined) {
       updateData.rateLimit = rateLimit;
     }
     if (expirationDuration !== undefined) {

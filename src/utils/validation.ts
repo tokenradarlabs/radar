@@ -64,13 +64,13 @@ export const apiKeyScopesSchema = z
     z.string({
       required_error: REQUIRED_ERROR,
       invalid_type_error: INVALID_TYPE_ERROR,
-    }),
+    })
   )
   .refine(
     (scopes) => scopes.every((scope) => ALLOWED_API_KEY_SCOPES.includes(scope)),
     {
       message: INVALID_SELECTION_ERROR,
-    },
+    }
   )
   .default([]);
 

@@ -43,8 +43,13 @@ export default async function profileController(fastify: FastifyInstance) {
           return reply.code(404).send(response);
         }
 
-        sendInternalError(reply, 'Internal server error', ERROR_CODES.INTERNAL_SERVER_ERROR);
-        return;      }
+        sendInternalError(
+          reply,
+          'Internal server error',
+          ERROR_CODES.INTERNAL_SERVER_ERROR
+        );
+        return;
+      }
     }
   );
 }

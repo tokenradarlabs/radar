@@ -2,7 +2,11 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { Response } from '../../types/responses';
 import { sendInternalError, ERROR_CODES } from '../../utils/responseHelper';
-import { ConflictError, UnauthorizedError, NotFoundError } from '../../utils/errors';
+import {
+  ConflictError,
+  UnauthorizedError,
+  NotFoundError,
+} from '../../utils/errors';
 import {
   deleteApiKeyCombinedSchema,
   type DeleteApiKeyRequest,
@@ -68,8 +72,13 @@ export default async function apiKeyController(fastify: FastifyInstance) {
           return reply.code(409).send(response);
         }
 
-        sendInternalError(reply, 'Internal server error', ERROR_CODES.INTERNAL_SERVER_ERROR);
-        return;      }
+        sendInternalError(
+          reply,
+          'Internal server error',
+          ERROR_CODES.INTERNAL_SERVER_ERROR
+        );
+        return;
+      }
     }
   );
 
@@ -124,8 +133,13 @@ export default async function apiKeyController(fastify: FastifyInstance) {
           return reply.code(404).send(response);
         }
 
-        sendInternalError(reply, 'Internal server error', ERROR_CODES.INTERNAL_SERVER_ERROR);
-        return;      }
+        sendInternalError(
+          reply,
+          'Internal server error',
+          ERROR_CODES.INTERNAL_SERVER_ERROR
+        );
+        return;
+      }
     }
   );
 
@@ -192,8 +206,13 @@ export default async function apiKeyController(fastify: FastifyInstance) {
           return reply.code(409).send(response);
         }
 
-        sendInternalError(reply, 'Internal server error', ERROR_CODES.INTERNAL_SERVER_ERROR);
-        return;      }
+        sendInternalError(
+          reply,
+          'Internal server error',
+          ERROR_CODES.INTERNAL_SERVER_ERROR
+        );
+        return;
+      }
     }
   );
 }

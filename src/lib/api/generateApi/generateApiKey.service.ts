@@ -33,7 +33,9 @@ async function generateUniqueKeyName(userId: string): Promise<string> {
       counter++;
     }
     if (counter >= MAX_ATTEMPTS) {
-      throw new Error('Failed to generate a unique API key name after multiple attempts.');
+      throw new Error(
+        'Failed to generate a unique API key name after multiple attempts.'
+      );
     }
   } while (!isUnique);
 
@@ -68,7 +70,9 @@ export class GenerateApiKeyService {
       });
 
       if (existingKey) {
-        throw new ConflictError('API key with this name already exists for this user.');
+        throw new ConflictError(
+          'API key with this name already exists for this user.'
+        );
       }
       apiKeyName = data.name;
     } else {
@@ -100,8 +104,13 @@ export class GenerateApiKeyService {
         apiKey: newApiKey.key,
       };
     } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError && error.code === 'P2002') {
-        throw new ConflictError('API key with this name already exists for this user.');
+      if (
+        error instanceof PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
+        throw new ConflictError(
+          'API key with this name already exists for this user.'
+        );
       }
       throw error;
     }

@@ -40,7 +40,11 @@ describe('PriceChangeService', () => {
 
     // Assert telemetry calls
     expect(mockRecordCount).toHaveBeenCalledTimes(1);
-    expect(mockRecordCount).toHaveBeenCalledWith('price_change_service_call', 1, { tokenId: 'bitcoin' });
+    expect(mockRecordCount).toHaveBeenCalledWith(
+      'price_change_service_call',
+      1,
+      { tokenId: 'bitcoin' }
+    );
     expect(mockRecordDuration).toHaveBeenCalledTimes(1);
     expect(mockRecordDuration).toHaveBeenCalledWith(
       'price_change_service_duration',

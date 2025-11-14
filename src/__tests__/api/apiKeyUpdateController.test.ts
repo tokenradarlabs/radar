@@ -413,7 +413,9 @@ describe('API Key Update Endpoint', () => {
 
     const body = JSON.parse(response.body);
     expect(body.success).toBe(false);
-    expect(body.error).toBe('API key with this name already exists for this user.');
+    expect(body.error).toBe(
+      'API key with this name already exists for this user.'
+    );
 
     // Verify the original API key name remains unchanged
     const unchangedApiKey = await prisma.apiKey.findUnique({
@@ -532,7 +534,8 @@ describe('API Key Update Endpoint', () => {
         name: 'name with invalid characters',
         newName: 'API Key!@#',
         shouldSucceed: false,
-        expectedError: 'API key name can only contain alphanumeric characters, spaces, hyphens, and underscores',
+        expectedError:
+          'API key name can only contain alphanumeric characters, spaces, hyphens, and underscores',
       },
     ];
 
