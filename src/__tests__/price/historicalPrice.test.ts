@@ -102,14 +102,14 @@ describe('Historical Price API', () => {
   });
 
   it('should fetch from CoinGecko and cache if not available', async () => {
-    jest.spyOn(Cache, 'getCache').mockResolvedValueOnce(null);
+    vi.spyOn(Cache, 'getCache').mockResolvedValueOnce(null);
     const mockCoinGeckoData = {
       prices: [
         [1678886400000, 1500], // March 15, 2023 00:00:00 UTC
         [1678972800000, 1600], // March 16, 2023 00:00:00 UTC
       ],
     };
-    jest.spyOn(CoinGeckoPrice, 'getHistoricalPrice').mockResolvedValueOnce(mockCoinGeckoData);
+    vi.spyOn(CoinGeckoPrice, 'getHistoricalPrice').mockResolvedValueOnce(mockCoinGeGeckoData);
 
     const response = await fastify.inject({
       method: 'GET',
@@ -127,7 +127,7 @@ describe('Historical Price API', () => {
   });
 
   it('should return 404 if historical price data is not found from CoinGecko', async () => {
-    jest.spyOn(CoinGeckoPrice, 'getHistoricalPrice').mockResolvedValueOnce(null);
+    vi.spyOn(CoinGeckoPrice, 'getHistoricalPrice').mockResolvedValueOnce(null);
 
     const response = await fastify.inject({
       method: 'GET',
