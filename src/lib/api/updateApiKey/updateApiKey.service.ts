@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 import { prisma } from '../../../utils/prisma';
 import { UpdateApiKeyRequest } from './updateApiKey.schema';
+import { ConflictError, UnauthorizedError, NotFoundError } from '../../../utils/errors';
 
 export interface UpdateApiKeyResponse {
   message: string;
@@ -23,13 +24,13 @@ export class UpdateApiKeyService {
     });
 
     if (!user) {
-      throw new Error('Invalid credentials');
+      throw new UnauthorizedError('Invalid credentials');
     }
 
     const isValidPassword = await bcrypt.compare(data.password, user.password);
 
     if (!isValidPassword) {
-      throw new Error('Invalid credentials');
+      throw new UnauthorizedError('Invalid credentials');
     }
 
     // Check if the API key exists and belongs to the user
@@ -41,7 +42,23 @@ export class UpdateApiKeyService {
     });
 
     if (!existingApiKey) {
-      throw new Error('API key not found or access denied');
+      throw new NotFoundError('API key not found or access denied');
+    }
+
+    if (data.name && data.name !== existingApiKey.name) {
+      const duplicateNameKey = await prisma.apiKey.findFirst({
+        where: {
+          userId: user.id,
+          name: data.name,
+          NOT: {
+            id: apiKeyId,
+          },
+        },
+      });
+
+      if (duplicateNameKey) {
+        throw new ConflictError('API key with this name already exists for this user.');
+      }
     }
 
     const updatedApiKey = await prisma.apiKey.update({
