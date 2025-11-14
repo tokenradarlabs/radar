@@ -4,6 +4,7 @@ import {
   sendSuccess,
   sendBadRequest,
   sendInternalError,
+  ERROR_CODES,
 } from '../utils/responseHelper';
 import { DevPriceService } from '../lib/api/devPrice/devPrice.service';
 
@@ -18,11 +19,7 @@ export default async function devPriceController(fastify: FastifyInstance) {
         return sendSuccess(reply, responseData);
       } catch (error) {
         logger.error('DEV price controller error:', { error });
-        if (error instanceof Error) {
-          return sendBadRequest(reply, error.message);
-        } else {
-          return sendInternalError(reply, 'Failed to fetch DEV token price');
-        }
+        return sendInternalError(reply, 'Failed to fetch DEV token price', ERROR_CODES.EXTERNAL_SERVICE_ERROR);
       }
     }
   );

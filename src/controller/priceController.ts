@@ -37,13 +37,12 @@ export default async function priceController(fastify: FastifyInstance) {
           tokenId: request.params.tokenId,
         });
         if (error instanceof z.ZodError) {
-          return sendBadRequest(reply, formatValidationError(error));
+          return sendBadRequest(reply, formatValidationError(error), ERROR_CODES.VALIDATION_FAILED);
         } else if (error instanceof Error) {
-          return sendBadRequest(reply, error.message);
+          return sendBadRequest(reply, error.message, ERROR_CODES.BAD_REQUEST);
         } else {
-          return sendInternalError(reply, 'An unexpected error occurred');
-        }
-      }
+          return sendInternalError(reply, 'An unexpected error occurred', ERROR_CODES.INTERNAL_SERVER_ERROR);
+        }      }
     }
   );
 }

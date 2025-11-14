@@ -31,7 +31,7 @@ export default async function registerController(fastify: FastifyInstance) {
           const response: Response<IAuthUser> = {
             success: false,
             error: formatValidationError(error),
-            code: ERROR_CODES.BAD_REQUEST,
+            code: ERROR_CODES.VALIDATION_FAILED,
           };
           return reply.code(400).send(response);
         }
@@ -43,14 +43,13 @@ export default async function registerController(fastify: FastifyInstance) {
           const response: Response<IAuthUser> = {
             success: false,
             error: error.message,
-            code: 'ERR_CONFLICT',
+            code: ERROR_CODES.RESOURCE_ALREADY_EXISTS,
           };
           return reply.code(409).send(response);
         }
 
-        sendInternalError(reply, 'Internal server error');
-        return;
-      }
+        sendInternalError(reply, 'Internal server error', ERROR_CODES.INTERNAL_SERVER_ERROR);
+        return;      }
     }
   );
 }

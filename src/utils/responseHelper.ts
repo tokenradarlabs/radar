@@ -22,14 +22,51 @@ export const HTTP_STATUS = {
  * Stable error codes for API responses
  */
 export const ERROR_CODES = {
+  // Generic Errors
   BAD_REQUEST: 'ERR_BAD_REQUEST',
-  CONFLICT: 'ERR_CONFLICT',
   UNAUTHORIZED: 'ERR_UNAUTHORIZED',
   FORBIDDEN: 'ERR_FORBIDDEN',
   NOT_FOUND: 'ERR_NOT_FOUND',
-  TOO_MANY_REQUESTS: 'ERR_TOO_MANY_REQUESTS',
-  SERVICE_UNAVAILABLE: 'ERR_SERVICE_UNAVAILABLE',
+  CONFLICT: 'ERR_CONFLICT',
   INTERNAL_SERVER_ERROR: 'ERR_INTERNAL_SERVER_ERROR',
+  SERVICE_UNAVAILABLE: 'ERR_SERVICE_UNAVAILABLE',
+  TOO_MANY_REQUESTS: 'ERR_TOO_MANY_REQUESTS',
+
+  // API Key Specific Errors
+  API_KEY_INVALID: 'ERR_API_KEY_INVALID',
+  API_KEY_EXPIRED: 'ERR_API_KEY_EXPIRED',
+  API_KEY_DISABLED: 'ERR_API_KEY_DISABLED',
+  API_KEY_NOT_FOUND: 'ERR_API_KEY_NOT_FOUND',
+  API_KEY_MISSING: 'ERR_API_KEY_MISSING',
+  API_KEY_UNAUTHORIZED: 'ERR_API_KEY_UNAUTHORIZED',
+  API_KEY_LIMIT_EXCEEDED: 'ERR_API_KEY_LIMIT_EXCEEDED',
+
+  // Authentication & Authorization Errors
+  AUTHENTICATION_FAILED: 'ERR_AUTHENTICATION_FAILED',
+  INVALID_CREDENTIALS: 'ERR_INVALID_CREDENTIALS',
+  ACCOUNT_LOCKED: 'ERR_ACCOUNT_LOCKED',
+  SESSION_EXPIRED: 'ERR_SESSION_EXPIRED',
+  PERMISSION_DENIED: 'ERR_PERMISSION_DENIED',
+
+  // Validation Errors
+  VALIDATION_FAILED: 'ERR_VALIDATION_FAILED',
+  INVALID_INPUT: 'ERR_INVALID_INPUT',
+  MISSING_FIELD: 'ERR_MISSING_FIELD',
+  INVALID_FORMAT: 'ERR_INVALID_FORMAT',
+  VALUE_OUT_OF_RANGE: 'ERR_VALUE_OUT_OF_RANGE',
+
+  // Resource & Data Errors
+  RESOURCE_NOT_FOUND: 'ERR_RESOURCE_NOT_FOUND',
+  RESOURCE_ALREADY_EXISTS: 'ERR_RESOURCE_ALREADY_EXISTS',
+  DATA_INTEGRITY_VIOLATION: 'ERR_DATA_INTEGRITY_VIOLATION',
+  EXTERNAL_SERVICE_ERROR: 'ERR_EXTERNAL_SERVICE_ERROR',
+  DATABASE_ERROR: 'ERR_DATABASE_ERROR',
+
+  // Business Logic Errors
+  TRANSACTION_FAILED: 'ERR_TRANSACTION_FAILED',
+  INSUFFICIENT_FUNDS: 'ERR_INSUFFICIENT_FUNDS',
+  PRODUCT_UNAVAILABLE: 'ERR_PRODUCT_UNAVAILABLE',
+  ORDER_PROCESSING_FAILED: 'ERR_ORDER_PROCESSING_FAILED',
 } as const;
 
 /**
@@ -77,9 +114,10 @@ export function errorResponse(
  */
 export function sendBadRequest(
   reply: FastifyReply,
-  error: string
+  error: string,
+  code: string = ERROR_CODES.BAD_REQUEST
 ): FastifyReply {
-  return errorResponse(reply, HTTP_STATUS.BAD_REQUEST, error, ERROR_CODES.BAD_REQUEST);
+  return errorResponse(reply, HTTP_STATUS.BAD_REQUEST, error, code);
 }
 
 /**
@@ -94,14 +132,10 @@ export function sendNotFound(reply: FastifyReply, error: string): FastifyReply {
  */
 export function sendInternalError(
   reply: FastifyReply,
-  error: string = 'Internal server error'
+  error: string = 'Internal server error',
+  code: string = ERROR_CODES.INTERNAL_SERVER_ERROR
 ): FastifyReply {
-  return errorResponse(
-    reply,
-    HTTP_STATUS.INTERNAL_SERVER_ERROR,
-    error,
-    ERROR_CODES.INTERNAL_SERVER_ERROR
-  );
+  return errorResponse(reply, HTTP_STATUS.INTERNAL_SERVER_ERROR, error, code);
 }
 
 /**
@@ -109,14 +143,10 @@ export function sendInternalError(
  */
 export function sendUnauthorized(
   reply: FastifyReply,
-  error: string = 'Authentication required'
+  error: string = 'Authentication required',
+  code: string = ERROR_CODES.UNAUTHORIZED
 ): FastifyReply {
-  return errorResponse(
-    reply,
-    HTTP_STATUS.UNAUTHORIZED,
-    error,
-    ERROR_CODES.UNAUTHORIZED
-  );
+  return errorResponse(reply, HTTP_STATUS.UNAUTHORIZED, error, code);
 }
 
 /**
