@@ -45,29 +45,38 @@ export class UpdateApiKeyService {
       throw new NotFoundError('API key not found or access denied');
     }
 
-    if (data.name && data.name !== existingApiKey.name) {
-      const duplicateNameKey = await prisma.apiKey.findFirst({
-        where: {
-          userId: user.id,
-          name: data.name,
-          NOT: {
-            id: apiKeyId,
-          },
-        },
-      });
+    const { name, scopes, rateLimit, expirationDuration } = data;
 
-      if (duplicateNameKey) {
-        throw new ConflictError('API key with this name already exists for this user.');
+    const updateData: { 
+      name?: string;
+      scopes?: string[];
+      rateLimit?: number;
+      expiresAt?: Date | null;
+    } = {};
+
+    if (name) {
+      updateData.name = name;
+    }
+    if (scopes) {
+      updateData.scopes = scopes;
+    }
+    if (rateLimit) {
+      updateData.rateLimit = rateLimit;
+    }
+    if (expirationDuration !== undefined) {
+      let expiresAt: Date | null = null;
+      if (expirationDuration > 0) {
+        expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + expirationDuration);
       }
+      updateData.expiresAt = expiresAt;
     }
 
     const updatedApiKey = await prisma.apiKey.update({
       where: {
         id: apiKeyId,
       },
-      data: {
-        name: data.name,
-      },
+      data: updateData,
     });
 
     return {

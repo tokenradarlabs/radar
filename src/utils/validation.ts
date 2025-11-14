@@ -53,6 +53,27 @@ export type VolumeTokenIdParams = TokenIdParams;
 export const priceChangeTokenIdSchema = tokenIdSchema;
 export type PriceChangeTokenIdParams = TokenIdParams;
 
+export const ALLOWED_API_KEY_SCOPES = [
+  'read:price',
+  'read:alerts',
+  'write:alerts',
+];
+
+export const apiKeyScopesSchema = z
+  .array(
+    z.string({
+      required_error: REQUIRED_ERROR,
+      invalid_type_error: INVALID_TYPE_ERROR,
+    }),
+  )
+  .refine(
+    (scopes) => scopes.every((scope) => ALLOWED_API_KEY_SCOPES.includes(scope)),
+    {
+      message: INVALID_SELECTION_ERROR,
+    },
+  )
+  .default([]);
+
 // Validation error handler
 export function formatValidationError(error: z.ZodError): string {
   return error.errors[0]?.message || 'Validation error';

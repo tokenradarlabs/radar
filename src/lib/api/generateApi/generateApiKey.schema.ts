@@ -3,6 +3,7 @@ import {
   REQUIRED_ERROR,
   INVALID_TYPE_ERROR,
   INVALID_EMAIL_ERROR,
+  apiKeyScopesSchema,
 } from '../../utils/validation';
 
 export const apiKeyGenerateSchema = z.object({
@@ -19,7 +20,7 @@ export const apiKeyGenerateSchema = z.object({
   expirationDuration: z.number().int().positive().optional(), // Optional duration in days
   name: z
     .string({
-      invalid_type_error: INVALID_TYPE_ERROR,
+      invalid_type_type: INVALID_TYPE_ERROR,
     })
     .min(3, 'API key name must be at least 3 characters long')
     .max(50, 'API key name must be at most 50 characters long')
@@ -28,5 +29,7 @@ export const apiKeyGenerateSchema = z.object({
       'API key name can only contain alphanumeric characters, spaces, hyphens, and underscores',
     )
     .optional(),
+  scopes: apiKeyScopesSchema.optional(),
+  rateLimit: z.number().int().positive().optional(),
 });
 export type ApiKeyRequest = z.infer<typeof apiKeyGenerateSchema>;

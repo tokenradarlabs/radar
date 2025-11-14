@@ -82,6 +82,8 @@ export class GenerateApiKeyService {
       expiresAt.setDate(expiresAt.getDate() + data.expirationDuration);
     }
 
+    const { scopes, rateLimit } = data;
+
     try {
       const newApiKey = await prisma.apiKey.create({
         data: {
@@ -89,6 +91,8 @@ export class GenerateApiKeyService {
           name: apiKeyName,
           userId: user.id,
           expiresAt: expiresAt,
+          scopes: scopes || [],
+          rateLimit: rateLimit || 1000,
         },
       });
 

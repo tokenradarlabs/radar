@@ -6,6 +6,7 @@ import {
   MIN_LENGTH_ERROR,
   MAX_LENGTH_ERROR,
   INVALID_UUID_ERROR,
+  apiKeyScopesSchema,
 } from '../../utils/validation';
 
 export const updateApiKeyRequestSchema = z.object({
@@ -25,7 +26,11 @@ export const updateApiKeyRequestSchema = z.object({
       invalid_type_error: INVALID_TYPE_ERROR,
     })
     .min(1, MIN_LENGTH_ERROR)
-    .max(100, MAX_LENGTH_ERROR),
+    .max(100, MAX_LENGTH_ERROR)
+    .optional(), // Make name optional for updates
+  scopes: apiKeyScopesSchema.optional(),
+  rateLimit: z.number().int().positive().optional(),
+  expirationDuration: z.number().int().positive().optional(),
 });
 
 export const updateApiKeyParamsSchema = z.object({
