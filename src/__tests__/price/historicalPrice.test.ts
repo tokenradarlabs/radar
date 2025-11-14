@@ -1,9 +1,10 @@
 
 import { FastifyInstance } from 'fastify';
-import { build } from '../../../app'; // Adjust path as necessary
-import { prisma } from '../../../utils/prisma';
-import * as CoinGeckoPrice from '../../../utils/coinGeckoPrice';
-import * as Cache from '../../../utils/cache';
+import { build } from '../../app'; // Adjust path as necessary
+import { prisma } from '../../utils/prisma';
+import * as CoinGeckoPrice from '../../utils/coinGeckoPrice';
+import * as Cache from '../../utils/cache';
+import { vi } from 'vitest';
 
 describe('Historical Price API', () => {
   let fastify: FastifyInstance;
@@ -24,15 +25,17 @@ describe('Historical Price API', () => {
     apiKey = apiKeyValue;
 
     // Mock CoinGeckoPrice and Cache
-    jest.spyOn(CoinGeckoPrice, 'getHistoricalPrice').mockResolvedValue({
+    vi.spyOn(CoinGeckoPrice, 'getHistoricalPrice').mockResolvedValue({
       prices: [
         [1678886400000, 20000], // March 15, 2023 00:00:00 UTC
         [1678972800000, 21000], // March 16, 2023 00:00:00 UTC
       ],
     });
-    jest.spyOn(Cache, 'getCache').mockResolvedValue(null);
-    jest.spyOn(Cache, 'setCache').mockResolvedValue(undefined);
+    vi.spyOn(Cache, 'getCache').mockResolvedValue(null);
+    vi.spyOn(Cache, 'setCache').mockResolvedValue(undefined);
   });
+
+  afterEach(() => vi.clearAllMocks());
 
   afterAll(async () => {
     await prisma.apiKey.deleteMany({ where: { value: 'test_historical_api_key' } });
@@ -85,7 +88,7 @@ describe('Historical Price API', () => {
         [1678972800000, 21000], // March 16, 2023 00:00:00 UTC
       ],
     };
-    jest.spyOn(Cache, 'getCache').mockResolvedValueOnce(mockCacheData);
+    vi.spyOn(Cache, 'getCache').mockResolvedValueOnce(mockCacheData);
 
     const response = await fastify.inject({
       method: 'GET',
