@@ -19,11 +19,8 @@ export default async function devPriceController(fastify: FastifyInstance) {
         return sendSuccess(reply, responseData);
       } catch (error) {
         logger.error('DEV price controller error:', { error });
-        if (error instanceof Error) {
-          return sendBadRequest(reply, error.message, ERROR_CODES.BAD_REQUEST);
-        } else {
-          return sendInternalError(reply, 'Failed to fetch DEV token price', ERROR_CODES.INTERNAL_SERVER_ERROR);
-        }      }
+        return sendInternalError(reply, 'Failed to fetch DEV token price', ERROR_CODES.EXTERNAL_SERVICE_ERROR);
+      }
     }
   );
 }
