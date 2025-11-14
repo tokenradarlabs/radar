@@ -31,7 +31,11 @@ export default async function priceChangeController(fastify: FastifyInstance) {
         return sendSuccess(reply, responseData);
       } catch (error) {
         if (error instanceof z.ZodError) {
-          return sendBadRequest(reply, formatValidationError(error), ERROR_CODES.VALIDATION_FAILED);
+          return sendBadRequest(
+            reply,
+            formatValidationError(error),
+            ERROR_CODES.VALIDATION_FAILED
+          );
         }
 
         logger.error('Price change controller error:', { error });
@@ -41,10 +45,15 @@ export default async function priceChangeController(fastify: FastifyInstance) {
             ? error.message
             : 'Failed to fetch token price change',
           ERROR_CODES.INTERNAL_SERVER_ERROR
-        );      } finally {
+        );
+      } finally {
         const endTime = process.hrtime.bigint();
         const durationMs = Number(endTime - startTime) / 1_000_000;
-        telemetry.recordDuration('price_change_controller_duration', durationMs, { method: request.method, url: request.url });
+        telemetry.recordDuration(
+          'price_change_controller_duration',
+          durationMs,
+          { method: request.method, url: request.url }
+        );
       }
     }
   );

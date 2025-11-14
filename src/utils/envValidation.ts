@@ -88,7 +88,8 @@ export function validateEnvironmentVariables(): RequiredEnvVars &
     RATE_LIMIT_EXCLUDE_ROUTES: process.env.RATE_LIMIT_EXCLUDE_ROUTES?.trim(),
     RATE_LIMIT_BURST_ALLOWANCE: process.env.RATE_LIMIT_BURST_ALLOWANCE?.trim(),
     PRICE_CACHE_TTL: process.env.PRICE_CACHE_TTL?.trim() || '60000',
-    ENABLE_REQUEST_TIMING_LOGS: process.env.ENABLE_REQUEST_TIMING_LOGS?.trim() === 'true',
+    ENABLE_REQUEST_TIMING_LOGS:
+      process.env.ENABLE_REQUEST_TIMING_LOGS?.trim() === 'true',
   };
 }
 

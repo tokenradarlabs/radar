@@ -124,7 +124,12 @@ export function sendBadRequest(
  * Sends a 404 Not Found error response
  */
 export function sendNotFound(reply: FastifyReply, error: string): FastifyReply {
-  return errorResponse(reply, HTTP_STATUS.NOT_FOUND, error, ERROR_CODES.NOT_FOUND);
+  return errorResponse(
+    reply,
+    HTTP_STATUS.NOT_FOUND,
+    error,
+    ERROR_CODES.NOT_FOUND
+  );
 }
 
 /**

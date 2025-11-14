@@ -91,20 +91,26 @@ describe('fetchWithRetry', () => {
       .mockRejectedValueOnce(new Error('Network error 2'))
       .mockResolvedValueOnce(mockResponse as Response);
 
-    const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const consoleWarnSpy = vi
+      .spyOn(console, 'warn')
+      .mockImplementation(() => {});
 
     const promise = fetchWithRetry(mockUrl, { retries: 2, timeout: 100 });
 
     // First attempt and immediate failure
     vi.runOnlyPendingTimers();
     expect(mockFetch).toHaveBeenCalledTimes(1);
-    expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining('retrying (1/2)'));
+    expect(consoleWarnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('retrying (1/2)')
+    );
 
     // Advance for first retry (minDelay * 2^0 + jitter)
     vi.advanceTimersByTime(150); // minDelay * 1 + 0.5 * minDelay
     vi.runOnlyPendingTimers();
     expect(mockFetch).toHaveBeenCalledTimes(2);
-    expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining('retrying (2/2)'));
+    expect(consoleWarnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('retrying (2/2)')
+    );
 
     // Advance for second retry (minDelay * 2^1 + jitter)
     vi.advanceTimersByTime(250); // minDelay * 2 + 0.5 * minDelay
@@ -126,7 +132,11 @@ describe('fetchWithRetry', () => {
       });
     });
 
-    const promise = fetchWithRetry(mockUrl, { signal: controller.signal, retries: 0, timeout: 5000 });
+    const promise = fetchWithRetry(mockUrl, {
+      signal: controller.signal,
+      retries: 0,
+      timeout: 5000,
+    });
 
     controller.abort();
     vi.runAllTimers();

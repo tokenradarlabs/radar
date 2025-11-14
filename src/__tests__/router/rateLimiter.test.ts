@@ -132,7 +132,10 @@ test('Public routes should be rate-limited by API key', async () => {
 test('API key routes should respect burst allowance', async () => {
   const apiKey = 'burst-api-key-123';
   const maxRequests = parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '2', 10);
-  const burstAllowance = parseInt(process.env.RATE_LIMIT_BURST_ALLOWANCE || '1', 10);
+  const burstAllowance = parseInt(
+    process.env.RATE_LIMIT_BURST_ALLOWANCE || '1',
+    10
+  );
   const totalAllowed = maxRequests + burstAllowance;
 
   // Make requests up to totalAllowed (max + burst)

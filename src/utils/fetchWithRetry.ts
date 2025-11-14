@@ -46,9 +46,9 @@ export async function fetchWithRetry(
           };
           fetchOptions.signal.addEventListener('abort', externalSignalListener);
         }
-                  signalToUse = controller.signal; // Still use the internal signal, but it will be aborted by external
-              }
-            }
+        signalToUse = controller.signal; // Still use the internal signal, but it will be aborted by external
+      }
+    }
     try {
       const response = await fetch(url, {
         ...fetchOptions,
@@ -97,7 +97,10 @@ export async function fetchWithRetry(
     } finally {
       clearTimeout(timeoutId);
       if (fetchOptions.signal && externalSignalListener) {
-        fetchOptions.signal.removeEventListener('abort', externalSignalListener);
+        fetchOptions.signal.removeEventListener(
+          'abort',
+          externalSignalListener
+        );
       }
     }
   }

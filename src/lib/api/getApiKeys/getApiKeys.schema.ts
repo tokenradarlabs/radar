@@ -23,4 +23,5 @@ export const getApiKeysQuerySchema = z.object({
   limit: z.coerce.number().int().positive().max(100).default(10),
 });
 
-export type GetApiKeysRequest = z.infer<typeof getApiKeysBodySchema> & z.infer<typeof getApiKeysQuerySchema>;
+export type GetApiKeysRequest = z.infer<typeof getApiKeysBodySchema> &
+  z.infer<typeof getApiKeysQuerySchema>;

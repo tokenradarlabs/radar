@@ -48,12 +48,15 @@ test('requestTiming plugin should log request duration', async () => {
 
     expect(response.statusCode).toBe(200);
 
-    const timingLogCall = loggerSpy.mock.calls.find(call =>
-      typeof call[0] === 'string' && call[0].includes('Request Timing:')
+    const timingLogCall = loggerSpy.mock.calls.find(
+      (call) =>
+        typeof call[0] === 'string' && call[0].includes('Request Timing:')
     );
 
     expect(timingLogCall).toBeDefined();
-    expect(timingLogCall![0]).toMatch(/Request Timing: .* - GET \/health - 200 - \d+\.\d{2}ms/);
+    expect(timingLogCall![0]).toMatch(
+      /Request Timing: .* - GET \/health - 200 - \d+\.\d{2}ms/
+    );
   } finally {
     loggerSpy.mockRestore();
     if (testServer) {

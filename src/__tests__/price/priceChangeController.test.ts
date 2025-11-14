@@ -71,7 +71,9 @@ describe('Token Price Change Endpoint', () => {
 
     // Assert telemetry calls
     expect(mockRecordCount).toHaveBeenCalledTimes(1);
-    expect(mockRecordCount).toHaveBeenCalledWith('price_change_request', 1, { tokenId });
+    expect(mockRecordCount).toHaveBeenCalledWith('price_change_request', 1, {
+      tokenId,
+    });
     expect(mockRecordDuration).toHaveBeenCalledTimes(1);
     expect(mockRecordDuration).toHaveBeenCalledWith(
       'price_change_controller_duration',

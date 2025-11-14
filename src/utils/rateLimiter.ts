@@ -7,8 +7,14 @@ const { RATE_LIMIT_BURST_ALLOWANCE } = validateEnvironmentVariables();
 
 const burstAllowance = (() => {
   const parsedAllowance = parseInt(RATE_LIMIT_BURST_ALLOWANCE || '0', 10);
-  if (isNaN(parsedAllowance) || !Number.isFinite(parsedAllowance) || parsedAllowance < 0) {
-    throw new Error('Invalid RATE_LIMIT_BURST_ALLOWANCE environment variable. Must be a non-negative integer.');
+  if (
+    isNaN(parsedAllowance) ||
+    !Number.isFinite(parsedAllowance) ||
+    parsedAllowance < 0
+  ) {
+    throw new Error(
+      'Invalid RATE_LIMIT_BURST_ALLOWANCE environment variable. Must be a non-negative integer.'
+    );
   }
   return parsedAllowance;
 })();
@@ -19,24 +25,28 @@ interface RateLimitOptions {
   excludeRoutes?: string | string[];
 }
 
-const createRateLimiterPlugin = (options: RateLimitOptions): FastifyPluginAsync => {
+const createRateLimiterPlugin = (
+  options: RateLimitOptions
+): FastifyPluginAsync => {
   const rateLimiterPlugin: FastifyPluginAsync = async (fastify) => {
-    const {
-      RATE_LIMIT_TIME_WINDOW,
-      RATE_LIMIT_EXCLUDE_ROUTES,
-    } = validateEnvironmentVariables();
+    const { RATE_LIMIT_TIME_WINDOW, RATE_LIMIT_EXCLUDE_ROUTES } =
+      validateEnvironmentVariables();
 
     let excludeRoutes: string[];
     if (options.excludeRoutes) {
       if (Array.isArray(options.excludeRoutes)) {
         excludeRoutes = options.excludeRoutes;
       } else if (typeof options.excludeRoutes === 'string') {
-        excludeRoutes = options.excludeRoutes.split(',').map((route) => route.trim());
+        excludeRoutes = options.excludeRoutes
+          .split(',')
+          .map((route) => route.trim());
       } else {
         excludeRoutes = ['/health']; // Fallback if options.excludeRoutes is neither string nor array
       }
     } else if (RATE_LIMIT_EXCLUDE_ROUTES) {
-      excludeRoutes = RATE_LIMIT_EXCLUDE_ROUTES.split(',').map((route) => route.trim());
+      excludeRoutes = RATE_LIMIT_EXCLUDE_ROUTES.split(',').map((route) =>
+        route.trim()
+      );
     } else {
       excludeRoutes = ['/health']; // Default exclude health route
     }

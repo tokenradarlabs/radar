@@ -49,7 +49,8 @@ describe('CoinGeckoAdapter.getCurrentPrice', () => {
     };
     (fetchWithRetry as vi.Mock).mockResolvedValue(mockResponse as Response);
 
-    const result = await coinGeckoPriceProvider.getCurrentPrice('bitcoin');    expect(result).toBeNull();
+    const result = await coinGeckoPriceProvider.getCurrentPrice('bitcoin');
+    expect(result).toBeNull();
   });
 
   it('should throw an error if usd field is null', async () => {
@@ -59,9 +60,9 @@ describe('CoinGeckoAdapter.getCurrentPrice', () => {
     };
     (fetchWithRetry as vi.Mock).mockResolvedValue(mockResponse as Response);
 
-    await expect(coinGeckoPriceProvider.getCurrentPrice('bitcoin')).rejects.toThrow(
-      'Invalid price data from CoinGecko'
-    );
+    await expect(
+      coinGeckoPriceProvider.getCurrentPrice('bitcoin')
+    ).rejects.toThrow('Invalid price data from CoinGecko');
   });
 
   it('should throw an error if usd field is a string', async () => {
@@ -71,8 +72,8 @@ describe('CoinGeckoAdapter.getCurrentPrice', () => {
     };
     (fetchWithRetry as vi.Mock).mockResolvedValue(mockResponse as Response);
 
-    await expect(coinGeckoPriceProvider.getCurrentPrice('bitcoin')).rejects.toThrow(
-      'Invalid price data from CoinGecko'
-    );
+    await expect(
+      coinGeckoPriceProvider.getCurrentPrice('bitcoin')
+    ).rejects.toThrow('Invalid price data from CoinGecko');
   });
 });

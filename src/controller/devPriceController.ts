@@ -19,7 +19,11 @@ export default async function devPriceController(fastify: FastifyInstance) {
         return sendSuccess(reply, responseData);
       } catch (error) {
         logger.error('DEV price controller error:', { error });
-        return sendInternalError(reply, 'Failed to fetch DEV token price', ERROR_CODES.EXTERNAL_SERVICE_ERROR);
+        return sendInternalError(
+          reply,
+          'Failed to fetch DEV token price',
+          ERROR_CODES.EXTERNAL_SERVICE_ERROR
+        );
       }
     }
   );

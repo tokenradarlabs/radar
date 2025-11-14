@@ -1,5 +1,5 @@
 {
-  // "extends": "fastify-tsconfig",
+    "extends": "fastify-tsconfig",
   "compilerOptions": {
     "target": "es2022",
     "module": "nodenext",
