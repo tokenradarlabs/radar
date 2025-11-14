@@ -15,6 +15,9 @@ import devPriceController from './controller/devPriceController';
 import priceAlertController from './controller/alerts/priceAlertController';
 import { authenticateApiKey } from './utils/auth';
 
+import { getHistoricalPriceController } from './controller/historicalPriceController';
+import { historicalPriceSchema } from './lib/api/historicalPrice/historicalPrice.schema';
+
 const createRateLimitOptions = (
   max: number,
   timeWindow: string,
@@ -113,6 +116,7 @@ export default async function router(fastify: FastifyInstance) {
     fastify.register(volumeController, { prefix: '/api/v1/volume' });
     fastify.register(devPriceController, { prefix: '/api/v1/price/dev' });
     fastify.register(priceAlertController);
+    fastify.get('/api/v1/historical-price', { schema: { querystring: historicalPriceSchema } }, getHistoricalPriceController);
   });
 
   // Public endpoints (no authentication required)
