@@ -19,6 +19,14 @@ export const getDetailedUsageAnalyticsRequestSchema = z.object({
   startDate: z.string().datetime().optional(),
   endDate: z.string().datetime().optional(),
   interval: z.enum(['daily', 'weekly', 'monthly']).optional(),
+}).refine((data) => {
+  if (data.startDate && data.endDate) {
+    return new Date(data.startDate) <= new Date(data.endDate);
+  }
+  return true;
+}, {
+  message: 'Start date must be before or equal to end date',
+  path: ['endDate'],
 });
 
 export type GetDetailedUsageAnalyticsRequest = z.infer<
