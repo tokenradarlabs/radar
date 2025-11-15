@@ -6,19 +6,7 @@ import {
   INVALID_UUID_ERROR,
 } from '../../utils/validation';
 
-export const getUsageAnalyticsRequestSchema = z.object({
-  apiKeyId: z
-    .string({
-      required_error: REQUIRED_ERROR,
-      invalid_type_error: INVALID_TYPE_ERROR,
-    })
-    .uuid(INVALID_UUID_ERROR)
-    .optional(),
-});
 
-export type GetUsageAnalyticsRequest = z.infer<
-  typeof getUsageAnalyticsRequestSchema
->;
 
 export const getDetailedUsageAnalyticsRequestSchema = z.object({
   apiKeyId: z
