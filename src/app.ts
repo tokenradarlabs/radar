@@ -20,6 +20,9 @@ import { sendServiceUnavailable, errorResponse } from './utils/responseHelper';
 import logger, { asyncLocalStorage } from './utils/logger';
 import { v4 as uuidv4 } from 'uuid';
 import { connectPrisma, disconnectPrisma } from './utils/prisma';
+import { getDetailedHealth } from './utils/healthCheck';
+
+const APP_VERSION = '4.1.0';
 
 export async function buildApp(): Promise<FastifyInstance> {
   const server = fastify({
@@ -115,12 +118,13 @@ export async function buildApp(): Promise<FastifyInstance> {
 
   // Health endpoint
   server.get('/health', async (_request, reply) => {
-    try {
-      await connectPrisma(); // Attempt to connect to the database
-      return reply.send({ status: 'ok' });
-    } catch (error) {
-      return sendServiceUnavailable(reply, 'Database unavailable');
-    }
+    return reply.send({ status: 'up', version: APP_VERSION });
+  });
+
+  server.get('/health/detailed', async (_request, reply) => {
+    const detailedHealth = await getDetailedHealth(APP_VERSION);
+    const statusCode = detailedHealth.overallStatus === 'down' ? 503 : detailedHealth.overallStatus === 'degraded' ? 200 : 200;
+    return reply.code(statusCode).send(detailedHealth);
   });
 
   // Test routes for error handler (only in test environment)
