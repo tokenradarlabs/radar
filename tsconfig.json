@@ -1,5 +1,4 @@
 {
-    "extends": "fastify-tsconfig",
   "compilerOptions": {
     "target": "es2022",
     "module": "nodenext",
@@ -17,7 +16,7 @@
     "esModuleInterop": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "types": ["node"]
+    "types": ["node", "fastify"]
   },
   "exclude": [
     "node_modules",

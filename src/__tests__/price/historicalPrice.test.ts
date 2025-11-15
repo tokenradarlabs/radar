@@ -1,4 +1,3 @@
-
 import { FastifyInstance } from 'fastify';
 import { build } from '../../app'; // Adjust path as necessary
 import { prisma } from '../../utils/prisma';
@@ -38,8 +37,12 @@ describe('Historical Price API', () => {
   afterEach(() => vi.clearAllMocks());
 
   afterAll(async () => {
-    await prisma.apiKey.deleteMany({ where: { value: 'test_historical_api_key' } });
-    await prisma.user.deleteMany({ where: { email: 'test-historical@example.com' } });
+    await prisma.apiKey.deleteMany({
+      where: { value: 'test_historical_api_key' },
+    });
+    await prisma.user.deleteMany({
+      where: { email: 'test-historical@example.com' },
+    });
     await prisma.$disconnect();
     await fastify.close();
   });
@@ -109,7 +112,9 @@ describe('Historical Price API', () => {
         [1678972800000, 1600], // March 16, 2023 00:00:00 UTC
       ],
     };
-    vi.spyOn(CoinGeckoPrice, 'getHistoricalPrice').mockResolvedValueOnce(mockCoinGeGeckoData);
+    vi.spyOn(CoinGeckoPrice, 'getHistoricalPrice').mockResolvedValueOnce(
+      mockCoinGeGeckoData
+    );
 
     const response = await fastify.inject({
       method: 'GET',
@@ -137,6 +142,8 @@ describe('Historical Price API', () => {
 
     expect(response.statusCode).toBe(404);
     expect(response.json()).toHaveProperty('success', true);
-    expect(response.json().message).toContain('Historical price data not found');
+    expect(response.json().message).toContain(
+      'Historical price data not found'
+    );
   });
 });

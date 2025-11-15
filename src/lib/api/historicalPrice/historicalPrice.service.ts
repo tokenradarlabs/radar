@@ -1,4 +1,3 @@
-
 import { HistoricalPriceSchema } from './historicalPrice.schema';
 import { getHistoricalPrice } from '../../../utils/coinGeckoPrice';
 import { getCache, setCache } from '../../../utils/cache';
@@ -16,8 +15,14 @@ export async function getHistoricalPriceService(params: HistoricalPriceSchema) {
     return cachedData;
   }
 
-  logger.info(`Cache miss for historical price: ${cacheKey}. Fetching from CoinGecko.`);
-  const data = await getHistoricalPrice(params.id, params.vs_currency, params.days);
+  logger.info(
+    `Cache miss for historical price: ${cacheKey}. Fetching from CoinGecko.`
+  );
+  const data = await getHistoricalPrice(
+    params.id,
+    params.vs_currency,
+    params.days
+  );
 
   if (data) {
     await setCache(cacheKey, data, CACHE_TTL);

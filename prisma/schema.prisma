@@ -69,6 +69,22 @@ model ApiKey {
   user        User     @relation(fields: [userId], references: [id])
   expiresAt   DateTime?
   scopes      Json      @default("[]")
+  usageLogs   UsageLog[]
 
   @@unique([userId, name])
+  @@index([userId])
+}
+
+model UsageLog {
+  id          String   @id @default(uuid())
+  apiKeyId    String
+  apiKey      ApiKey   @relation(fields: [apiKeyId], references: [id])
+  endpoint    String
+  response_time_ms Int
+  status_code Int
+  createdAt   DateTime @default(now())
+
+  @@index([apiKeyId])
+  @@index([endpoint])
+  @@index([createdAt])
 }

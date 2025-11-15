@@ -1,4 +1,3 @@
-
 import { Request, Response, NextFunction } from 'express';
 import { historicalPriceSchema } from '../../lib/api/historicalPrice/historicalPrice.schema';
 import { getHistoricalPriceService } from '../../lib/api/historicalPrice/historicalPrice.service';
@@ -13,7 +12,9 @@ export async function getHistoricalPriceController(
   try {
     const { id, vs_currency, days } = historicalPriceSchema.parse(req.query);
 
-    logger.info(`Fetching historical price for token: ${id}, currency: ${vs_currency}, days: ${days}`);
+    logger.info(
+      `Fetching historical price for token: ${id}, currency: ${vs_currency}, days: ${days}`
+    );
 
     const historicalPriceData = await getHistoricalPriceService({
       id,
@@ -22,10 +23,20 @@ export async function getHistoricalPriceController(
     });
 
     if (!historicalPriceData) {
-      return sendSuccessResponse(res, 404, 'Historical price data not found', null);
+      return sendSuccessResponse(
+        res,
+        404,
+        'Historical price data not found',
+        null
+      );
     }
 
-    sendSuccessResponse(res, 200, 'Historical price data fetched successfully', historicalPriceData);
+    sendSuccessResponse(
+      res,
+      200,
+      'Historical price data fetched successfully',
+      historicalPriceData
+    );
   } catch (error) {
     logger.error(`Error fetching historical price: ${error.message}`);
     next(error);

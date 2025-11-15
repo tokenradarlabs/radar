@@ -19,7 +19,9 @@ export async function getCoinGeckoPrice(id: string): Promise<number | null> {
     const data: CoinGeckoPriceResponse = await fetchWithRetry(url);
     return data[id]?.usd || null;
   } catch (error) {
-    logger.error(`Error fetching price for ${id} from CoinGecko: ${error.message}`);
+    logger.error(
+      `Error fetching price for ${id} from CoinGecko: ${error.message}`
+    );
     return null;
   }
 }
@@ -34,7 +36,9 @@ export async function getHistoricalPrice(
     const data: CoinGeckoHistoricalPriceResponse = await fetchWithRetry(url);
     return data;
   } catch (error) {
-    logger.error(`Error fetching historical price for ${id} from CoinGecko: ${error.message}`);
+    logger.error(
+      `Error fetching historical price for ${id} from CoinGecko: ${error.message}`
+    );
     return null;
   }
 }
