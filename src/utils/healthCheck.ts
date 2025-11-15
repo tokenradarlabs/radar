@@ -1,8 +1,8 @@
-import { PrismaClient } from '@prisma/client';
-import { fetchWithRetry } from './fetchWithRetry';
+
+import { prisma } from './prisma';
 import { getCoinGeckoPrice } from './coinGeckoPrice';
 
-const prisma = new PrismaClient();
+
 
 interface HealthCheckResult {
   status: 'up' | 'down' | 'degraded';
@@ -35,9 +35,8 @@ export async function checkDatabaseHealth(): Promise<HealthCheckResult> {
   } catch (error: any) {
     const end = Date.now();
     return { status: 'down', timestamp: new Date().toISOString(), responseTime: end - start, message: error.message };
-  } finally {
-    await prisma.$disconnect();
   }
+}
 }
 
 export async function checkCoinGeckoHealth(): Promise<HealthCheckResult> {
@@ -67,7 +66,8 @@ export async function checkAnkrRpcHealth(): Promise<HealthCheckResult> {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ jsonrpc: '2.0', method: 'eth_blockNumber', params: [], id: 1 }),
-    }, HEALTH_CHECK_TIMEOUT);
+      timeout: HEALTH_CHECK_TIMEOUT,
+    });
 
     if (!response.ok) {
       throw new Error(`Ankr RPC responded with status ${response.status}`);
