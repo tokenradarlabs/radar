@@ -1,6 +1,7 @@
 
 import { prisma } from './prisma';
 import { getCoinGeckoPrice } from './coinGeckoPrice';
+import { fetchWithRetry } from './fetchWithRetry';
 
 
 
@@ -36,7 +37,6 @@ export async function checkDatabaseHealth(): Promise<HealthCheckResult> {
     const end = Date.now();
     return { status: 'down', timestamp: new Date().toISOString(), responseTime: end - start, message: error.message };
   }
-}
 }
 
 export async function checkCoinGeckoHealth(): Promise<HealthCheckResult> {
