@@ -16,6 +16,7 @@ import priceAlertController from './controller/alerts/priceAlertController';
 import { authenticateApiKey } from './utils/auth';
 
 import { getHistoricalPriceController } from './controller/historicalPriceController';
+import { batchPriceController } from './controller/batchPriceController';
 import { historicalPriceSchema } from './lib/api/historicalPrice/historicalPrice.schema';
 
 const createRateLimitOptions = (
@@ -121,6 +122,7 @@ export default async function router(fastify: FastifyInstance) {
       { schema: { querystring: historicalPriceSchema } },
       getHistoricalPriceController
     );
+    fastify.post('/api/v1/batch-price', batchPriceController);
   });
 
   // Public endpoints (no authentication required)
