@@ -10,11 +10,12 @@ import {
 } from '../../lib/api/getApiKeys';
 import {
   getUsageAnalyticsRequestSchema,
-  type GetUsageAnalyticsRequest,
+  getDetailedUsageAnalyticsRequestSchema,
+  type GetDetailedUsageAnalyticsRequest,
+  type UsageAnalyticsResponse,
 } from '../../lib/api/getUsageAnalytics/getUsageAnalytics.schema';
 import {
   GetUsageAnalyticsService,
-  type UsageAnalyticsResponse,
 } from '../../lib/api/getUsageAnalytics/getUsageAnalytics.service';
 
 export default async function getApiKeysController(fastify: FastifyInstance) {
@@ -67,19 +68,30 @@ export default async function getApiKeysController(fastify: FastifyInstance) {
   );
 
   // GET endpoint for API key usage analytics
-  fastify.post<{ Body: GetUsageAnalyticsRequest }>(
+  fastify.post<{ Body: GetDetailedUsageAnalyticsRequest }>(
     '/usageAnalytics',
     async function (
-      request: FastifyRequest<{ Body: GetUsageAnalyticsRequest }>,
+      request: FastifyRequest<{ Body: GetDetailedUsageAnalyticsRequest }>,
       reply: FastifyReply
     ) {
       try {
-        const validatedData = getUsageAnalyticsRequestSchema.parse(
+        const validatedData = getDetailedUsageAnalyticsRequestSchema.parse(
           request.body
         );
 
+        const userId = request.user?.id; // Assuming userId is available from authentication
+
+        if (!userId) {
+          const response: Response<UsageAnalyticsResponse> = {
+            success: false,
+            error: 'Unauthorized',
+            code: ERROR_CODES.AUTHENTICATION_FAILED,
+          };
+          return reply.code(401).send(response);
+        }
+
         const result =
-          await GetUsageAnalyticsService.getUsageAnalytics(validatedData);
+          await GetUsageAnalyticsService.getUsageAnalytics(userId, validatedData);
 
         const response: Response<UsageAnalyticsResponse> = {
           success: true,
@@ -95,26 +107,6 @@ export default async function getApiKeysController(fastify: FastifyInstance) {
             code: ERROR_CODES.VALIDATION_FAILED,
           };
           return reply.code(400).send(response);
-        }
-
-        if (error instanceof Error) {
-          if (error.message === 'Invalid credentials') {
-            const response: Response<UsageAnalyticsResponse> = {
-              success: false,
-              error: error.message,
-              code: ERROR_CODES.AUTHENTICATION_FAILED,
-            };
-            return reply.code(401).send(response);
-          }
-
-          if (error.message === 'No API keys found') {
-            const response: Response<UsageAnalyticsResponse> = {
-              success: false,
-              error: error.message,
-              code: ERROR_CODES.API_KEY_NOT_FOUND,
-            };
-            return reply.code(404).send(response);
-          }
         }
 
         sendInternalError(

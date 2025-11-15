@@ -1,117 +1,164 @@
-import bcrypt from 'bcrypt';
 import { prisma } from '../../../utils/prisma';
-import { GetUsageAnalyticsRequest } from './getUsageAnalytics.schema';
-
-export interface UsageAnalyticsResponse {
-  totalApiKeys: number;
-  totalUsage: number;
-  activeApiKeys: number;
-  inactiveApiKeys: number;
-  mostUsedApiKey: {
-    id: string;
-    name: string;
-    usageCount: number;
-    lastUsedAt: Date;
-  } | null;
-  leastUsedApiKey: {
-    id: string;
-    name: string;
-    usageCount: number;
-    lastUsedAt: Date;
-  } | null;
-  averageUsagePerKey: number;
-  apiKeyDetails: Array<{
-    id: string;
-    name: string;
-    usageCount: number;
-    lastUsedAt: Date;
-    isActive: boolean;
-    createdAt: Date;
-  }>;
-}
+import { GetDetailedUsageAnalyticsRequest, UsageAnalyticsResponse } from './getUsageAnalytics.schema';
 
 export class GetUsageAnalyticsService {
   static async getUsageAnalytics(
-    data: GetUsageAnalyticsRequest
+    userId: string,
+    data: GetDetailedUsageAnalyticsRequest
   ): Promise<UsageAnalyticsResponse> {
-    // Find user by email
-    const user = await prisma.user.findUnique({
-      where: {
-        email: data.email,
-      },
-    });
+    const { apiKeyId, startDate, endDate, interval } = data;
 
-    if (!user) {
-      throw new Error('Invalid credentials');
-    }
-
-    // Compare password with hashed password
-    const isValidPassword = await bcrypt.compare(data.password, user.password);
-
-    if (!isValidPassword) {
-      throw new Error('Invalid credentials');
-    }
-
-    // Build where clause for API keys
     const whereClause: any = {
-      userId: user.id,
+      apiKey: {
+        userId: userId,
+      },
     };
 
-    // If specific API key ID is provided, filter by it
-    if (data.apiKeyId) {
-      whereClause.id = data.apiKeyId;
+    if (apiKeyId) {
+      whereClause.apiKeyId = apiKeyId;
     }
 
-    // Get all API keys for the user with usage data
-    const apiKeys = await prisma.apiKey.findMany({
+    if (startDate && endDate) {
+      whereClause.createdAt = {
+        gte: new Date(startDate),
+        lte: new Date(endDate),
+      };
+    }
+
+    const totalRequests = await prisma.usageLog.count({
       where: whereClause,
-      select: {
-        id: true,
-        name: true,
-        usageCount: true,
-        lastUsedAt: true,
-        isActive: true,
-        createdAt: true,
+    });
+
+    const averageResponseTimeResult = await prisma.usageLog.aggregate({
+      _avg: {
+        response_time_ms: true,
       },
-      orderBy: {
-        usageCount: 'desc',
+      where: whereClause,
+    });
+
+    const errorRequests = await prisma.usageLog.count({
+      where: {
+        ...whereClause,
+        status_code: { gte: 400 },
       },
     });
 
-    if (apiKeys.length === 0) {
-      throw new Error('No API keys found');
+    const errorRate = totalRequests === 0 ? 0 : (errorRequests / totalRequests) * 100;
+
+    const popularEndpoints = await prisma.usageLog.groupBy({
+      by: ['endpoint'],
+      _count: {
+        id: true,
+      },
+      where: whereClause,
+      orderBy: {
+        _count: {
+          id: 'desc',
+        },
+      },
+      take: 5,
+    });
+
+    let timeSeries: any[] = [];
+    if (interval && startDate && endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+
+      let dateUnit: 'day' | 'week' | 'month';
+      let dateFormat: Intl.DateTimeFormatOptions;
+
+      switch (interval) {
+        case 'daily':
+          dateUnit = 'day';
+          dateFormat = { year: 'numeric', month: '2-digit', day: '2-digit' };
+          break;
+        case 'weekly':
+          dateUnit = 'week';
+          dateFormat = { year: 'numeric', month: '2-digit', day: '2-digit' };
+          break;
+        case 'monthly':
+          dateUnit = 'month';
+          dateFormat = { year: 'numeric', month: '2-digit' };
+          break;
+        default:
+          dateUnit = 'day';
+          dateFormat = { year: 'numeric', month: '2-digit', day: '2-digit' };
+      }
+
+      const logs = await prisma.usageLog.findMany({
+        where: whereClause,
+        orderBy: {
+          createdAt: 'asc',
+        },
+      });
+
+      const groupedLogs = logs.reduce((acc, log) => {
+        let dateKey;
+        const logDate = new Date(log.createdAt);
+
+        if (interval === 'weekly') {
+          const firstDayOfWeek = new Date(logDate);
+          firstDayOfWeek.setDate(logDate.getDate() - logDate.getDay());
+          dateKey = firstDayOfWeek.toLocaleDateString('en-CA', dateFormat);
+        } else if (interval === 'monthly') {
+          dateKey = logDate.toLocaleDateString('en-CA', dateFormat);
+        } else {
+          dateKey = logDate.toLocaleDateString('en-CA', dateFormat);
+        }
+
+        if (!acc[dateKey]) {
+          acc[dateKey] = {
+            requests: 0,
+            errors: 0,
+            totalResponseTime: 0,
+            count: 0,
+          };
+        }
+        acc[dateKey].requests++;
+        if (log.status_code >= 400) {
+          acc[dateKey].errors++;
+        }
+        acc[dateKey].totalResponseTime += log.response_time_ms;
+        acc[dateKey].count++;
+        return acc;
+      }, {});
+
+      for (let d = new Date(start); d <= end; ) {
+        let dateKey;
+        if (interval === 'weekly') {
+          const firstDayOfWeek = new Date(d);
+          firstDayOfWeek.setDate(d.getDate() - d.getDay());
+          dateKey = firstDayOfWeek.toLocaleDateString('en-CA', dateFormat);
+        } else if (interval === 'monthly') {
+          dateKey = d.toLocaleDateString('en-CA', dateFormat);
+        } else {
+          dateKey = d.toLocaleDateString('en-CA', dateFormat);
+        }
+
+        const dataForDate = groupedLogs[dateKey] || { requests: 0, errors: 0, totalResponseTime: 0, count: 0 };
+        timeSeries.push({
+          date: dateKey,
+          requests: dataForDate.requests,
+          errors: dataForDate.errors,
+          averageResponseTime: dataForDate.count > 0 ? dataForDate.totalResponseTime / dataForDate.count : 0,
+        });
+
+        if (interval === 'daily') {
+          d.setDate(d.getDate() + 1);
+        } else if (interval === 'weekly') {
+          d.setDate(d.getDate() + 7);
+        } else if (interval === 'monthly') {
+          d.setMonth(d.getMonth() + 1);
+        }
+      }
     }
 
-    // Calculate analytics
-    const totalApiKeys = apiKeys.length;
-    const totalUsage = apiKeys.reduce((sum, key) => sum + key.usageCount, 0);
-    const activeApiKeys = apiKeys.filter((key) => key.isActive).length;
-    const inactiveApiKeys = totalApiKeys - activeApiKeys;
-    const averageUsagePerKey = totalUsage / totalApiKeys;
-
-    // Find most and least used API keys
-    const mostUsedApiKey = apiKeys[0]; // Already sorted by usage count desc
-    const leastUsedApiKey = apiKeys[apiKeys.length - 1];
-
     return {
-      totalApiKeys,
-      totalUsage,
-      activeApiKeys,
-      inactiveApiKeys,
-      mostUsedApiKey: {
-        id: mostUsedApiKey.id,
-        name: mostUsedApiKey.name,
-        usageCount: mostUsedApiKey.usageCount,
-        lastUsedAt: mostUsedApiKey.lastUsedAt,
-      },
-      leastUsedApiKey: {
-        id: leastUsedApiKey.id,
-        name: leastUsedApiKey.name,
-        usageCount: leastUsedApiKey.usageCount,
-        lastUsedAt: leastUsedApiKey.lastUsedAt,
-      },
-      averageUsagePerKey: Math.round(averageUsagePerKey * 100) / 100, // Round to 2 decimal places
-      apiKeyDetails: apiKeys,
+      totalRequests,
+      averageResponseTime: averageResponseTimeResult._avg.response_time_ms || 0,
+      errorRate,
+      popularEndpoints: popularEndpoints.map(ep => ({ endpoint: ep.endpoint, count: ep._count.id })),
+      timeSeries,
     };
   }
 }
