@@ -116,7 +116,11 @@ export default async function router(fastify: FastifyInstance) {
     fastify.register(volumeController, { prefix: '/api/v1/volume' });
     fastify.register(devPriceController, { prefix: '/api/v1/price/dev' });
     fastify.register(priceAlertController);
-    fastify.get('/api/v1/historical-price', { schema: { querystring: historicalPriceSchema } }, getHistoricalPriceController);
+    fastify.get(
+      '/api/v1/historical-price',
+      { schema: { querystring: historicalPriceSchema } },
+      getHistoricalPriceController
+    );
   });
 
   // Public endpoints (no authentication required)

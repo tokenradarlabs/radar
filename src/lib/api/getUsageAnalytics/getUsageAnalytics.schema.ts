@@ -41,16 +41,24 @@ export const UsageAnalyticsResponseSchema = z.object({
   totalRequests: z.number(),
   averageResponseTime: z.number(),
   errorRate: z.number(),
-  popularEndpoints: z.array(z.object({
-    endpoint: z.string(),
-    count: z.number(),
-  })),
-  timeSeries: z.array(z.object({
-    date: z.string(),
-    requests: z.number(),
-    errors: z.number(),
-    averageResponseTime: z.number(),
-  })).optional(),
+  popularEndpoints: z.array(
+    z.object({
+      endpoint: z.string(),
+      count: z.number(),
+    })
+  ),
+  timeSeries: z
+    .array(
+      z.object({
+        date: z.string(),
+        requests: z.number(),
+        errors: z.number(),
+        averageResponseTime: z.number(),
+      })
+    )
+    .optional(),
 });
 
-export type UsageAnalyticsResponse = z.infer<typeof UsageAnalyticsResponseSchema>;
+export type UsageAnalyticsResponse = z.infer<
+  typeof UsageAnalyticsResponseSchema
+>;

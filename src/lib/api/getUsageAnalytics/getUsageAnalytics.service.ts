@@ -1,5 +1,8 @@
 import { prisma } from '../../../utils/prisma';
-import { GetDetailedUsageAnalyticsRequest, UsageAnalyticsResponse } from './getUsageAnalytics.schema';
+import {
+  GetDetailedUsageAnalyticsRequest,
+  UsageAnalyticsResponse,
+} from './getUsageAnalytics.schema';
 
 export class GetUsageAnalyticsService {
   static async getUsageAnalytics(
@@ -43,7 +46,8 @@ export class GetUsageAnalyticsService {
       },
     });
 
-    const errorRate = totalRequests === 0 ? 0 : (errorRequests / totalRequests) * 100;
+    const errorRate =
+      totalRequests === 0 ? 0 : (errorRequests / totalRequests) * 100;
 
     const popularEndpoints = await prisma.usageLog.groupBy({
       by: ['endpoint'],
@@ -59,7 +63,14 @@ export class GetUsageAnalyticsService {
       take: 5,
     });
 
-    let timeSeries: Array<{date: string; requests: number; errors: number; averageResponseTime: number}> | undefined = undefined;
+    let timeSeries:
+      | Array<{
+          date: string;
+          requests: number;
+          errors: number;
+          averageResponseTime: number;
+        }>
+      | undefined = undefined;
 
     if (interval && startDate && endDate) {
       timeSeries = [];
@@ -89,36 +100,55 @@ export class GetUsageAnalyticsService {
         },
       });
 
-      const groupedLogs: Record<string, { requests: number; errors: number; totalResponseTime: number; count: number }> = logs.reduce((acc, log) => {
-        let dateKey;
-        const logDate = new Date(log.createdAt);
+      const groupedLogs: Record<
+        string,
+        {
+          requests: number;
+          errors: number;
+          totalResponseTime: number;
+          count: number;
+        }
+      > = logs.reduce(
+        (acc, log) => {
+          let dateKey;
+          const logDate = new Date(log.createdAt);
 
-        if (interval === 'weekly') {
-          const firstDayOfWeek = new Date(logDate);
-          firstDayOfWeek.setDate(logDate.getDate() - logDate.getDay());
-          dateKey = firstDayOfWeek.toLocaleDateString('en-CA', dateFormat);
-        } else if (interval === 'monthly') {
-          dateKey = logDate.toLocaleDateString('en-CA', dateFormat);
-        } else {
-          dateKey = logDate.toLocaleDateString('en-CA', dateFormat);
-        }
+          if (interval === 'weekly') {
+            const firstDayOfWeek = new Date(logDate);
+            firstDayOfWeek.setDate(logDate.getDate() - logDate.getDay());
+            dateKey = firstDayOfWeek.toLocaleDateString('en-CA', dateFormat);
+          } else if (interval === 'monthly') {
+            dateKey = logDate.toLocaleDateString('en-CA', dateFormat);
+          } else {
+            dateKey = logDate.toLocaleDateString('en-CA', dateFormat);
+          }
 
-        if (!acc[dateKey]) {
-          acc[dateKey] = {
-            requests: 0,
-            errors: 0,
-            totalResponseTime: 0,
-            count: 0,
-          };
-        }
-        acc[dateKey].requests++;
-        if (log.status_code >= 400) {
-          acc[dateKey].errors++;
-        }
-        acc[dateKey].totalResponseTime += log.response_time_ms;
-        acc[dateKey].count++;
-        return acc;
-      }, {});
+          if (!acc[dateKey]) {
+            acc[dateKey] = {
+              requests: 0,
+              errors: 0,
+              totalResponseTime: 0,
+              count: 0,
+            };
+          }
+          acc[dateKey].requests++;
+          if (log.status_code >= 400) {
+            acc[dateKey].errors++;
+          }
+          acc[dateKey].totalResponseTime += log.response_time_ms;
+          acc[dateKey].count++;
+          return acc;
+        },
+        {} as Record<
+          string,
+          {
+            requests: number;
+            errors: number;
+            totalResponseTime: number;
+            count: number;
+          }
+        >
+      );
 
       for (let d = new Date(start); d <= end; ) {
         let dateKey;
@@ -132,12 +162,20 @@ export class GetUsageAnalyticsService {
           dateKey = d.toLocaleDateString('en-CA', dateFormat);
         }
 
-        const dataForDate = groupedLogs[dateKey] || { requests: 0, errors: 0, totalResponseTime: 0, count: 0 };
+        const dataForDate = groupedLogs[dateKey] || {
+          requests: 0,
+          errors: 0,
+          totalResponseTime: 0,
+          count: 0,
+        };
         timeSeries.push({
           date: dateKey,
           requests: dataForDate.requests,
           errors: dataForDate.errors,
-          averageResponseTime: dataForDate.count > 0 ? dataForDate.totalResponseTime / dataForDate.count : 0,
+          averageResponseTime:
+            dataForDate.count > 0
+              ? dataForDate.totalResponseTime / dataForDate.count
+              : 0,
         });
 
         if (interval === 'daily') {
@@ -154,7 +192,10 @@ export class GetUsageAnalyticsService {
       totalRequests,
       averageResponseTime: averageResponseTimeResult._avg.response_time_ms || 0,
       errorRate,
-      popularEndpoints: popularEndpoints.map(ep => ({ endpoint: ep.endpoint, count: ep._count.id })),
+      popularEndpoints: popularEndpoints.map((ep) => ({
+        endpoint: ep.endpoint,
+        count: ep._count.id,
+      })),
       timeSeries,
     };
   }

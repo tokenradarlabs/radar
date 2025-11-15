@@ -1,4 +1,12 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vitest';
+import {
+  describe,
+  it,
+  expect,
+  beforeAll,
+  afterAll,
+  beforeEach,
+  vi,
+} from 'vitest';
 import Fastify, { FastifyInstance } from 'fastify';
 import { prisma } from '../../utils/prisma';
 import getApiKeysController from '../../controller/api/getApiKeysController';
@@ -8,11 +16,11 @@ import authenticatePlugin from '../../plugins/authenticate';
 
 // Mock the authentication plugin
 vi.mock('../../plugins/authenticate', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('../../plugins/authenticate')>();
+  const actual =
+    await importOriginal<typeof import('../../plugins/authenticate')>();
   return {
     default: vi.fn().mockImplementation((fastify, opts, done) => {
-      fastify.decorateRequest('user', null);
-      fastify.addHook('preHandler', async (request, reply) => {
+      fastify.decorate('authenticate', async (request: any, reply: any) => {
         if (!request.headers.authorization) {
           reply.code(401).send({ success: false, error: 'Unauthorized' });
           return;
@@ -82,11 +90,41 @@ describe('API Key Usage Analytics Endpoint', () => {
     const now = new Date();
     await prisma.usageLog.createMany({
       data: [
-        { apiKeyId: testApiKey.id, endpoint: '/price', response_time_ms: 100, status_code: 200, createdAt: new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000) }, // 5 days ago
-        { apiKeyId: testApiKey.id, endpoint: '/price', response_time_ms: 120, status_code: 200, createdAt: new Date(now.getTime() - 4 * 24 * 60 * 60 * 1000) }, // 4 days ago
-        { apiKeyId: testApiKey.id, endpoint: '/price', response_time_ms: 150, status_code: 500, createdAt: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000) }, // 3 days ago (error)
-        { apiKeyId: testApiKey2.id, endpoint: '/volume', response_time_ms: 200, status_code: 200, createdAt: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000) }, // 2 days ago
-        { apiKeyId: testApiKey2.id, endpoint: '/volume', response_time_ms: 220, status_code: 200, createdAt: new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000) }, // 1 day ago
+        {
+          apiKeyId: testApiKey.id,
+          endpoint: '/price',
+          response_time_ms: 100,
+          status_code: 200,
+          createdAt: new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000),
+        }, // 5 days ago
+        {
+          apiKeyId: testApiKey.id,
+          endpoint: '/price',
+          response_time_ms: 120,
+          status_code: 200,
+          createdAt: new Date(now.getTime() - 4 * 24 * 60 * 60 * 1000),
+        }, // 4 days ago
+        {
+          apiKeyId: testApiKey.id,
+          endpoint: '/price',
+          response_time_ms: 150,
+          status_code: 500,
+          createdAt: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000),
+        }, // 3 days ago (error)
+        {
+          apiKeyId: testApiKey2.id,
+          endpoint: '/volume',
+          response_time_ms: 200,
+          status_code: 200,
+          createdAt: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000),
+        }, // 2 days ago
+        {
+          apiKeyId: testApiKey2.id,
+          endpoint: '/volume',
+          response_time_ms: 220,
+          status_code: 200,
+          createdAt: new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000),
+        }, // 1 day ago
       ],
     });
   });
@@ -146,7 +184,9 @@ describe('API Key Usage Analytics Endpoint', () => {
     const token = sign({ userId: testUser.id }, JWT_SECRET);
     const now = new Date();
     const endDate = now.toISOString();
-    const startDate = new Date(now.getTime() - 6 * 24 * 60 * 60 * 1000).toISOString(); // 6 days ago
+    const startDate = new Date(
+      now.getTime() - 6 * 24 * 60 * 60 * 1000
+    ).toISOString(); // 6 days ago
 
     const response = await app.inject({
       method: 'POST',
@@ -173,7 +213,13 @@ describe('API Key Usage Analytics Endpoint', () => {
     const expectedDates = [];
     for (let i = 6; i >= 0; i--) {
       const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
-      expectedDates.push(d.toLocaleDateString('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit' }));
+      expectedDates.push(
+        d.toLocaleDateString('en-CA', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+        })
+      );
     }
 
     // Check if timeSeries contains expected dates and data

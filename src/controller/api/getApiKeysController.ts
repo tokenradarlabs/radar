@@ -13,9 +13,7 @@ import {
   type GetDetailedUsageAnalyticsRequest,
   type UsageAnalyticsResponse,
 } from '../../lib/api/getUsageAnalytics/getUsageAnalytics.schema';
-import {
-  GetUsageAnalyticsService,
-} from '../../lib/api/getUsageAnalytics/getUsageAnalytics.service';
+import { GetUsageAnalyticsService } from '../../lib/api/getUsageAnalytics/getUsageAnalytics.service';
 
 export default async function getApiKeysController(fastify: FastifyInstance) {
   fastify.post<{ Body: GetApiKeysRequest }>(
@@ -90,8 +88,10 @@ export default async function getApiKeysController(fastify: FastifyInstance) {
           return reply.code(401).send(response);
         }
 
-        const result =
-          await GetUsageAnalyticsService.getUsageAnalytics(userId, validatedData);
+        const result = await GetUsageAnalyticsService.getUsageAnalytics(
+          userId,
+          validatedData
+        );
 
         const response: Response<UsageAnalyticsResponse> = {
           success: true,
