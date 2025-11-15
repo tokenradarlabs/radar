@@ -59,29 +59,26 @@ export class GetUsageAnalyticsService {
       take: 5,
     });
 
-    let timeSeries: any[] = [];
+    let timeSeries: Array<{date: string; requests: number; errors: number; averageResponseTime: number}> | undefined = undefined;
+
     if (interval && startDate && endDate) {
+      timeSeries = [];
       const start = new Date(startDate);
       const end = new Date(endDate);
 
-      let dateUnit: 'day' | 'week' | 'month';
       let dateFormat: Intl.DateTimeFormatOptions;
 
       switch (interval) {
         case 'daily':
-          dateUnit = 'day';
           dateFormat = { year: 'numeric', month: '2-digit', day: '2-digit' };
           break;
         case 'weekly':
-          dateUnit = 'week';
           dateFormat = { year: 'numeric', month: '2-digit', day: '2-digit' };
           break;
         case 'monthly':
-          dateUnit = 'month';
           dateFormat = { year: 'numeric', month: '2-digit' };
           break;
         default:
-          dateUnit = 'day';
           dateFormat = { year: 'numeric', month: '2-digit', day: '2-digit' };
       }
 
@@ -92,7 +89,7 @@ export class GetUsageAnalyticsService {
         },
       });
 
-      const groupedLogs = logs.reduce((acc, log) => {
+      const groupedLogs: Record<string, { requests: number; errors: number; totalResponseTime: number; count: number }> = logs.reduce((acc, log) => {
         let dateKey;
         const logDate = new Date(log.createdAt);
 

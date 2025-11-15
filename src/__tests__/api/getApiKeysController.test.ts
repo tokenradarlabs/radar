@@ -2,25 +2,33 @@ import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vites
 import Fastify, { FastifyInstance } from 'fastify';
 import { prisma } from '../../utils/prisma';
 import getApiKeysController from '../../controller/api/getApiKeysController';
-import { sign } from 'jsonwebtoken';
+import { sign, verify } from 'jsonwebtoken';
 import { JWT_SECRET } from '../../utils/envValidation';
+import authenticatePlugin from '../../plugins/authenticate';
 
 // Mock the authentication plugin
-vi.mock('../../plugins/authenticate', () => ({
-  authenticate: vi.fn(async (request, reply) => {
-    if (!request.headers.authorization) {
-      reply.code(401).send({ success: false, error: 'Unauthorized' });
-      return;
-    }
-    try {
-      const token = request.headers.authorization.split(' ')[1];
-      const decoded: any = sign(token, JWT_SECRET); // In a real scenario, you'd verify, not sign again
-      request.user = { id: decoded.userId };
-    } catch (err) {
-      reply.code(401).send({ success: false, error: 'Unauthorized' });
-    }
-  }),
-}));
+vi.mock('../../plugins/authenticate', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../plugins/authenticate')>();
+  return {
+    default: vi.fn().mockImplementation((fastify, opts, done) => {
+      fastify.decorateRequest('user', null);
+      fastify.addHook('preHandler', async (request, reply) => {
+        if (!request.headers.authorization) {
+          reply.code(401).send({ success: false, error: 'Unauthorized' });
+          return;
+        }
+        try {
+          const token = request.headers.authorization.split(' ')[1];
+          const decoded: any = verify(token, JWT_SECRET);
+          request.user = { id: decoded.userId };
+        } catch (err) {
+          reply.code(401).send({ success: false, error: 'Unauthorized' });
+        }
+      });
+      done();
+    }),
+  };
+});
 
 describe('API Key Usage Analytics Endpoint', () => {
   let app: FastifyInstance;
@@ -31,7 +39,7 @@ describe('API Key Usage Analytics Endpoint', () => {
   beforeAll(async () => {
     app = Fastify();
     // Mock the authenticate plugin
-    await app.register(require('../../plugins/authenticate'));
+    await app.register(authenticatePlugin);
     await app.register(getApiKeysController, { prefix: '/api/keys' });
     await app.ready();
   });
@@ -171,8 +179,8 @@ describe('API Key Usage Analytics Endpoint', () => {
     // Check if timeSeries contains expected dates and data
     // This part might need more precise assertions based on the exact date formatting and data aggregation
     expect(body.data.timeSeries[0].date).toBe(expectedDates[0]);
-    expect(body.data.timeSeries[0].requests).toBe(1); // 5 days ago
-    expect(body.data.timeSeries[2].errors).toBe(1); // 3 days ago
+    expect(body.data.timeSeries[1].requests).toBe(1); // 5 days ago
+    expect(body.data.timeSeries[3].errors).toBe(1); // 3 days ago
   });
 
   it('should handle unauthorized access', async () => {

@@ -9,7 +9,6 @@ import {
   type ApiKeyListResponse,
 } from '../../lib/api/getApiKeys';
 import {
-  getUsageAnalyticsRequestSchema,
   getDetailedUsageAnalyticsRequestSchema,
   type GetDetailedUsageAnalyticsRequest,
   type UsageAnalyticsResponse,
@@ -67,9 +66,10 @@ export default async function getApiKeysController(fastify: FastifyInstance) {
     }
   );
 
-  // GET endpoint for API key usage analytics
+  // POST endpoint for API key usage analytics
   fastify.post<{ Body: GetDetailedUsageAnalyticsRequest }>(
     '/usageAnalytics',
+    { preHandler: [fastify.authenticate] }, // Apply authentication middleware
     async function (
       request: FastifyRequest<{ Body: GetDetailedUsageAnalyticsRequest }>,
       reply: FastifyReply
@@ -85,7 +85,7 @@ export default async function getApiKeysController(fastify: FastifyInstance) {
           const response: Response<UsageAnalyticsResponse> = {
             success: false,
             error: 'Unauthorized',
-            code: ERROR_CODES.AUTHENTICATION_FAILED,
+            code: ERROR_CODES.UNAUTHORIZED,
           };
           return reply.code(401).send(response);
         }
