@@ -43,8 +43,16 @@ export async function checkCoinGeckoHealth(): Promise<HealthCheckResult> {
   const start = Date.now();
   try {
     // Use a lightweight CoinGecko endpoint, e.g., a simple price check for a common coin
-    await getCoinGeckoPrice('bitcoin');
+    const price = await getCoinGeckoPrice('bitcoin');
     const end = Date.now();
+    if (price === null || price === undefined) {
+      return {
+        status: 'degraded',
+        timestamp: new Date().toISOString(),
+        responseTime: end - start,
+        message: 'CoinGecko price data for bitcoin is null or undefined, indicating a potential issue.',
+      };
+    }
     return { status: 'up', timestamp: new Date().toISOString(), responseTime: end - start };
   } catch (error: any) {
     const end = Date.now();
