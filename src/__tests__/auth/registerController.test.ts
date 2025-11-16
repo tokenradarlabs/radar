@@ -45,10 +45,12 @@ describe('User Registration Endpoint (Unit)', () => {
   // Reset mocks before each test to ensure isolation
   beforeEach(() => {
     vi.clearAllMocks();
-    (formatZodError as vi.Mock).mockReturnValue([{
-      field: 'root',
-      message: 'Validation error'
-    }]); // Default mock
+    (formatZodError as vi.Mock).mockReturnValue([
+      {
+        field: 'root',
+        message: 'Validation error',
+      },
+    ]); // Default mock
   });
 
   it('should successfully register a new user with valid data', async () => {

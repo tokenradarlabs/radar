@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import logger from '../utils/logger';
 import { z } from 'zod';
-import { sendSuccess, sendBadRequest } from '../utils/responseHelper';
+import { sendSuccess, sendBadRequest, ERROR_CODES } from '../utils/responseHelper';
 import { formatZodError } from '../utils/validation';
 import { telemetry } from '../utils/telemetry';
 import {

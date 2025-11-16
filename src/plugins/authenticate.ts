@@ -23,13 +23,11 @@ const authenticatePlugin: FastifyPluginAsync = async (fastify) => {
     'authenticate',
     async (request: FastifyRequest, reply: FastifyReply) => {
       if (!request.headers.authorization) {
-        reply
-          .code(401)
-          .send({
-            success: false,
-            error: 'Unauthorized',
-            code: ERROR_CODES.UNAUTHORIZED,
-          });
+        reply.code(401).send({
+          success: false,
+          error: 'Unauthorized',
+          code: ERROR_CODES.UNAUTHORIZED,
+        });
         return;
       }
       try {
@@ -37,13 +35,11 @@ const authenticatePlugin: FastifyPluginAsync = async (fastify) => {
         const decoded: any = verify(token, JWT_SECRET);
         request.user = { id: decoded.userId };
       } catch (err) {
-        reply
-          .code(401)
-          .send({
-            success: false,
-            error: 'Unauthorized',
-            code: ERROR_CODES.UNAUTHORIZED,
-          });
+        reply.code(401).send({
+          success: false,
+          error: 'Unauthorized',
+          code: ERROR_CODES.UNAUTHORIZED,
+        });
       }
     }
   );

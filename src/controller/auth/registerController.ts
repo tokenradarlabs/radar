@@ -30,7 +30,9 @@ export default async function registerController(fastify: FastifyInstance) {
         if (error instanceof z.ZodError) {
           const response: Response<IAuthUser> = {
             success: false,
-            error: formatZodError(error),
+            error: formatZodError(error)
+              .map((err) => err.message)
+              .join(', '),
             code: ERROR_CODES.VALIDATION_FAILED,
           };
           return reply.code(400).send(response);

@@ -1,4 +1,3 @@
-
 import { getPrice } from '../price/price.service';
 import { BatchPriceInput } from './batchPrice.schema';
 
