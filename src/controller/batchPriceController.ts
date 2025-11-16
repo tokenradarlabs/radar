@@ -1,4 +1,3 @@
-
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { ZodError } from 'zod';
 import { getBatchPrices } from '../lib/api/batchPrice/batchPrice.service';
@@ -12,7 +11,10 @@ interface BatchPriceRequest extends FastifyRequest {
   };
 }
 
-export async function batchPriceController(req: BatchPriceRequest, reply: FastifyReply) {
+export async function batchPriceController(
+  req: BatchPriceRequest,
+  reply: FastifyReply
+) {
   try {
     const validatedInput = batchPriceSchema.parse(req.body);
     const { results, errors } = await getBatchPrices(validatedInput);
@@ -36,11 +38,17 @@ export async function batchPriceController(req: BatchPriceRequest, reply: Fastif
       return reply.code(error.statusCode).send({ message: error.message });
     }
     if (error instanceof ZodError) {
-      return reply.code(400).send({ message: 'Validation error', errors: error.errors });
+      return reply
+        .code(400)
+        .send({ message: 'Validation error', errors: error.errors });
     }
     if (error instanceof Error) {
-      return reply.code(500).send({ message: 'Internal server error', error: error.message });
+      return reply
+        .code(500)
+        .send({ message: 'Internal server error', error: error.message });
     }
-    return reply.code(500).send({ message: 'Internal server error', error: String(error) });
+    return reply
+      .code(500)
+      .send({ message: 'Internal server error', error: String(error) });
   }
 }

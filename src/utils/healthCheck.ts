@@ -1,9 +1,6 @@
-
 import { prisma } from './prisma';
 import { getCoinGeckoPrice } from './coinGeckoPrice';
 import { fetchWithRetry } from './fetchWithRetry';
-
-
 
 interface HealthCheckResult {
   status: 'up' | 'down' | 'degraded';
@@ -25,17 +22,29 @@ interface DetailedHealthCheckResult {
   };
 }
 
-const HEALTH_CHECK_TIMEOUT = parseInt(process.env.HEALTH_CHECK_TIMEOUT || '5000', 10); // Default to 5 seconds
+const HEALTH_CHECK_TIMEOUT = parseInt(
+  process.env.HEALTH_CHECK_TIMEOUT || '5000',
+  10
+); // Default to 5 seconds
 
 export async function checkDatabaseHealth(): Promise<HealthCheckResult> {
   const start = Date.now();
   try {
     await prisma.$queryRaw`SELECT 1`;
     const end = Date.now();
-    return { status: 'up', timestamp: new Date().toISOString(), responseTime: end - start };
+    return {
+      status: 'up',
+      timestamp: new Date().toISOString(),
+      responseTime: end - start,
+    };
   } catch (error: any) {
     const end = Date.now();
-    return { status: 'down', timestamp: new Date().toISOString(), responseTime: end - start, message: error.message };
+    return {
+      status: 'down',
+      timestamp: new Date().toISOString(),
+      responseTime: end - start,
+      message: error.message,
+    };
   }
 }
 
@@ -50,13 +59,23 @@ export async function checkCoinGeckoHealth(): Promise<HealthCheckResult> {
         status: 'degraded',
         timestamp: new Date().toISOString(),
         responseTime: end - start,
-        message: 'CoinGecko price data for bitcoin is null or undefined, indicating a potential issue.',
+        message:
+          'CoinGecko price data for bitcoin is null or undefined, indicating a potential issue.',
       };
     }
-    return { status: 'up', timestamp: new Date().toISOString(), responseTime: end - start };
+    return {
+      status: 'up',
+      timestamp: new Date().toISOString(),
+      responseTime: end - start,
+    };
   } catch (error: any) {
     const end = Date.now();
-    return { status: 'down', timestamp: new Date().toISOString(), responseTime: end - start, message: error.message };
+    return {
+      status: 'down',
+      timestamp: new Date().toISOString(),
+      responseTime: end - start,
+      message: error.message,
+    };
   }
 }
 
@@ -65,7 +84,11 @@ export async function checkAnkrRpcHealth(): Promise<HealthCheckResult> {
   try {
     const ANKR_API_KEY = process.env.ANKR_API_KEY;
     if (!ANKR_API_KEY) {
-      return { status: 'degraded', timestamp: new Date().toISOString(), message: 'ANKR_API_KEY is not configured.' };
+      return {
+        status: 'degraded',
+        timestamp: new Date().toISOString(),
+        message: 'ANKR_API_KEY is not configured.',
+      };
     }
     const ANKR_RPC_URL = `https://rpc.ankr.com/base/${ANKR_API_KEY}`;
 
@@ -73,7 +96,12 @@ export async function checkAnkrRpcHealth(): Promise<HealthCheckResult> {
     const response = await fetchWithRetry(ANKR_RPC_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ jsonrpc: '2.0', method: 'eth_blockNumber', params: [], id: 1 }),
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        method: 'eth_blockNumber',
+        params: [],
+        id: 1,
+      }),
       timeout: HEALTH_CHECK_TIMEOUT,
     });
 
@@ -85,10 +113,19 @@ export async function checkAnkrRpcHealth(): Promise<HealthCheckResult> {
       throw new Error(`Ankr RPC error: ${data.error.message}`);
     }
     const end = Date.now();
-    return { status: 'up', timestamp: new Date().toISOString(), responseTime: end - start };
+    return {
+      status: 'up',
+      timestamp: new Date().toISOString(),
+      responseTime: end - start,
+    };
   } catch (error: any) {
     const end = Date.now();
-    return { status: 'down', timestamp: new Date().toISOString(), responseTime: end - start, message: error.message };
+    return {
+      status: 'down',
+      timestamp: new Date().toISOString(),
+      responseTime: end - start,
+      message: error.message,
+    };
   }
 }
 
@@ -109,7 +146,9 @@ export async function checkMemoryUsage(): Promise<HealthCheckResult> {
   };
 }
 
-export async function getDetailedHealth(version: string): Promise<DetailedHealthCheckResult> {
+export async function getDetailedHealth(
+  version: string
+): Promise<DetailedHealthCheckResult> {
   const [database, coinGecko, ankrRpc, memoryUsage] = await Promise.all([
     checkDatabaseHealth(),
     checkCoinGeckoHealth(),
@@ -118,11 +157,15 @@ export async function getDetailedHealth(version: string): Promise<DetailedHealth
   ]);
 
   const overallStatus: 'up' | 'down' | 'degraded' =
-    database.status === 'down' || coinGecko.status === 'down' || ankrRpc.status === 'down'
+    database.status === 'down' ||
+    coinGecko.status === 'down' ||
+    ankrRpc.status === 'down'
       ? 'down'
-      : database.status === 'degraded' || coinGecko.status === 'degraded' || ankrRpc.status === 'degraded'
-      ? 'degraded'
-      : 'up';
+      : database.status === 'degraded' ||
+          coinGecko.status === 'degraded' ||
+          ankrRpc.status === 'degraded'
+        ? 'degraded'
+        : 'up';
 
   return {
     overallStatus,

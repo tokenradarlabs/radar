@@ -1,5 +1,12 @@
-
-import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vitest';
+import {
+  describe,
+  it,
+  expect,
+  beforeAll,
+  afterAll,
+  beforeEach,
+  vi,
+} from 'vitest';
 import Fastify, { FastifyInstance } from 'fastify';
 import router from '../../router';
 import { prisma } from '../../utils/prisma';
@@ -67,14 +74,26 @@ describe('Batch Price Endpoint', () => {
 
   it('should successfully fetch prices for multiple tokens', async () => {
     // Mock successful price fetches
-    (PriceService.getPrice as vi.Mock).mockImplementation(async ({ tokenId }: { tokenId: string }) => {
-      if (tokenId === 'bitcoin') {
-        return { id: 'bitcoin', symbol: 'btc', name: 'Bitcoin', current_price: 60000 };
-      } else if (tokenId === 'ethereum') {
-        return { id: 'ethereum', symbol: 'eth', name: 'Ethereum', current_price: 4000 };
+    (PriceService.getPrice as vi.Mock).mockImplementation(
+      async ({ tokenId }: { tokenId: string }) => {
+        if (tokenId === 'bitcoin') {
+          return {
+            id: 'bitcoin',
+            symbol: 'btc',
+            name: 'Bitcoin',
+            current_price: 60000,
+          };
+        } else if (tokenId === 'ethereum') {
+          return {
+            id: 'ethereum',
+            symbol: 'eth',
+            name: 'Ethereum',
+            current_price: 4000,
+          };
+        }
+        throw new Error('Token not found');
       }
-      throw new Error('Token not found');
-    });
+    );
 
     const response = await app.inject({
       method: 'POST',
@@ -98,14 +117,21 @@ describe('Batch Price Endpoint', () => {
 
   it('should return 207 for partial failures', async () => {
     // Mock some successful, some failed price fetches
-    (PriceService.getPrice as vi.Mock).mockImplementation(async ({ tokenId }: { tokenId: string }) => {
-      if (tokenId === 'bitcoin') {
-        return { id: 'bitcoin', symbol: 'btc', name: 'Bitcoin', current_price: 60000 };
-      } else if (tokenId === 'nonexistent-token') {
-        throw new Error('Token not found');
+    (PriceService.getPrice as vi.Mock).mockImplementation(
+      async ({ tokenId }: { tokenId: string }) => {
+        if (tokenId === 'bitcoin') {
+          return {
+            id: 'bitcoin',
+            symbol: 'btc',
+            name: 'Bitcoin',
+            current_price: 60000,
+          };
+        } else if (tokenId === 'nonexistent-token') {
+          throw new Error('Token not found');
+        }
+        throw new Error('Unexpected token');
       }
-      throw new Error('Unexpected token');
-    });
+    );
 
     const response = await app.inject({
       method: 'POST',
@@ -120,7 +146,9 @@ describe('Batch Price Endpoint', () => {
 
     expect(response.statusCode).toBe(207);
     const body = JSON.parse(response.body);
-    expect(body.message).toBe('Partial success: some prices could not be fetched.');
+    expect(body.message).toBe(
+      'Partial success: some prices could not be fetched.'
+    );
     expect(body.data).toBeDefined();
     expect(body.data.bitcoin.current_price).toBe(60000);
     expect(body.errors).toBeDefined();
@@ -142,7 +170,9 @@ describe('Batch Price Endpoint', () => {
     expect(response.statusCode).toBe(400);
     const body = JSON.parse(response.body);
     expect(body.message).toBe('Validation error');
-    expect(body.errors[0].message).toBe('Array must contain at least 1 element(s)');
+    expect(body.errors[0].message).toBe(
+      'Array must contain at least 1 element(s)'
+    );
   });
 
   it('should return 400 for tokenIds array exceeding max limit (10)', async () => {
@@ -162,14 +192,18 @@ describe('Batch Price Endpoint', () => {
     expect(response.statusCode).toBe(400);
     const body = JSON.parse(response.body);
     expect(body.message).toBe('Validation error');
-    expect(body.errors[0].message).toBe('Maximum 10 token IDs allowed per request.');
+    expect(body.errors[0].message).toBe(
+      'Maximum 10 token IDs allowed per request.'
+    );
   });
 
   it('should return 207 if all tokens fail to fetch', async () => {
     // Mock all price fetches to fail
-    (PriceService.getPrice as vi.Mock).mockImplementation(async ({ tokenId }: { tokenId: string }) => {
-      throw new Error(`Failed to fetch ${tokenId}`);
-    });
+    (PriceService.getPrice as vi.Mock).mockImplementation(
+      async ({ tokenId }: { tokenId: string }) => {
+        throw new Error(`Failed to fetch ${tokenId}`);
+      }
+    );
 
     const response = await app.inject({
       method: 'POST',
@@ -184,7 +218,9 @@ describe('Batch Price Endpoint', () => {
 
     expect(response.statusCode).toBe(207);
     const body = JSON.parse(response.body);
-    expect(body.message).toBe('Partial success: some prices could not be fetched.');
+    expect(body.message).toBe(
+      'Partial success: some prices could not be fetched.'
+    );
     expect(Object.keys(body.data).length).toBe(0);
     expect(body.errors).toBeDefined();
     expect(body.errors.token1).toBe('Failed to fetch token1');
@@ -192,12 +228,19 @@ describe('Batch Price Endpoint', () => {
   });
 
   it('should work correctly with a single token in the array', async () => {
-    (PriceService.getPrice as vi.Mock).mockImplementation(async ({ tokenId }: { tokenId: string }) => {
-      if (tokenId === 'solana') {
-        return { id: 'solana', symbol: 'sol', name: 'Solana', current_price: 150 };
+    (PriceService.getPrice as vi.Mock).mockImplementation(
+      async ({ tokenId }: { tokenId: string }) => {
+        if (tokenId === 'solana') {
+          return {
+            id: 'solana',
+            symbol: 'sol',
+            name: 'Solana',
+            current_price: 150,
+          };
+        }
+        throw new Error('Token not found');
       }
-      throw new Error('Token not found');
-    });
+    );
 
     const response = await app.inject({
       method: 'POST',

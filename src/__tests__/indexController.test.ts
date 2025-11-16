@@ -41,7 +41,10 @@ describe('Index Route', () => {
 
   describe('/health/detailed endpoint', () => {
     // Mock health check functions
-    const mockHealthCheckResult = (status: 'up' | 'down' | 'degraded', message?: string) => ({
+    const mockHealthCheckResult = (
+      status: 'up' | 'down' | 'degraded',
+      message?: string
+    ) => ({
       status,
       timestamp: new Date().toISOString(),
       responseTime: 100,
@@ -49,13 +52,23 @@ describe('Index Route', () => {
     });
 
     beforeAll(() => {
-      vi.spyOn(healthCheck, 'checkDatabaseHealth').mockResolvedValue(mockHealthCheckResult('up'));
-      vi.spyOn(healthCheck, 'checkCoinGeckoHealth').mockResolvedValue(mockHealthCheckResult('up'));
-      vi.spyOn(healthCheck, 'checkAnkrRpcHealth').mockResolvedValue(mockHealthCheckResult('up'));
+      vi.spyOn(healthCheck, 'checkDatabaseHealth').mockResolvedValue(
+        mockHealthCheckResult('up')
+      );
+      vi.spyOn(healthCheck, 'checkCoinGeckoHealth').mockResolvedValue(
+        mockHealthCheckResult('up')
+      );
+      vi.spyOn(healthCheck, 'checkAnkrRpcHealth').mockResolvedValue(
+        mockHealthCheckResult('up')
+      );
       vi.spyOn(healthCheck, 'checkMemoryUsage').mockResolvedValue({
         status: 'up',
         timestamp: new Date().toISOString(),
-        details: { rss: '100.00 MB', heapUsed: '50.00 MB', heapTotal: '70.00 MB' },
+        details: {
+          rss: '100.00 MB',
+          heapUsed: '50.00 MB',
+          heapTotal: '70.00 MB',
+        },
       });
     });
 
@@ -72,29 +85,39 @@ describe('Index Route', () => {
     });
 
     it('should return overall status down if database is down', async () => {
-      vi.spyOn(healthCheck, 'checkDatabaseHealth').mockResolvedValueOnce(mockHealthCheckResult('down', 'DB connection failed'));
+      vi.spyOn(healthCheck, 'checkDatabaseHealth').mockResolvedValueOnce(
+        mockHealthCheckResult('down', 'DB connection failed')
+      );
 
       const response = await request(app.server).get('/health/detailed');
 
       expect(response.statusCode).toBe(503);
       expect(response.body.overallStatus).toBe('down');
       expect(response.body.checks.database.status).toBe('down');
-      expect(response.body.checks.database.message).toBe('DB connection failed');
+      expect(response.body.checks.database.message).toBe(
+        'DB connection failed'
+      );
     });
 
     it('should return overall status degraded if CoinGecko is degraded', async () => {
-      vi.spyOn(healthCheck, 'checkCoinGeckoHealth').mockResolvedValueOnce(mockHealthCheckResult('degraded', 'CoinGecko rate limit'));
+      vi.spyOn(healthCheck, 'checkCoinGeckoHealth').mockResolvedValueOnce(
+        mockHealthCheckResult('degraded', 'CoinGecko rate limit')
+      );
 
       const response = await request(app.server).get('/health/detailed');
 
       expect(response.statusCode).toBe(206);
       expect(response.body.overallStatus).toBe('degraded');
       expect(response.body.checks.coinGecko.status).toBe('degraded');
-      expect(response.body.checks.coinGecko.message).toBe('CoinGecko rate limit');
+      expect(response.body.checks.coinGecko.message).toBe(
+        'CoinGecko rate limit'
+      );
     });
 
     it('should return overall status down if Ankr RPC is down', async () => {
-      vi.spyOn(healthCheck, 'checkAnkrRpcHealth').mockResolvedValueOnce(mockHealthCheckResult('down', 'Ankr RPC unreachable'));
+      vi.spyOn(healthCheck, 'checkAnkrRpcHealth').mockResolvedValueOnce(
+        mockHealthCheckResult('down', 'Ankr RPC unreachable')
+      );
 
       const response = await request(app.server).get('/health/detailed');
 

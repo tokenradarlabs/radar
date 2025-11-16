@@ -123,7 +123,12 @@ export async function buildApp(): Promise<FastifyInstance> {
 
   server.get('/health/detailed', async (_request, reply) => {
     const detailedHealth = await getDetailedHealth(APP_VERSION);
-    const statusCode = detailedHealth.overallStatus === 'down' ? 503 : detailedHealth.overallStatus === 'degraded' ? 200 : 200;
+    const statusCode =
+      detailedHealth.overallStatus === 'down'
+        ? 503
+        : detailedHealth.overallStatus === 'degraded'
+          ? 200
+          : 200;
     return reply.code(statusCode).send(detailedHealth);
   });
 

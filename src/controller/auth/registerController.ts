@@ -2,7 +2,7 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { Response } from '../../types/responses';
 import { sendInternalError, ERROR_CODES } from '../../utils/responseHelper';
-import { formatValidationError } from '../../utils/validation';
+import { formatZodError } from '../../utils/validation';
 import { IAuthUser } from '../../types/user';
 import {
   registerRequestSchema,
@@ -30,7 +30,9 @@ export default async function registerController(fastify: FastifyInstance) {
         if (error instanceof z.ZodError) {
           const response: Response<IAuthUser> = {
             success: false,
-            error: formatValidationError(error),
+            error: formatZodError(error)
+              .map((err) => err.message)
+              .join(', '),
             code: ERROR_CODES.VALIDATION_FAILED,
           };
           return reply.code(400).send(response);

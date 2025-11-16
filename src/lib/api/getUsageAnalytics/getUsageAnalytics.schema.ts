@@ -6,28 +6,31 @@ import {
   INVALID_UUID_ERROR,
 } from '../../utils/validation';
 
-
-
-export const getDetailedUsageAnalyticsRequestSchema = z.object({
-  apiKeyId: z
-    .string({
-      required_error: REQUIRED_ERROR,
-      invalid_type_error: INVALID_TYPE_ERROR,
-    })
-    .uuid(INVALID_UUID_ERROR)
-    .optional(),
-  startDate: z.string().datetime().optional(),
-  endDate: z.string().datetime().optional(),
-  interval: z.enum(['daily', 'weekly', 'monthly']).optional(),
-}).refine((data) => {
-  if (data.startDate && data.endDate) {
-    return new Date(data.startDate) <= new Date(data.endDate);
-  }
-  return true;
-}, {
-  message: 'Start date must be before or equal to end date',
-  path: ['endDate'],
-});
+export const getDetailedUsageAnalyticsRequestSchema = z
+  .object({
+    apiKeyId: z
+      .string({
+        required_error: REQUIRED_ERROR,
+        invalid_type_error: INVALID_TYPE_ERROR,
+      })
+      .uuid(INVALID_UUID_ERROR)
+      .optional(),
+    startDate: z.string().datetime().optional(),
+    endDate: z.string().datetime().optional(),
+    interval: z.enum(['daily', 'weekly', 'monthly']).optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.startDate && data.endDate) {
+        return new Date(data.startDate) <= new Date(data.endDate);
+      }
+      return true;
+    },
+    {
+      message: 'Start date must be before or equal to end date',
+      path: ['endDate'],
+    }
+  );
 
 export type GetDetailedUsageAnalyticsRequest = z.infer<
   typeof getDetailedUsageAnalyticsRequestSchema

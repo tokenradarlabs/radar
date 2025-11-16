@@ -75,6 +75,11 @@ export const apiKeyScopesSchema = z
   .default([]);
 
 // Validation error handler
-export function formatValidationError(error: z.ZodError): string {
-  return error.errors[0]?.message || 'Validation error';
+export function formatZodError(error: z.ZodError): ZodFormattedError[] {
+  return error.errors.map((err) => ({
+    field: err.path.length ? err.path.join('.') : 'root',
+    message: err.message,
+  }));
 }
+
+export type ZodFormattedError = { field: string; message: string };

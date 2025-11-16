@@ -1,8 +1,8 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import logger from '../utils/logger';
 import { z } from 'zod';
-import { sendSuccess, sendBadRequest } from '../utils/responseHelper';
-import { formatValidationError } from '../utils/validation';
+import { sendSuccess, sendBadRequest, ERROR_CODES } from '../utils/responseHelper';
+import { formatZodError } from '../utils/validation';
 import { telemetry } from '../utils/telemetry';
 import {
   PriceChangeService,
@@ -33,10 +33,9 @@ export default async function priceChangeController(fastify: FastifyInstance) {
         if (error instanceof z.ZodError) {
           return sendBadRequest(
             reply,
-            formatValidationError(error),
+            formatZodError(error).map((err) => err.message).join(', '),
             ERROR_CODES.VALIDATION_FAILED
           );
-        }
 
         logger.error('Price change controller error:', { error });
         return sendBadRequest(

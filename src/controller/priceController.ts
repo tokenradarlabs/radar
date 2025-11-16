@@ -5,8 +5,9 @@ import {
   sendSuccess,
   sendBadRequest,
   sendInternalError,
+  ERROR_CODES,
 } from '../utils/responseHelper';
-import { formatValidationError } from '../utils/validation';
+import { formatZodError } from '../utils/validation';
 import {
   PriceService,
   priceTokenIdSchema,
@@ -39,7 +40,9 @@ export default async function priceController(fastify: FastifyInstance) {
         if (error instanceof z.ZodError) {
           return sendBadRequest(
             reply,
-            formatValidationError(error),
+            formatZodError(error)
+              .map((err) => err.message)
+              .join(', '),
             ERROR_CODES.VALIDATION_FAILED
           );
         } else if (error instanceof Error) {
