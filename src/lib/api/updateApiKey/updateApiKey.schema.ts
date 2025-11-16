@@ -28,7 +28,7 @@ export const updateApiKeyRequestSchema = z.object({
     .min(1, MIN_LENGTH_ERROR)
     .max(100, MAX_LENGTH_ERROR)
     .optional(), // Make name optional for updates
-  scopes: apiKeyScopesSchema.optional(),
+  scopes: apiKeyScopesSchema,
   rateLimit: z.number().int().positive().optional(),
   expirationDuration: z.number().int().positive().optional(),
 });

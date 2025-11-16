@@ -5,7 +5,7 @@ import {
   INVALID_EMAIL_ERROR,
   apiKeyScopesSchema,
   INVALID_UUID_ERROR,
-} from '../../../utils/validation';
+} from '../../utils/validation';
 
 export const apiKeyGenerateSchema = z.object({
   email: z
@@ -14,10 +14,15 @@ export const apiKeyGenerateSchema = z.object({
       invalid_type_error: INVALID_TYPE_ERROR,
     })
     .email(INVALID_EMAIL_ERROR),
-  password: z.string({
-    required_error: REQUIRED_ERROR,
-    invalid_type_error: INVALID_TYPE_ERROR,
-  }),
+  password: z
+    .string({
+      required_error: REQUIRED_ERROR,
+      invalid_type_error: INVALID_TYPE_ERROR,
+    })
+    .min(8, MIN_PASSWORD_LENGTH_ERROR)
+    .regex(/[A-Z]/, PASSWORD_UPPERCASE_ERROR)
+    .regex(/[0-9]/, PASSWORD_NUMBER_ERROR)
+    .regex(/[^a-zA-Z0-9]/, PASSWORD_SPECIAL_CHAR_ERROR),
   expirationDuration: z.number().int().positive().optional(), // Optional duration in days
   name: z
     .string({
@@ -30,7 +35,7 @@ export const apiKeyGenerateSchema = z.object({
       'API key name can only contain alphanumeric characters, spaces, hyphens, and underscores'
     )
     .optional(),
-  scopes: apiKeyScopesSchema.optional(),
+  scopes: apiKeyScopesSchema,
   rateLimit: z.number().int().positive().optional(),
 });
 export type ApiKeyRequest = z.infer<typeof apiKeyGenerateSchema>;
