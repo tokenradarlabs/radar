@@ -2,7 +2,7 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import logger from '../utils/logger';
 import { z } from 'zod';
 import { sendSuccess, sendBadRequest } from '../utils/responseHelper';
-import { formatValidationError } from '../utils/validation';
+import { formatZodError } from '../utils/validation';
 import { VolumeService } from '../lib/api/volume/volume.service';
 import {
   volumeTokenIdSchema,
@@ -29,7 +29,7 @@ export default async function volumeController(fastify: FastifyInstance) {
         if (error instanceof z.ZodError) {
           return sendBadRequest(
             reply,
-            formatValidationError(error),
+            formatZodError(error).map((err) => err.message).join(', '),
             ERROR_CODES.VALIDATION_FAILED
           );
         }

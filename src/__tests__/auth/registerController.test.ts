@@ -4,7 +4,7 @@ import { registerController } from '../../controller/auth';
 import { RegisterService, registerRequestSchema } from '../../lib/auth';
 import { handleControllerError } from '../../utils/responseHelper';
 import { ZodError } from 'zod';
-import { formatValidationError } from '../../utils/validation';
+import { formatZodError } from '../../utils/validation';
 
 // Mock dependencies
 vi.mock('../../lib/auth', async (importOriginal) => {
@@ -25,7 +25,7 @@ vi.mock('../../utils/responseHelper', () => ({
 }));
 
 vi.mock('../../utils/validation', () => ({
-  formatValidationError: vi.fn(),
+  formatZodError: vi.fn(),
 }));
 
 describe('User Registration Endpoint (Unit)', () => {
@@ -45,7 +45,10 @@ describe('User Registration Endpoint (Unit)', () => {
   // Reset mocks before each test to ensure isolation
   beforeEach(() => {
     vi.clearAllMocks();
-    (formatValidationError as vi.Mock).mockReturnValue('Validation error'); // Default mock
+    (formatZodError as vi.Mock).mockReturnValue([{
+      field: 'root',
+      message: 'Validation error'
+    }]); // Default mock
   });
 
   it('should successfully register a new user with valid data', async () => {
@@ -84,19 +87,12 @@ describe('User Registration Endpoint (Unit)', () => {
       email: 'invalid-email',
       password: 'short',
     };
-    const zodError = new ZodError([
+    (formatZodError as vi.Mock).mockReturnValue([
       {
-        code: 'invalid_string',
+        field: 'email',
         message: 'Invalid email format',
-        path: ['email'],
-        validation: 'email',
       },
     ]);
-
-    (registerRequestSchema.parse as vi.Mock).mockImplementation(() => {
-      throw zodError;
-    });
-    (formatValidationError as vi.Mock).mockReturnValue('Invalid email format');
 
     const response = await app.inject({
       method: 'POST',
