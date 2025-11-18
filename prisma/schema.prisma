@@ -69,10 +69,14 @@ model ApiKey {
   user        User     @relation(fields: [userId], references: [id])
   expiresAt   DateTime?
   scopes      Json      @default("[]")
+  previousKey String? @unique
+  previousKeyExpiresAt DateTime?
   usageLogs   UsageLog[]
 
   @@unique([userId, name])
   @@index([userId])
+  @@index([previousKey])
+  @@index([previousKeyExpiresAt])
 }
 
 model UsageLog {
