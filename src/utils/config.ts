@@ -9,3 +9,7 @@ export const corsConfig = {
   allowedHeaders: ['Content-Type', 'Authorization', 'X-API-Key'],
   credentials: true,
 };
+
+export const PRICE_CACHE_MAX_AGE = process.env.PRICE_CACHE_MAX_AGE
+  ? parseInt(process.env.PRICE_CACHE_MAX_AGE, 10)
+  : 60;
