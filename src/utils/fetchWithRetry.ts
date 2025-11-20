@@ -1,4 +1,5 @@
 import { RequestInit } from 'node-fetch';
+import logger from './logger';
 
 interface FetchOptions extends RequestInit {
   retries?: number;
@@ -20,6 +21,10 @@ export async function fetchWithRetry(
 
   const minDelay = 100; // Minimum delay for backoff in ms
   const maxDelay = 5000; // Maximum delay for backoff in ms
+
+  // Sanitize URL for logging purposes to prevent sensitive query parameters from being exposed.
+  const parsedUrl = new URL(url);
+  const sanitizedUrl = `${parsedUrl.origin}${parsedUrl.pathname}`;
 
   for (let i = 0; i <= retries; i++) {
     const controller = new AbortController();
@@ -70,20 +75,20 @@ export async function fetchWithRetry(
       }
 
       if (error.name === 'AbortError' && i < retries) {
-        console.warn(
-          `Fetch for ${url} timed out, retrying (${
+        logger.warn(
+          `Fetch for ${sanitizedUrl} timed out, retrying (${
             i + 1
           }/${retries}). Error: ${error.message}`
         );
       } else if (i < retries) {
-        console.warn(
-          `Fetch failed for ${url}, retrying (${
+        logger.warn(
+          `Fetch failed for ${sanitizedUrl}, retrying (${
             i + 1
           }/${retries}). Error: ${error.message}`
         );
       } else {
-        console.error(
-          `Fetch failed for ${url} after ${retries} retries. Error: ${error.message}`
+        logger.error(
+          `Fetch failed for ${sanitizedUrl} after ${retries} retries. Error: ${error.message}`
         );
         throw error;
       }
