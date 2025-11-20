@@ -30,12 +30,20 @@ export async function fetchWithRetry(
       controller.abort();
     }, timeout);
 
+  // Sanitize URL for logging purposes to prevent sensitive query parameters from being exposed.
+  const parsedUrl = new URL(url);
+  const sanitizedUrl = `${parsedUrl.origin}${parsedUrl.pathname}`;
+
+   for (let i = 0; i <= retries; i++) {
+    const controller = new AbortController();
+    let timeoutAborted = false;
+    const timeoutId = setTimeout(() => {
+      timeoutAborted = true;
+      controller.abort();
+    }, timeout);
+
     let signalToUse = controller.signal;
     let externalSignalListener: (() => void) | undefined;
-
-    // Sanitize URL for logging purposes to prevent sensitive query parameters from being exposed.
-    const parsedUrl = new URL(url);
-    const sanitizedUrl = `${parsedUrl.origin}${parsedUrl.pathname}`;
 
     if (fetchOptions.signal) {
       // Check if AbortSignal.any is available (Node.js 20+)
