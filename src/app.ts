@@ -13,6 +13,7 @@ import rateLimiterPlugin from './utils/rateLimiter';
 import requestTimingPlugin from './plugins/requestTiming';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
+import { corsConfig } from './utils/config';
 import router from './router';
 import { z } from 'zod';
 import { isDatabaseUnavailableError } from './utils/db';
@@ -48,17 +49,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   });
 
   // Register CORS plugin
-  server.register(cors, {
-    origin:
-      process.env.NODE_ENV === 'production'
-        ? [
-            process.env.ALLOWED_ORIGINS?.split(',') || 'https://tokenradar.com',
-          ].flat()
-        : true, // Allow all origins in development
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-API-Key'],
-    credentials: true,
-  });
+  server.register(cors, corsConfig);
 
   // Register rate limiter plugin
   server.register(rateLimiterPlugin);
@@ -85,11 +76,12 @@ export async function buildApp(): Promise<FastifyInstance> {
     }
 
     const userAgentHeader = request.headers['user-agent'];
-    const userAgent = typeof userAgentHeader === 'string'
-      ? userAgentHeader
-      : Array.isArray(userAgentHeader) && userAgentHeader.length > 0
-        ? userAgentHeader[0]
-        : undefined;
+    const userAgent =
+      typeof userAgentHeader === 'string'
+        ? userAgentHeader
+        : Array.isArray(userAgentHeader) && userAgentHeader.length > 0
+          ? userAgentHeader[0]
+          : undefined;
     if (userAgent) {
       store.set('userAgent', userAgent);
     }
