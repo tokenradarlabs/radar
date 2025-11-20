@@ -84,7 +84,12 @@ export async function buildApp(): Promise<FastifyInstance> {
       store.set('apiKey', apiKey);
     }
 
-    const userAgent = request.headers['user-agent'];
+    const userAgentHeader = request.headers['user-agent'];
+    const userAgent = typeof userAgentHeader === 'string'
+      ? userAgentHeader
+      : Array.isArray(userAgentHeader) && userAgentHeader.length > 0
+        ? userAgentHeader[0]
+        : undefined;
     if (userAgent) {
       store.set('userAgent', userAgent);
     }
