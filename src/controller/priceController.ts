@@ -33,7 +33,7 @@ export default async function priceController(fastify: FastifyInstance) {
 
         reply.header(
           'Cache-Control',
-          `private, max-age=${PRICE_CACHE_MAX_AGE}`
+          `public, max-age=${PRICE_CACHE_MAX_AGE}`
         );
         return sendSuccess(reply, responseData);
       } catch (error) {

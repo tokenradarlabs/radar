@@ -10,6 +10,9 @@ export const corsConfig = {
   credentials: true,
 };
 
-export const PRICE_CACHE_MAX_AGE = process.env.PRICE_CACHE_MAX_AGE
-  ? parseInt(process.env.PRICE_CACHE_MAX_AGE, 10)
-  : 60;
+export const PRICE_CACHE_MAX_AGE: number = (() => {
+  const parsed = parseInt(process.env.PRICE_CACHE_MAX_AGE || '', 10);
+  return Number.isFinite(parsed) && Number.isInteger(parsed) && parsed >= 0
+    ? parsed
+    : 60;
+})();
