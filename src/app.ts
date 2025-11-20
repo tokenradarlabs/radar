@@ -13,6 +13,7 @@ import rateLimiterPlugin from './utils/rateLimiter';
 import requestTimingPlugin from './plugins/requestTiming';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
+import { corsConfig } from './utils/config';
 import router from './router';
 import { z } from 'zod';
 import { isDatabaseUnavailableError } from './utils/db';
@@ -48,8 +49,6 @@ export async function buildApp(): Promise<FastifyInstance> {
   });
 
   // Register CORS plugin
-  import { corsConfig } from './utils/config';
-
   server.register(cors, corsConfig);
 
   // Register rate limiter plugin
