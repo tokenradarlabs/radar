@@ -33,6 +33,10 @@ export async function fetchWithRetry(
     let signalToUse = controller.signal;
     let externalSignalListener: (() => void) | undefined;
 
+    // Sanitize URL for logging purposes to prevent sensitive query parameters from being exposed.
+    const parsedUrl = new URL(url);
+    const sanitizedUrl = `${parsedUrl.origin}${parsedUrl.pathname}`;
+
     if (fetchOptions.signal) {
       // Check if AbortSignal.any is available (Node.js 20+)
       if (typeof AbortSignal.any === 'function') {
@@ -72,19 +76,19 @@ export async function fetchWithRetry(
 
       if (error.name === 'AbortError' && i < retries) {
         logger.warn(
-          `Fetch for ${url} timed out, retrying (${
+          `Fetch for ${sanitizedUrl} timed out, retrying (${
             i + 1
           }/${retries}). Error: ${error.message}`
         );
       } else if (i < retries) {
         logger.warn(
-          `Fetch failed for ${url}, retrying (${
+          `Fetch failed for ${sanitizedUrl}, retrying (${
             i + 1
           }/${retries}). Error: ${error.message}`
         );
       } else {
         logger.error(
-          `Fetch failed for ${url} after ${retries} retries. Error: ${error.message}`
+          `Fetch failed for ${sanitizedUrl} after ${retries} retries. Error: ${error.message}`
         );
         throw error;
       }
