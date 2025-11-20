@@ -1,4 +1,5 @@
 import { RequestInit } from 'node-fetch';
+import logger from './logger';
 
 interface FetchOptions extends RequestInit {
   retries?: number;
@@ -70,19 +71,19 @@ export async function fetchWithRetry(
       }
 
       if (error.name === 'AbortError' && i < retries) {
-        console.warn(
+        logger.warn(
           `Fetch for ${url} timed out, retrying (${
             i + 1
           }/${retries}). Error: ${error.message}`
         );
       } else if (i < retries) {
-        console.warn(
+        logger.warn(
           `Fetch failed for ${url}, retrying (${
             i + 1
           }/${retries}). Error: ${error.message}`
         );
       } else {
-        console.error(
+        logger.error(
           `Fetch failed for ${url} after ${retries} retries. Error: ${error.message}`
         );
         throw error;
