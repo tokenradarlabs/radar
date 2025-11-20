@@ -22,19 +22,11 @@ export async function fetchWithRetry(
   const minDelay = 100; // Minimum delay for backoff in ms
   const maxDelay = 5000; // Maximum delay for backoff in ms
 
-  for (let i = 0; i <= retries; i++) {
-    const controller = new AbortController();
-    let timeoutAborted = false;
-    const timeoutId = setTimeout(() => {
-      timeoutAborted = true;
-      controller.abort();
-    }, timeout);
-
   // Sanitize URL for logging purposes to prevent sensitive query parameters from being exposed.
   const parsedUrl = new URL(url);
   const sanitizedUrl = `${parsedUrl.origin}${parsedUrl.pathname}`;
 
-   for (let i = 0; i <= retries; i++) {
+  for (let i = 0; i <= retries; i++) {
     const controller = new AbortController();
     let timeoutAborted = false;
     const timeoutId = setTimeout(() => {
