@@ -8,6 +8,7 @@ import {
   ERROR_CODES,
 } from '../utils/responseHelper';
 import { formatZodError } from '../utils/validation';
+import { PRICE_CACHE_MAX_AGE } from '../utils/config';
 import {
   PriceService,
   priceTokenIdSchema,
@@ -30,6 +31,10 @@ export default async function priceController(fastify: FastifyInstance) {
 
         const responseData = await PriceService.getTokenPrice(tokenId);
 
+        reply.header(
+          'Cache-Control',
+          `public, max-age=${PRICE_CACHE_MAX_AGE}`
+        );
         return sendSuccess(reply, responseData);
       } catch (error) {
         logger.error('Error in priceController', {
