@@ -84,6 +84,16 @@ export async function buildApp(): Promise<FastifyInstance> {
       store.set('apiKey', apiKey);
     }
 
+    const userAgentHeader = request.headers['user-agent'];
+    const userAgent = typeof userAgentHeader === 'string'
+      ? userAgentHeader
+      : Array.isArray(userAgentHeader) && userAgentHeader.length > 0
+        ? userAgentHeader[0]
+        : undefined;
+    if (userAgent) {
+      store.set('userAgent', userAgent);
+    }
+
     // Assuming userId might be available on request.user after authentication
     // if (request.user && request.user.id) {
     //   store.set('userId', request.user.id);

@@ -12,6 +12,7 @@ const requestContextFormat = format((info) => {
     info.requestId = store.get('requestId');
     info.apiKey = store.get('apiKey');
     info.userId = store.get('userId');
+    info.userAgent = store.get('userAgent');
   }
   return info;
 });
