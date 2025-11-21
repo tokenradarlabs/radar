@@ -1,4 +1,4 @@
-import 'dotenv/config';
+
 import { buildApp } from './app'; // Changed import
 import { validateEnvironmentVariables } from './utils/envValidation';
 import { logger } from './utils/logger';
