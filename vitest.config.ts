@@ -1,4 +1,4 @@
-import { defineConfig } from 'vitest'
+import { defineConfig } from 'vitest/config'
 import path from 'path'
 
 export default defineConfig({
@@ -23,7 +23,16 @@ export default defineConfig({
     },
     typecheck: {
       tsconfig: './tsconfig.json'
-    }
+    },
+    mock: {
+      include: ['bcrypt'],
+      imports: {
+        bcrypt: {
+          hash: vi.fn(() => 'hashedPassword'),
+          compare: vi.fn(() => true),
+        },
+      },
+    },
   },
   resolve: {
     alias: {

@@ -1,4 +1,4 @@
-import 'dotenv/config';
+
 import { validateEnvironmentVariables } from './envValidation';
 
 // Interface for the Coingecko API response
