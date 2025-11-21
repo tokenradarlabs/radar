@@ -1,4 +1,4 @@
-import { defineConfig } from 'vitest/dist/config.cjs'
+import { defineConfig } from 'vitest/config'
 import path from 'path'
 
 export default defineConfig({

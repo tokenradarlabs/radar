@@ -9,20 +9,18 @@ import fastify, {
   FastifyTypeProvider,
   FastifyBaseLogger,
 } from 'fastify';
-import rateLimiterPlugin from './utils/rateLimiter';
-import requestTimingPlugin from './plugins/requestTiming';
+import rateLimiterPlugin from '@/utils/rateLimiter';
+import requestTimingPlugin from '@/plugins/requestTiming';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
-import { corsConfig } from './utils/config';
-import router from './router';
+import { corsConfig } from '@/utils/config';
+import router from '@/router';
 import { z } from 'zod';
-import { isDatabaseUnavailableError } from './utils/db';
-import { sendServiceUnavailable, errorResponse } from './utils/responseHelper';
-import logger, { asyncLocalStorage } from './utils/logger';
-import { globalErrorHandler } from './utils/errorHandler';
+import logger, { asyncLocalStorage } from '@/utils/logger';
+import { globalErrorHandler } from '@/utils/errorHandler';
 import { v4 as uuidv4 } from 'uuid';
-import { connectPrisma, disconnectPrisma } from './utils/prisma';
-import { getDetailedHealth } from './utils/healthCheck';
+import { connectPrisma, disconnectPrisma } from '@/utils/prisma';
+import { getDetailedHealth } from '@/utils/healthCheck';
 
 const APP_VERSION = '4.1.0';
 
