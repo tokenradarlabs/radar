@@ -9,7 +9,7 @@
     "format": "prettier --write \"src/**/*.ts\"",
     "build": "./node_modules/.bin/rimraf dist && tsc",
     "start": "node dist/index.js",
-    "test": "./node_modules/.bin/cross-env NODE_ENV=test ./node_modules/.bin/vitest",
+    "test": "cross-env NODE_ENV=test vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui"
