@@ -9,7 +9,7 @@
     "format": "prettier --write \"src/**/*.ts\"",
     "build": "./node_modules/.bin/rimraf dist && tsc",
     "start": "node dist/index.js",
-    "test": "./node_modules/.bin/cross-env NODE_ENV=test ./node_modules/.bin/vitest",
+    "test": "npx cross-env NODE_ENV=test npx vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui"
@@ -45,7 +45,6 @@
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.7.2",
-    "vite": "^5.0.0",
-    "vitest": "^1.6.1"
+    "vite": "^5.0.0"
   }
 }

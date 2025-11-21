@@ -70,3 +70,25 @@ test('requestTiming plugin should log request duration', async () => {
 // and assert that the logger received the requestId in its metadata.
 // This is a more complex setup for a minimal change request.
 // The current test verifies the middleware runs without error and the app is functional.
+
+test('should return 503 Service Unavailable when MAINTENANCE_MODE is true', async () => {
+  let testServer: FastifyInstance | undefined;
+  try {
+    process.env.MAINTENANCE_MODE = 'true';
+    testServer = await buildApp();
+    await testServer.ready();
+
+    const response = await testServer.inject({
+      method: 'GET',
+      url: '/health',
+    });
+
+    expect(response.statusCode).toBe(503);
+    expect(response.json()).toEqual({ message: 'Service Unavailable' });
+  } finally {
+    if (testServer) {
+      await testServer.close();
+    }
+    delete process.env.MAINTENANCE_MODE;
+  }
+});

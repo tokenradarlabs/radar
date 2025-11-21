@@ -36,6 +36,13 @@ export async function buildApp(): Promise<FastifyInstance> {
   // Connect to the database at startup
   await connectPrisma();
 
+  // Maintenance mode check
+  if (process.env.MAINTENANCE_MODE === 'true') {
+    server.addHook('onRequest', (request, reply, done) => {
+      reply.status(503).send({ message: 'Service Unavailable' });
+    });
+  }
+
   // Register security headers plugin (Helmet)
   server.register(helmet, {
     contentSecurityPolicy: {
