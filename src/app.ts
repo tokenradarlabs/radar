@@ -19,6 +19,7 @@ import { z } from 'zod';
 import { isDatabaseUnavailableError } from './utils/db';
 import { sendServiceUnavailable, errorResponse } from './utils/responseHelper';
 import logger, { asyncLocalStorage } from './utils/logger';
+import { globalErrorHandler } from './utils/errorHandler';
 import { v4 as uuidv4 } from 'uuid';
 import { connectPrisma, disconnectPrisma } from './utils/prisma';
 import { getDetailedHealth } from './utils/healthCheck';
@@ -160,36 +161,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   }
 
   // Express-style error handler
-  server.setErrorHandler((error: FastifyError, request, reply) => {
-    logger.error('Global error handler caught an error', {
-      message: error.message,
-      stack: error.stack,
-      statusCode: error.statusCode,
-      requestUrl: request.url,
-    });
-
-    if (isDatabaseUnavailableError(error)) {
-      return sendServiceUnavailable(reply, 'Database unavailable');
-    }
-
-    // Operational, trusted error: send message to client
-    if (error.statusCode && error.statusCode >= 400 && error.statusCode < 500) {
-      return errorResponse(
-        reply,
-        error.statusCode,
-        error.message,
-        'CLIENT_ERROR'
-      );
-    }
-
-    // Programming or other unknown error: don't leak error details
-    return errorResponse(
-      reply,
-      500,
-      'An unexpected error occurred',
-      'SERVER_ERROR'
-    );
-  });
+  server.setErrorHandler(globalErrorHandler);
 
   // Ensure Prisma client is disconnected on application shutdown
   process.on('SIGINT', async () => {
