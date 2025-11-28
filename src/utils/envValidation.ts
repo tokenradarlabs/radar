@@ -17,6 +17,10 @@ interface OptionalEnvVars {
   ENABLE_REQUEST_TIMING_LOGS?: boolean;
 }
 
+function parseBooleanEnvVar(value: string | undefined): boolean {
+  return value?.trim().toLowerCase() === 'true';
+}
+
 /**
  * Validates that all required environment variables are present and not empty
  * @throws Error if any required environment variable is missing or empty
@@ -88,8 +92,9 @@ export function validateEnvironmentVariables(): RequiredEnvVars &
     RATE_LIMIT_EXCLUDE_ROUTES: process.env.RATE_LIMIT_EXCLUDE_ROUTES?.trim(),
     RATE_LIMIT_BURST_ALLOWANCE: process.env.RATE_LIMIT_BURST_ALLOWANCE?.trim(),
     PRICE_CACHE_TTL: process.env.PRICE_CACHE_TTL?.trim() || '60000',
-    ENABLE_REQUEST_TIMING_LOGS:
-      process.env.ENABLE_REQUEST_TIMING_LOGS?.trim() === 'true',
+    ENABLE_REQUEST_TIMING_LOGS: parseBooleanEnvVar(
+      process.env.ENABLE_REQUEST_TIMING_LOGS
+    ),
   };
 }
 
