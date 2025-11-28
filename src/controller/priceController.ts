@@ -15,10 +15,21 @@ import {
   type TokenPriceParams,
 } from '../lib/api/price';
 
+/**
+ * Registers the price API route with the Fastify instance.
+ *
+ * @param fastify The Fastify instance to register the route with.
+ */
 export default async function priceController(fastify: FastifyInstance) {
   // GET /api/v1/price/:tokenId
   fastify.get<{ Params: TokenPriceParams }>(
     '/:tokenId',
+    /**
+     * Handles requests for fetching token prices.
+     *
+     * @param request The Fastify request object, containing the tokenId in params.
+     * @param reply The Fastify reply object used to send the response.
+     */
     async function (
       request: FastifyRequest<{ Params: TokenPriceParams }>,
       reply: FastifyReply
