@@ -126,11 +126,13 @@ export async function buildApp(): Promise<FastifyInstance> {
 
   // Health endpoint
   server.get('/health', async (_request, reply) => {
-    return reply.send({ status: 'up', version: APP_VERSION });
+    const GIT_HASH = process.env.GIT_HASH || 'unknown';
+    return reply.send({ status: 'up', version: APP_VERSION, gitHash: GIT_HASH });
   });
 
   server.get('/health/detailed', async (_request, reply) => {
-    const detailedHealth = await getDetailedHealth(APP_VERSION);
+    const GIT_HASH = process.env.GIT_HASH || 'unknown';
+    const detailedHealth = await getDetailedHealth(APP_VERSION, GIT_HASH);
     const statusCode =
       detailedHealth.overallStatus === 'down'
         ? 503

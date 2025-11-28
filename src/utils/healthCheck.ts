@@ -14,6 +14,7 @@ interface DetailedHealthCheckResult {
   overallStatus: 'up' | 'down' | 'degraded';
   timestamp: string;
   version: string;
+  gitHash?: string;
   checks: {
     database: HealthCheckResult;
     coinGecko: HealthCheckResult;
@@ -147,7 +148,8 @@ export async function checkMemoryUsage(): Promise<HealthCheckResult> {
 }
 
 export async function getDetailedHealth(
-  version: string
+  version: string,
+  gitHash?: string
 ): Promise<DetailedHealthCheckResult> {
   const [database, coinGecko, ankrRpc, memoryUsage] = await Promise.all([
     checkDatabaseHealth(),
@@ -171,6 +173,7 @@ export async function getDetailedHealth(
     overallStatus,
     timestamp: new Date().toISOString(),
     version,
+    gitHash,
     checks: {
       database,
       coinGecko,
