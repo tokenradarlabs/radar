@@ -26,11 +26,11 @@ export default defineConfig({
     },
     mock: {
       include: ['bcrypt'],
-      imports: {
-        bcrypt: {
+      factory: {
+        bcrypt: () => ({
           hash: vi.fn(() => 'hashedPassword'),
           compare: vi.fn(() => true),
-        },
+        }),
       },
     },
   },
