@@ -21,6 +21,7 @@ import { globalErrorHandler } from '@/utils/errorHandler';
 import { v4 as uuidv4 } from 'uuid';
 import { connectPrisma, disconnectPrisma } from '@/utils/prisma';
 import { getDetailedHealth } from '@/utils/healthCheck';
+import { isValidUuid, INVALID_UUID_ERROR } from '@/utils/validation';
 
 const APP_VERSION = '4.1.0';
 
@@ -67,12 +68,28 @@ export async function buildApp(): Promise<FastifyInstance> {
   server.addHook('onRequest', (request, reply, done) => {
     const store = new Map();
     const requestIdHeader = request.headers['x-request-id'];
-    const requestId =
-      typeof requestIdHeader === 'string'
-        ? requestIdHeader
-        : Array.isArray(requestIdHeader) && requestIdHeader.length > 0
-          ? requestIdHeader[0]
-          : uuidv4();
+    let requestId: string;
+
+    if (
+      typeof requestIdHeader === 'string' &&
+      requestIdHeader.length > 0 &&
+      !isValidUuid(requestIdHeader)
+    ) {
+      logger.warn('Invalid X-Request-ID format', { requestId: requestIdHeader });
+      return reply.status(400).send({
+        statusCode: 400,
+        error: 'Bad Request',
+        message: INVALID_UUID_ERROR,
+      });
+    }
+
+    if (typeof requestIdHeader === 'string') {
+      requestId = requestIdHeader;
+    } else if (Array.isArray(requestIdHeader) && requestIdHeader.length > 0) {
+      requestId = requestIdHeader[0];
+    } else {
+      requestId = uuidv4();
+    }
     store.set('requestId', requestId);
     request.id = requestId; // Attach to request object for potential later use
 

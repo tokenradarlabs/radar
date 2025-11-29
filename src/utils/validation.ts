@@ -83,3 +83,9 @@ export function formatZodError(error: z.ZodError): ZodFormattedError[] {
 }
 
 export type ZodFormattedError = { field: string; message: string };
+
+export function isValidUuid(uuid: string): boolean {
+  const uuidRegex =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(uuid);
+}
