@@ -17,7 +17,7 @@ export async function fetchWithRetry(
   url: string,
   options?: FetchOptions
 ): Promise<Response> {
-  const { retries = 3, timeout = 5000, ...fetchOptions } = options || {};
+  const { retries = 3, timeout = 3000, ...fetchOptions } = options || {};
 
   const minDelay = 100; // Minimum delay for backoff in ms
   const maxDelay = 5000; // Maximum delay for backoff in ms
