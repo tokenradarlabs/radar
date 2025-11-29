@@ -70,24 +70,29 @@ export async function buildApp(): Promise<FastifyInstance> {
     const requestIdHeader = request.headers['x-request-id'];
     let requestId: string;
 
-    if (
-      typeof requestIdHeader === 'string' &&
-      requestIdHeader.length > 0 &&
-      !isValidUuid(requestIdHeader)
-    ) {
-      logger.warn('Invalid X-Request-ID format', { requestId: requestIdHeader });
-      return reply.status(400).send({
-        statusCode: 400,
-        error: 'Bad Request',
-        message: INVALID_UUID_ERROR,
-      });
-    }
+    // Normalize X-Request-ID: convert to a single string or undefined
+    const normalizedRequestId = Array.isArray(requestIdHeader)
+      ? requestIdHeader[0]
+      : requestIdHeader;
 
-    if (typeof requestIdHeader === 'string') {
-      requestId = requestIdHeader;
-    } else if (Array.isArray(requestIdHeader) && requestIdHeader.length > 0) {
-      requestId = requestIdHeader[0];
+    // Validate normalized X-Request-ID if present and not empty
+    if (
+      typeof normalizedRequestId === 'string' &&
+      normalizedRequestId.length > 0
+    ) {
+      if (!isValidUuid(normalizedRequestId)) {
+        logger.warn('Invalid X-Request-ID format', {
+          requestId: normalizedRequestId,
+        });
+        return reply.status(400).send({
+          statusCode: 400,
+          error: 'Bad Request',
+          message: INVALID_UUID_ERROR,
+        });
+      }
+      requestId = normalizedRequestId;
     } else {
+      // Generate a new UUID if header is missing or empty
       requestId = uuidv4();
     }
     store.set('requestId', requestId);
