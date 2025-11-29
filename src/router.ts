@@ -125,6 +125,10 @@ export default async function router(fastify: FastifyInstance) {
     fastify.post('/api/v1/batch-price', batchPriceController);
   });
 
+  fastify.get('/metrics', async (_request, reply) => {
+    reply.code(501).send('Not Implemented');
+  });
+
   // Public endpoints (no authentication required)
   fastify.addHook('preHandler', (request, reply, done) => {
     if (request.url === '//') {
