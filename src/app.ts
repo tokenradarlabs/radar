@@ -187,11 +187,13 @@ export async function buildApp(): Promise<FastifyInstance> {
 
   // Ensure Prisma client is disconnected on application shutdown
   process.on('SIGINT', async () => {
+    logger.info('Received SIGINT signal, shutting down gracefully...');
     await disconnectPrisma();
     process.exit(0);
   });
 
   process.on('SIGTERM', async () => {
+    logger.info('Received SIGTERM signal, shutting down gracefully...');
     await disconnectPrisma();
     process.exit(0);
   });
