@@ -53,6 +53,11 @@ export async function buildApp(): Promise<FastifyInstance> {
         imgSrc: ["'self'", 'data:', 'https:'],
       },
     },
+    hsts: {
+      maxAge: 31536000, // 1 year in seconds
+      includeSubDomains: true,
+      preload: true,
+    },
   });
 
   // Register CORS plugin
