@@ -24,6 +24,7 @@ import { getDetailedHealth } from '@/utils/healthCheck';
 import { isValidUuid, INVALID_UUID_ERROR } from '@/utils/validation';
 
 const APP_VERSION = '4.1.0';
+let isShuttingDown = false;
 
 export async function buildApp(): Promise<FastifyInstance> {
   const server = fastify({
@@ -187,13 +188,33 @@ export async function buildApp(): Promise<FastifyInstance> {
 
   // Ensure Prisma client is disconnected on application shutdown
   process.on('SIGINT', async () => {
-    await disconnectPrisma();
-    process.exit(0);
+    if (isShuttingDown) return;
+    isShuttingDown = true;
+    logger.info('Received SIGINT signal, shutting down gracefully...');
+    try {
+      await server.close();
+      await disconnectPrisma();
+      logger.info('Graceful shutdown completed.');
+      process.exit(0);
+    } catch (error) {
+      logger.error('Error during shutdown', { error });
+      process.exit(1);
+    }
   });
 
   process.on('SIGTERM', async () => {
-    await disconnectPrisma();
-    process.exit(0);
+    if (isShuttingDown) return;
+    isShuttingDown = true;
+    logger.info('Received SIGTERM signal, shutting down gracefully...');
+    try {
+      await server.close();
+      await disconnectPrisma();
+      logger.info('Graceful shutdown completed.');
+      process.exit(0);
+    } catch (error) {
+      logger.error('Error during shutdown', { error });
+      process.exit(1);
+    }
   });
 
   return server;
