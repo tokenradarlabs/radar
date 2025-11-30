@@ -76,13 +76,16 @@ export const apiKeyScopesSchema = z
 
 // Validation error handler
 export function formatZodError(error: z.ZodError): ZodFormattedError[] {
-  return error.errors.map((err) => ({
-    field: err.path.length ? err.path.join('.') : 'root',
-    message: err.message,
-  }));
+  return error.errors.map((err) => {
+    const errorObject: ZodFormattedError = { message: err.message };
+    if (err.path.length > 0) {
+      errorObject.field = err.path.join('.');
+    }
+    return errorObject;
+  });
 }
 
-export type ZodFormattedError = { field: string; message: string };
+export type ZodFormattedError = { field?: string; message: string };
 
 const UUID_V4_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
