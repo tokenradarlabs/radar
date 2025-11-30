@@ -1,4 +1,3 @@
-
 import fastify, {
   FastifyError,
   FastifyInstance,
@@ -150,7 +149,11 @@ export async function buildApp(): Promise<FastifyInstance> {
   // Health endpoint
   server.get('/health', async (_request, reply) => {
     const GIT_HASH = process.env.GIT_HASH || 'unknown';
-    return reply.send({ status: 'up', version: APP_VERSION, gitHash: GIT_HASH });
+    return reply.send({
+      status: 'up',
+      version: APP_VERSION,
+      gitHash: GIT_HASH,
+    });
   });
 
   server.get('/health/detailed', async (_request, reply) => {

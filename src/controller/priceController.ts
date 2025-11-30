@@ -42,10 +42,7 @@ export default async function priceController(fastify: FastifyInstance) {
 
         const responseData = await PriceService.getTokenPrice(tokenId);
 
-        reply.header(
-          'Cache-Control',
-          `public, max-age=${PRICE_CACHE_MAX_AGE}`
-        );
+        reply.header('Cache-Control', `public, max-age=${PRICE_CACHE_MAX_AGE}`);
         return sendSuccess(reply, responseData);
       } catch (error) {
         logger.error('Error in priceController', {
