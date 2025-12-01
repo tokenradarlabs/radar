@@ -40,5 +40,7 @@ $ npm run start
 The application uses the following environment variables:
 
 - `LOG_PRETTY`: (Optional) Set to `true` to force pretty logging output. Defaults to `false`.
-- `MAINTENANCE_MODE`: Set to `true` to activate maintenance mode, returning a 503 status for all requests. Defaults to `false`.
-- `GIT_HASH`: The current Git commit hash, used for Sentry releases and internal tracking. Automatically set in production environments. Defaults to `''` (empty string) in development.
+- `MAINTENANCE_MODE`: (Optional) Set to `true` to activate maintenance mode, returning a 503 status for all requests. Defaults to `false`.
+- `GIT_HASH`: (Optional) The current Git commit hash, used for Sentry releases and internal tracking. Automatically set in production environments. Defaults to `unknown` in development.
+
+Developers can set these environment variables using a `.env` file in the project root, by passing them as CLI arguments (e.g., `VAR=value npm run dev`), or through deployment configurations.
