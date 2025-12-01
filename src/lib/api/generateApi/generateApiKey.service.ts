@@ -4,6 +4,7 @@ import { prisma } from '../../../utils/prisma';
 import bcrypt from 'bcrypt';
 import { ConflictError, UnauthorizedError } from '../../../utils/errors';
 import { PrismaClientKnownRequestError } from '@prisma/client';
+import { formatDateToYYYYMMDD, addDays } from '../../../utils/date';
 
 export interface ApiKeyResponse {
   apiKey: string;
@@ -20,8 +21,7 @@ async function generateUniqueKeyName(userId: string): Promise<string> {
 
   const MAX_ATTEMPTS = 100;
   do {
-    newName = `API Key - ${new Date().toISOString().slice(0, 10)}${counter > 0 ? ` (${counter})` : ''}`;
-    const existingKey = await prisma.apiKey.findFirst({
+    newName = `API Key - ${formatDateToYYYYMMDD(new Date())}${counter > 0 ? ` (${counter})` : ''}`;    const existingKey = await prisma.apiKey.findFirst({
       where: {
         userId: userId,
         name: newName,
@@ -82,8 +82,7 @@ export class GenerateApiKeyService {
     const apiKey = generateApiKey();
     let expiresAt: Date | undefined;
     if (data.expirationDuration) {
-      expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + data.expirationDuration);
+      expiresAt = addDays(new Date(), data.expirationDuration);
     }
 
     const { scopes, rateLimit } = data;

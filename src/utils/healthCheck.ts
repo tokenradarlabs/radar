@@ -29,20 +29,20 @@ const HEALTH_CHECK_TIMEOUT = parseInt(
 ); // Default to 5 seconds
 
 export async function checkDatabaseHealth(): Promise<HealthCheckResult> {
-  const start = Date.now();
+  const start = getCurrentTimestampMs();
   try {
     await prisma.$queryRaw`SELECT 1`;
-    const end = Date.now();
+    const end = getCurrentTimestampMs();
     return {
       status: 'up',
-      timestamp: new Date().toISOString(),
+      timestamp: getCurrentDateAsISOString(),
       responseTime: end - start,
     };
   } catch (error: any) {
-    const end = Date.now();
+    const end = getCurrentTimestampMs();
     return {
       status: 'down',
-      timestamp: new Date().toISOString(),
+      timestamp: getCurrentDateAsISOString(),
       responseTime: end - start,
       message: error.message,
     };
@@ -50,30 +50,31 @@ export async function checkDatabaseHealth(): Promise<HealthCheckResult> {
 }
 
 export async function checkCoinGeckoHealth(): Promise<HealthCheckResult> {
-  const start = Date.now();
+  const start = getCurrentTimestampMs();
   try {
     // Use a lightweight CoinGecko endpoint, e.g., a simple price check for a common coin
     const price = await getCoinGeckoPrice('bitcoin');
-    const end = Date.now();
-    if (price === null || price === undefined) {
+    const end = getCurrentTimestampMs();
+
+    if (price === null) {
       return {
-        status: 'degraded',
-        timestamp: new Date().toISOString(),
+        status: 'down',
+        timestamp: getCurrentDateAsISOString(),
         responseTime: end - start,
-        message:
-          'CoinGecko price data for bitcoin is null or undefined, indicating a potential issue.',
+        message: 'CoinGecko price check failed: received null price.',
       };
     }
+
     return {
       status: 'up',
-      timestamp: new Date().toISOString(),
+      timestamp: getCurrentDateAsISOString(),
       responseTime: end - start,
     };
   } catch (error: any) {
-    const end = Date.now();
+    const end = getCurrentTimestampMs();
     return {
       status: 'down',
-      timestamp: new Date().toISOString(),
+      timestamp: getCurrentDateAsISOString(),
       responseTime: end - start,
       message: error.message,
     };
@@ -81,13 +82,13 @@ export async function checkCoinGeckoHealth(): Promise<HealthCheckResult> {
 }
 
 export async function checkAnkrRpcHealth(): Promise<HealthCheckResult> {
-  const start = Date.now();
+  const start = getCurrentTimestampMs();
   try {
     const ANKR_API_KEY = process.env.ANKR_API_KEY;
     if (!ANKR_API_KEY) {
       return {
         status: 'degraded',
-        timestamp: new Date().toISOString(),
+        timestamp: getCurrentDateAsISOString(),
         message: 'ANKR_API_KEY is not configured.',
       };
     }
@@ -113,17 +114,17 @@ export async function checkAnkrRpcHealth(): Promise<HealthCheckResult> {
     if (data.error) {
       throw new Error(`Ankr RPC error: ${data.error.message}`);
     }
-    const end = Date.now();
+    const end = getCurrentTimestampMs();
     return {
       status: 'up',
-      timestamp: new Date().toISOString(),
+      timestamp: getCurrentDateAsISOString(),
       responseTime: end - start,
     };
   } catch (error: any) {
-    const end = Date.now();
+    const end = getCurrentTimestampMs();
     return {
       status: 'down',
-      timestamp: new Date().toISOString(),
+      timestamp: getCurrentDateAsISOString(),
       responseTime: end - start,
       message: error.message,
     };
@@ -138,7 +139,7 @@ export async function checkMemoryUsage(): Promise<HealthCheckResult> {
 
   return {
     status: 'up',
-    timestamp: new Date().toISOString(),
+    timestamp: getCurrentDateAsISOString(),
     details: {
       rss: `${totalMemory.toFixed(2)} MB`,
       heapUsed: `${heapUsed.toFixed(2)} MB`,
@@ -171,7 +172,7 @@ export async function getDetailedHealth(
 
   return {
     overallStatus,
-    timestamp: new Date().toISOString(),
+    timestamp: getCurrentDateAsISOString(),
     version,
     gitHash,
     checks: {
