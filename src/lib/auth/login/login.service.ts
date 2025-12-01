@@ -2,6 +2,7 @@ import { prisma } from '../../../utils/prisma';
 import { generateToken } from '../../../utils/auth';
 import { verifyPassword } from '../common/utils';
 import { LoginRequest, LoginResponse } from './login.schema';
+import { getCurrentDateAsISOString } from '../../../utils/date';
 
 export class LoginService {
   static async loginUser(data: LoginRequest): Promise<LoginResponse> {
@@ -12,7 +13,7 @@ export class LoginService {
     });
 
     if (!user) {
-      const timestamp = new Date().toISOString();
+      const timestamp = getCurrentDateAsISOString();
       throw new Error(`User Does Not Exist (${timestamp})`);
     }
 
