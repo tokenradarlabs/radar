@@ -29,17 +29,17 @@ const HEALTH_CHECK_TIMEOUT = parseInt(
 ); // Default to 5 seconds
 
 export async function checkDatabaseHealth(): Promise<HealthCheckResult> {
-  const start = Date.now();
+  const start = getCurrentTimestampMs();
   try {
     await prisma.$queryRaw`SELECT 1`;
-    const end = Date.now();
+    const end = getCurrentTimestampMs();
     return {
       status: 'up',
       timestamp: new Date().toISOString(),
       responseTime: end - start,
     };
   } catch (error: any) {
-    const end = Date.now();
+    const end = getCurrentTimestampMs();
     return {
       status: 'down',
       timestamp: new Date().toISOString(),
@@ -50,11 +50,11 @@ export async function checkDatabaseHealth(): Promise<HealthCheckResult> {
 }
 
 export async function checkCoinGeckoHealth(): Promise<HealthCheckResult> {
-  const start = Date.now();
+  const start = getCurrentTimestampMs();
   try {
     // Use a lightweight CoinGecko endpoint, e.g., a simple price check for a common coin
     const price = await getCoinGeckoPrice('bitcoin');
-    const end = Date.now();
+    const end = getCurrentTimestampMs();
     if (price === null || price === undefined) {
       return {
         status: 'degraded',

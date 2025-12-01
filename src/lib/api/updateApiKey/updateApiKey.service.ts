@@ -6,6 +6,7 @@ import {
   UnauthorizedError,
   NotFoundError,
 } from '../../../utils/errors';
+import { addDays } from '../../../utils/date';
 
 export interface UpdateApiKeyResponse {
   message: string;
@@ -70,8 +71,7 @@ export class UpdateApiKeyService {
     if (expirationDuration !== undefined) {
       let expiresAt: Date | null = null;
       if (expirationDuration > 0) {
-        expiresAt = new Date();
-        expiresAt.setDate(expiresAt.getDate() + expirationDuration);
+        expiresAt = addDays(new Date(), expirationDuration);
       }
       updateData.expiresAt = expiresAt;
     }

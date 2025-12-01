@@ -3,6 +3,7 @@ import {
   GetDetailedUsageAnalyticsRequest,
   UsageAnalyticsResponse,
 } from './getUsageAnalytics.schema';
+import { getDateFormatOptions, getFirstDayOfWeek, addDays, addMonths } from '../../utils/date';
 
 export class GetUsageAnalyticsService {
   static async getUsageAnalytics(
@@ -77,21 +78,7 @@ export class GetUsageAnalyticsService {
       const start = new Date(startDate);
       const end = new Date(endDate);
 
-      let dateFormat: Intl.DateTimeFormatOptions;
-
-      switch (interval) {
-        case 'daily':
-          dateFormat = { year: 'numeric', month: '2-digit', day: '2-digit' };
-          break;
-        case 'weekly':
-          dateFormat = { year: 'numeric', month: '2-digit', day: '2-digit' };
-          break;
-        case 'monthly':
-          dateFormat = { year: 'numeric', month: '2-digit' };
-          break;
-        default:
-          dateFormat = { year: 'numeric', month: '2-digit', day: '2-digit' };
-      }
+      const dateFormat = getDateFormatOptions(interval);
 
       const logs = await prisma.usageLog.findMany({
         where: whereClause,
@@ -114,8 +101,7 @@ export class GetUsageAnalyticsService {
           const logDate = new Date(log.createdAt);
 
           if (interval === 'weekly') {
-            const firstDayOfWeek = new Date(logDate);
-            firstDayOfWeek.setDate(logDate.getDate() - logDate.getDay());
+            const firstDayOfWeek = getFirstDayOfWeek(logDate);
             dateKey = firstDayOfWeek.toLocaleDateString('en-CA', dateFormat);
           } else if (interval === 'monthly') {
             dateKey = logDate.toLocaleDateString('en-CA', dateFormat);
@@ -153,8 +139,7 @@ export class GetUsageAnalyticsService {
       for (let d = new Date(start); d <= end; ) {
         let dateKey;
         if (interval === 'weekly') {
-          const firstDayOfWeek = new Date(d);
-          firstDayOfWeek.setDate(d.getDate() - d.getDay());
+          const firstDayOfWeek = getFirstDayOfWeek(d);
           dateKey = firstDayOfWeek.toLocaleDateString('en-CA', dateFormat);
         } else if (interval === 'monthly') {
           dateKey = d.toLocaleDateString('en-CA', dateFormat);
@@ -179,11 +164,11 @@ export class GetUsageAnalyticsService {
         });
 
         if (interval === 'daily') {
-          d.setDate(d.getDate() + 1);
+          d = addDays(d, 1);
         } else if (interval === 'weekly') {
-          d.setDate(d.getDate() + 7);
+          d = addDays(d, 7);
         } else if (interval === 'monthly') {
-          d.setMonth(d.getMonth() + 1);
+          d = addMonths(d, 1);
         }
       }
     }
