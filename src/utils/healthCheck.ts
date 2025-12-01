@@ -55,6 +55,16 @@ export async function checkCoinGeckoHealth(): Promise<HealthCheckResult> {
     // Use a lightweight CoinGecko endpoint, e.g., a simple price check for a common coin
     const price = await getCoinGeckoPrice('bitcoin');
     const end = getCurrentTimestampMs();
+
+    if (price === null) {
+      return {
+        status: 'down',
+        timestamp: getCurrentDateAsISOString(),
+        responseTime: end - start,
+        message: 'CoinGecko price check failed: received null price.',
+      };
+    }
+
     return {
       status: 'up',
       timestamp: getCurrentDateAsISOString(),
