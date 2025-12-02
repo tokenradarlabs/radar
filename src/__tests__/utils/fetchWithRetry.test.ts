@@ -157,7 +157,7 @@ describe('fetchWithRetry', () => {
 
     vi.advanceTimersByTime(timeoutMs);
 
-    await expect(promise).rejects.toThrow('TimeoutError');
+    await expect(promise).rejects.toThrow('AbortError');
     expect(global.fetch).toHaveBeenCalledTimes(1);
   });
 });
