@@ -144,4 +144,20 @@ describe('fetchWithRetry', () => {
     await expect(promise).rejects.toThrow('Aborted');
     expect(global.fetch).toHaveBeenCalledTimes(1);
   });
+
+  it('should reject with a TimeoutError when the fetch operation times out', async () => {
+    vi.spyOn(global, 'fetch').mockImplementation(() => {
+      return new Promise((resolve) =>
+        setTimeout(() => resolve(mockResponse as Response), 2000) // Simulate a long-running request
+      );
+    });
+
+    const timeoutMs = 1000;
+    const promise = fetchWithRetry(mockUrl, { timeout: timeoutMs, retries: 0 });
+
+    vi.advanceTimersByTime(timeoutMs);
+
+    await expect(promise).rejects.toThrow('TimeoutError');
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+  });
 });
