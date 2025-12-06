@@ -17,6 +17,29 @@ const requestContextFormat = format((info) => {
   return info;
 });
 
+const simpleWithContextFormat = format.printf(
+  ({
+    level,
+    message,
+    timestamp,
+    requestId,
+    apiKey,
+    userId,
+    userAgent,
+    stack,
+  }) => {
+    let log = `${timestamp} ${level}: ${message}`;
+    if (requestId) log += ` [requestId: ${requestId}]`;
+    if (apiKey) log += ` [apiKey: ${apiKey}]`;
+    if (userId) log += ` [userId: ${userId}]`;
+    if (userAgent) log += ` [userAgent: ${userAgent}]`;
+    if (stack)
+      log += `
+${stack}`; // Include stack for errors
+    return log;
+  }
+);
+
 const logger = createLogger({
   level: 'info',
   format: format.combine(
@@ -24,13 +47,13 @@ const logger = createLogger({
     format.timestamp(),
     format.errors({ stack: true }),
     format.splat(),
-    isDevelopment || isPrettyLog ? format.simple() : format.json()
+    isDevelopment || isPrettyLog ? simpleWithContextFormat : format.json()
   ),
   transports: [
     new transports.Console({
       format:
         isDevelopment || isPrettyLog
-          ? format.combine(format.colorize(), format.simple())
+          ? format.combine(format.colorize(), simpleWithContextFormat)
           : format.json(),
     }),
   ],
