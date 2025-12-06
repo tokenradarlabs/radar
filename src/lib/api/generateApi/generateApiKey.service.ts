@@ -21,7 +21,8 @@ async function generateUniqueKeyName(userId: string): Promise<string> {
 
   const MAX_ATTEMPTS = 100;
   do {
-    newName = `API Key - ${formatDateToYYYYMMDD(new Date())}${counter > 0 ? ` (${counter})` : ''}`;    const existingKey = await prisma.apiKey.findFirst({
+    newName = `API Key - ${formatDateToYYYYMMDD(new Date())}${counter > 0 ? ` (${counter})` : ''}`;
+    const existingKey = await prisma.apiKey.findFirst({
       where: {
         userId: userId,
         name: newName,

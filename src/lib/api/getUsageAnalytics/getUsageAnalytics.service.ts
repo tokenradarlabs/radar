@@ -3,7 +3,12 @@ import {
   GetDetailedUsageAnalyticsRequest,
   UsageAnalyticsResponse,
 } from './getUsageAnalytics.schema';
-import { getDateFormatOptions, getFirstDayOfWeek, addDays, addMonths } from '../../../utils/date';
+import {
+  getDateFormatOptions,
+  getFirstDayOfWeek,
+  addDays,
+  addMonths,
+} from '../../../utils/date';
 
 export class GetUsageAnalyticsService {
   static async getUsageAnalytics(

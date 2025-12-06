@@ -147,8 +147,8 @@ describe('fetchWithRetry', () => {
 
   it('should reject with a TimeoutError when the fetch operation times out', async () => {
     vi.spyOn(global, 'fetch').mockImplementation(() => {
-      return new Promise((resolve) =>
-        setTimeout(() => resolve(mockResponse as Response), 2000) // Simulate a long-running request
+      return new Promise(
+        (resolve) => setTimeout(() => resolve(mockResponse as Response), 2000) // Simulate a long-running request
       );
     });
 

@@ -2,7 +2,9 @@ import { GetDetailedUsageAnalyticsRequest } from '../lib/api/getUsageAnalytics/g
 
 // This file will contain date formatting and manipulation utilities.
 
-export function getDateFormatOptions(interval: GetDetailedUsageAnalyticsRequest['interval']): Intl.DateTimeFormatOptions {
+export function getDateFormatOptions(
+  interval: GetDetailedUsageAnalyticsRequest['interval']
+): Intl.DateTimeFormatOptions {
   switch (interval) {
     case 'daily':
       return { year: 'numeric', month: '2-digit', day: '2-digit' };
