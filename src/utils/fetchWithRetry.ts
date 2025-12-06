@@ -71,6 +71,9 @@ export async function fetchWithRetry(
     } catch (error: any) {
       if (error.name === 'AbortError' && !timeoutAborted) {
         // This is an external abort, rethrow immediately
+        logger.error(
+          `Fetch for ${sanitizedUrl} was externally aborted. Error: ${error.message}`
+        );
         throw error;
       }
 
