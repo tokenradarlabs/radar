@@ -15,6 +15,7 @@ interface OptionalEnvVars {
   RATE_LIMIT_BURST_ALLOWANCE?: string;
   PRICE_CACHE_TTL?: string;
   ENABLE_REQUEST_TIMING_LOGS?: boolean;
+  REQUEST_TIMING_MAX_DURATIONS?: string;
 }
 
 function parseBooleanEnvVar(value: string | undefined): boolean {
@@ -95,6 +96,7 @@ export function validateEnvironmentVariables(): RequiredEnvVars &
     ENABLE_REQUEST_TIMING_LOGS: parseBooleanEnvVar(
       process.env.ENABLE_REQUEST_TIMING_LOGS
     ),
+    REQUEST_TIMING_MAX_DURATIONS: process.env.REQUEST_TIMING_MAX_DURATIONS?.trim(),
   };
 }
 
