@@ -1,5 +1,4 @@
 import { test, expect, beforeAll, afterAll, vi } from 'vitest';
-import { buildApp } from '../../app';
 import { FastifyInstance } from 'fastify';
 import logger from '../../utils/logger';
 
@@ -8,6 +7,8 @@ const originalMaxDurations = process.env.REQUEST_TIMING_MAX_DURATIONS;
 const originalEnableLogs = process.env.ENABLE_REQUEST_TIMING_LOGS;
 
 beforeAll(async () => {
+  vi.resetModules(); // Reset modules to avoid premature environment variable evaluation
+  const { buildApp } = await import('../../app'); // Dynamically import buildApp
   process.env.ENABLE_REQUEST_TIMING_LOGS = 'true';
   process.env.REQUEST_TIMING_MAX_DURATIONS = '5'; // Use a small number for testing
   testServer = await buildApp();

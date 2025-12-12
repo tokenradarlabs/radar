@@ -9,8 +9,13 @@ declare module 'fastify' {
   }
 }
 
-const durations: number[] = [];
-const MAX_DURATIONS = parseInt(ENV.REQUEST_TIMING_MAX_DURATIONS || '100', 10); // Store up to MAX_DURATIONS for percentile calculation
+function validateMaxDurations(value: string | undefined): number {
+  const parsed = parseInt(value || '', 10);
+  if (Number.isFinite(parsed) && parsed > 0 && parsed <= 1000) {
+    return parsed;
+  }
+  return 100; // Safe default
+}
 
 function calculatePercentile(sortedDurations: number[], percentile: number): number {
   if (sortedDurations.length === 0) {
@@ -27,6 +32,9 @@ function calculatePercentile(sortedDurations: number[], percentile: number): num
 }
 
 async function requestTimingPlugin(fastify: FastifyInstance) {
+  const durations: number[] = [];
+  const MAX_DURATIONS = validateMaxDurations(ENV.REQUEST_TIMING_MAX_DURATIONS);
+
   fastify.addHook(
     'onRequest',
     async (request: FastifyRequest, reply: FastifyReply) => {
