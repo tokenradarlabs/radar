@@ -8,7 +8,7 @@
     "dev": "cross-env NODE_ENV=development nodemon",
     "dev:watch": "cross-env NODE_ENV=development nodemon -L",
     "format": "prettier --write \"src/**/*.ts\"",
-    "build": "./node_modules/.bin/rimraf dist && tsc && tsc-alias",
+    "build": "rm -rf dist && tsc && tsc-alias",
     "start": "node dist/index.js",
     "test": "cross-env NODE_OPTIONS='--experimental-vm-modules' NODE_ENV=test vitest",
     "test:run": "vitest run",
@@ -44,10 +44,10 @@
     "rimraf": "^5.0.10",
     "supertest": "^7.1.4",
     "ts-node": "^10.9.2",
+    "tsc-alias": "^1.8.8",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.7.2",
     "vite": "^5.0.0",
-    "vitest": "^1.6.1",
-    "tsc-alias": "^1.8.8"
+    "vitest": "^1.6.1"
   }
 }
