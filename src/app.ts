@@ -204,50 +204,54 @@ export async function buildApp(): Promise<FastifyInstance> {
   // Express-style error handler
   server.setErrorHandler(globalErrorHandler);
 
-  const initiateShutdown = async (signal: string) => {
-    if (isShuttingDown) return;
-    isShuttingDown = true;
-    logger.warn(`Received ${signal} signal. Initiating graceful shutdown...`);
-
-    const shutdownStartTime = process.hrtime.bigint();
-
-    // Set a timeout for forceful shutdown if graceful shutdown takes too long
-    const timeout = setTimeout(() => {
-      logger.error(
-        `Graceful shutdown timed out after ${shutdownGracePeriod / 1000}s. Forcing exit.`,
-        { signal, shutdownGracePeriodMs: shutdownGracePeriod },
-      );
-      process.exit(1);
-    }, shutdownGracePeriod);
-
-    try {
-      // Close the Fastify server, which will also call all 'onClose' hooks registered by plugins
-      await server.close({ dispose: true });
-
-      clearTimeout(timeout);
-      const shutdownEndTime = process.hrtime.bigint();
-      const shutdownDuration = Number(shutdownEndTime - shutdownStartTime) / 1_000_000; // Convert nanoseconds to milliseconds
-
-      logger.info('Graceful shutdown completed successfully.', {
-        signal,
-        shutdownDurationMs: shutdownDuration,
-      });
-      process.exit(0);
-    } catch (error) {
-      clearTimeout(timeout);
-      logger.error('Error during graceful shutdown', {
-        signal,
-        error: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined,
-      });
-      process.exit(1);
-    }
-  };
-
   process.on('SIGINT', () => initiateShutdown('SIGINT'));
   process.on('SIGTERM', () => initiateShutdown('SIGTERM'));
 
   return server;
 }
+
+// Register signal handlers at module scope to ensure they are only registered once.
+const initiateShutdown = async (signal: string) => {
+  if (isShuttingDown) return;
+  isShuttingDown = true;
+  logger.warn(`Received ${signal} signal. Initiating graceful shutdown...`);
+
+  const shutdownStartTime = process.hrtime.bigint();
+
+  // Set a timeout for forceful shutdown if graceful shutdown takes too long
+  const timeout = setTimeout(() => {
+    logger.error(
+      `Graceful shutdown timed out after ${shutdownGracePeriod / 1000}s. Forcing exit.`,
+      { signal, shutdownGracePeriodMs: shutdownGracePeriod },
+    );
+    process.exit(1);
+  }, shutdownGracePeriod);
+
+  try {
+    // Close the Fastify server, which will also call all 'onClose' hooks registered by plugins
+    await server.close({ dispose: true });
+
+    clearTimeout(timeout);
+    const shutdownEndTime = process.hrtime.bigint();
+    const shutdownDuration = Number(shutdownEndTime - shutdownStartTime) / 1_000_000; // Convert nanoseconds to milliseconds
+
+    logger.info('Graceful shutdown completed successfully.', {
+      signal,
+      shutdownDurationMs: shutdownDuration,
+    });
+    process.exit(0);
+  } catch (error) {
+    clearTimeout(timeout);
+    logger.error('Error during graceful shutdown', {
+      signal,
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+    process.exit(1);
+  }
+};
+
+process.on('SIGINT', () => initiateShutdown('SIGINT'));
+process.on('SIGTERM', () => initiateShutdown('SIGTERM'));
 
 export default buildApp;

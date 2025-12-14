@@ -47,10 +47,20 @@ const prismaPlugin: FastifyPluginAsync = async (fastify) => {
   fastify.addHook('onClose', async (instance) => {
     logger.info('Disconnecting Prisma from database...');
     const startTime = process.hrtime.bigint();
-    await instance.prisma.$disconnect();
-    const endTime = process.hrtime.bigint();
-    const duration = Number(endTime - startTime) / 1_000_000; // Convert nanoseconds to milliseconds
-    logger.info('Prisma database disconnected.', { durationMs: duration });
+    try {
+      await instance.prisma.$disconnect();
+      const endTime = process.hrtime.bigint();
+      const duration = Number(endTime - startTime) / 1_000_000; // Convert nanoseconds to milliseconds
+      logger.info('Prisma database disconnected.', { durationMs: duration });
+    } catch (error) {
+      const endTime = process.hrtime.bigint();
+      const duration = Number(endTime - startTime) / 1_000_000; // Convert nanoseconds to milliseconds
+      logger.error('Error disconnecting Prisma from database.', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        durationMs: duration,
+      });
+    }
   });
 
   // Decorate Fastify instance with Prisma for easy access
