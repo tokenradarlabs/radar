@@ -18,12 +18,13 @@ import { z } from 'zod';
 import logger, { asyncLocalStorage } from '@/utils/logger';
 import { globalErrorHandler } from '@/utils/errorHandler';
 import { v4 as uuidv4 } from 'uuid';
-import { connectPrisma, disconnectPrisma } from '@/utils/prisma';
+import prismaPlugin from '@/utils/prisma';
 import { getDetailedHealth } from '@/utils/healthCheck';
 import { isValidUuid, INVALID_UUID_ERROR } from '@/utils/validation';
 
 const APP_VERSION = '4.1.0';
 let isShuttingDown = false;
+const shutdownGracePeriod = 10_000; // 10 seconds
 
 export async function buildApp(): Promise<FastifyInstance> {
   const server = fastify({
@@ -33,8 +34,8 @@ export async function buildApp(): Promise<FastifyInstance> {
     bodyLimit: 1048576, // 1MB limit for request body
   });
 
-  // Connect to the database at startup
-  await connectPrisma();
+  // Register the Prisma plugin (handles connection and disconnection)
+  await server.register(prismaPlugin);
 
   // Maintenance mode check
   if (process.env.MAINTENANCE_MODE === 'true') {
@@ -131,6 +132,15 @@ export async function buildApp(): Promise<FastifyInstance> {
 
   // Request/Response Logging Middleware
   server.addHook('onRequest', async (request) => {
+    if (isShuttingDown) {
+      logger.warn('Rejecting new request during shutdown', {
+        method: request.method,
+        url: request.url,
+      });
+      // Immediately close the connection for new requests during shutdown
+      request.raw.destroy();
+      return;
+    }
     logger.info('Incoming request', {
       method: request.method,
       url: request.url,
@@ -194,38 +204,54 @@ export async function buildApp(): Promise<FastifyInstance> {
   // Express-style error handler
   server.setErrorHandler(globalErrorHandler);
 
-  // Ensure Prisma client is disconnected on application shutdown
-  process.on('SIGINT', async () => {
-    if (isShuttingDown) return;
-    isShuttingDown = true;
-    logger.info('Received SIGINT signal, shutting down gracefully...');
-    try {
-      await server.close();
-      await disconnectPrisma();
-      logger.info('Graceful shutdown completed.');
-      process.exit(0);
-    } catch (error) {
-      logger.error('Error during shutdown', { error });
-      process.exit(1);
-    }
-  });
-
-  process.on('SIGTERM', async () => {
-    if (isShuttingDown) return;
-    isShuttingDown = true;
-    logger.info('Received SIGTERM signal, shutting down gracefully...');
-    try {
-      await server.close();
-      await disconnectPrisma();
-      logger.info('Graceful shutdown completed.');
-      process.exit(0);
-    } catch (error) {
-      logger.error('Error during shutdown', { error });
-      process.exit(1);
-    }
-  });
+  process.on('SIGINT', () => initiateShutdown('SIGINT'));
+  process.on('SIGTERM', () => initiateShutdown('SIGTERM'));
 
   return server;
 }
+
+// Register signal handlers at module scope to ensure they are only registered once.
+const initiateShutdown = async (signal: string) => {
+  if (isShuttingDown) return;
+  isShuttingDown = true;
+  logger.warn(`Received ${signal} signal. Initiating graceful shutdown...`);
+
+  const shutdownStartTime = process.hrtime.bigint();
+
+  // Set a timeout for forceful shutdown if graceful shutdown takes too long
+  const timeout = setTimeout(() => {
+    logger.error(
+      `Graceful shutdown timed out after ${shutdownGracePeriod / 1000}s. Forcing exit.`,
+      { signal, shutdownGracePeriodMs: shutdownGracePeriod },
+    );
+    process.exit(1);
+  }, shutdownGracePeriod);
+
+  try {
+    // Close the Fastify server, which will also call all 'onClose' hooks registered by plugins
+    await server.close({ dispose: true });
+
+    clearTimeout(timeout);
+    const shutdownEndTime = process.hrtime.bigint();
+    const shutdownDuration = Number(shutdownEndTime - shutdownStartTime) / 1_000_000; // Convert nanoseconds to milliseconds
+
+    logger.info('Graceful shutdown completed successfully.', {
+      signal,
+      shutdownDurationMs: shutdownDuration,
+    });
+    process.exit(0);
+  } catch (error) {
+    clearTimeout(timeout);
+    logger.error('Error during graceful shutdown', {
+      signal,
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+    process.exit(1);
+  }
+};
+
+process.on('SIGINT', () => initiateShutdown('SIGINT'));
+process.on('SIGTERM', () => initiateShutdown('SIGTERM'));
 
 export default buildApp;

@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { isDatabaseUnavailableError } from './db';
 import { logger } from './logger';
+import { FastifyPluginAsync } from 'fastify';
 
 // Prevent multiple instances of Prisma Client in development
 declare global {
@@ -9,16 +10,17 @@ declare global {
 
 export let prisma: PrismaClient;
 
-if (process.env.NODE_ENV === 'production') {
-  prisma = new PrismaClient();
-} else {
-  if (!global.prisma) {
-    global.prisma = new PrismaClient();
+const prismaPlugin: FastifyPluginAsync = async (fastify) => {
+  if (process.env.NODE_ENV === 'production') {
+    prisma = new PrismaClient();
+  } else {
+    if (!global.prisma) {
+      global.prisma = new PrismaClient();
+    }
+    prisma = global.prisma;
   }
-  prisma = global.prisma;
-}
 
-export async function connectPrisma(): Promise<void> {
+  // Connect to the database
   try {
     await prisma.$connect();
     logger.info('Database connected successfully.');
@@ -40,9 +42,36 @@ export async function connectPrisma(): Promise<void> {
       throw error; // Re-throw other unexpected errors
     }
   }
+
+  // Disconnect Prisma when the Fastify app closes
+  fastify.addHook('onClose', async (instance) => {
+    logger.info('Disconnecting Prisma from database...');
+    const startTime = process.hrtime.bigint();
+    try {
+      await instance.prisma.$disconnect();
+      const endTime = process.hrtime.bigint();
+      const duration = Number(endTime - startTime) / 1_000_000; // Convert nanoseconds to milliseconds
+      logger.info('Prisma database disconnected.', { durationMs: duration });
+    } catch (error) {
+      const endTime = process.hrtime.bigint();
+      const duration = Number(endTime - startTime) / 1_000_000; // Convert nanoseconds to milliseconds
+      logger.error('Error disconnecting Prisma from database.', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        durationMs: duration,
+      });
+    }
+  });
+
+  // Decorate Fastify instance with Prisma for easy access
+  fastify.decorate('prisma', prisma);
+};
+
+export default prismaPlugin;
+
+declare module 'fastify' {
+  interface FastifyInstance {
+    prisma: PrismaClient;
+  }
 }
 
-export async function disconnectPrisma(): Promise<void> {
-  await prisma.$disconnect();
-  logger.info('Database disconnected.');
-}
