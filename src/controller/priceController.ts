@@ -49,7 +49,7 @@ export default async function priceController(fastify: FastifyInstance) {
           message: error.message,
           stack: error.stack,
           tokenId: request.params.tokenId,
-          requestId: request.id,
+          ...(request.id && { requestId: request.id }),
         });
         if (error instanceof z.ZodError) {
           return sendBadRequest(
